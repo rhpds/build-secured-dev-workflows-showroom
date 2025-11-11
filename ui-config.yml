@@ -5,6 +5,3 @@ tabs:
   - name: Bastion
     path: /wetty
     port: 443
-    secondary_name: Bastion
-    secondary_path: /wetty
-    secondary_port: 443
