@@ -30,6 +30,16 @@ git config --global gitsign.issuer {keycloak_admin_console}/realms/{tas_sso_real
 git config --global gitsign.rekor {tas_rekor_url}
 git config --global gitsign.clientid {tas_chains_client_id}
 
+[%hardbreaks]
+KEYCLOAK_ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "client_id=admin-cli" \
+  -d "username={keycloak_admin_user}" \
+  -d "password={keycloak_admin_password}" \
+  -d "grant_type=password" | jq -r '.access_token')
+
+"${KEYCLOAK_URL}/admin/realms/{tas_chains_realm}/clients?clientId=$TAS_CHAINS_CLIENT_ID" \
+  -H "Authorization: Bearer $KEYCLOAK_ACCESS_TOKEN" | jq -r '.[0].secret')
 
 == Writing your lab
 
