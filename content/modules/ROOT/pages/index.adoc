@@ -38,6 +38,7 @@ KEYCLOAK_ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/
   -d "password={keycloak_admin_password}" \
   -d "grant_type=password" | jq -r '.access_token')
 
+[%hardbreaks]
 "${KEYCLOAK_URL}/admin/realms/{tas_chains_realm}/clients?clientId=$TAS_CHAINS_CLIENT_ID" \
   -H "Authorization: Bearer $KEYCLOAK_ACCESS_TOKEN" | jq -r '.[0].secret')
 
