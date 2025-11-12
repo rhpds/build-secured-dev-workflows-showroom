@@ -7,9 +7,27 @@ image::rhel-logo-black.jpg[rhel-logo-black,55%,55%]
 
 == Variables
 
-Other vars can also be set there, such as `ssh_user` and `ssh_password`, and referenced inline in the lab content by using the `\{foo}` syntax.
+export TPA_REALM={tpa_realm}
+export TPA_CLI_CLIENT_SECRET={tpa_cli_client_secret}
+export TPA_ADMIN_USERNAME={tpa_admin_username}
+export TPA_ADMIN_PASSWORD={tpa_admin_password}
+export KEYCLOAK_URL={keycloak_admin_console}
+export TAS_CHAINS_CLIENT_ID={tas_chains_client_id}
+export TAS_CHAINS_REALM={tas_chains_realm}
+export TAS_SSO_REALM={tas_sso_realm}
+export TPA_SERVER_URL={tpa_server_url}
 
-This is another var, or asciidoc attribute, from `./content/antora.yml` {my_var}
+git config --global user.email '{user}@demo.redhat.com'
+git config --global user.name ‘{user}'
+git config --global commit.gpgsign true
+git config --global tag.gpgsign true
+git config --global gpg.x509.program /projects/home/bin/gitsign
+git config --global gpg.format x509
+git config --global gitsign.fulcio {tas_fulcio_url}
+git config --global gitsign.issuer {keycloak_admin_console}/realms/{tas_sso_realm}
+git config --global gitsign.rekor {tas_rekor_url}
+git config --global gitsign.clientid {tas_chains_client_id}
+
 
 == Writing your lab
 
