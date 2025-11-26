@@ -1,74 +1,97 @@
-= {lab_name}
+= Build secure streamlined developer workflows with Red Hat Advanced Developer Suite
 
-The `lab_name` var, known as an asciidoc attribute, above was set in `./content/antora.yml` and can be used to set the lab_name or title of your content.
-You are both free to change its value and if you prefer to use a different var name, you can change the value of `lab_name`, for example to `title` in `./content/antora.yml` and then reference it in your content as `\{title}`. +
+image::rhads-logo.png[RHADS Logo,align="center",width=200]
 
-image::rhel-logo-black.jpg[rhel-logo-black,55%,55%]
+== Welcome to Build secure streamlined developer workflows with RHADS Workshop
 
-== Variables
+This hands-on comprehensive workshop provides deep technical understanding of Red Hat Advanced Developer Suite (RHADS) components and their implementation. Designed for platform engineers, technical leaders, and technical sellers, this hands-on learning experience will equip you with the expertise to deploy, configure, and optimize RHADS while demonstrating its ability to deliver measurable business outcomes.
 
-[%hardbreaks]
-export TPA_REALM={tpa_realm}
-export TPA_CLI_CLIENT_SECRET={tpa_cli_client_secret}
-export TPA_ADMIN_USERNAME={tpa_admin_username}
-export TPA_ADMIN_PASSWORD={tpa_admin_password}
-export KEYCLOAK_URL={keycloak_admin_console}
-export TAS_CHAINS_CLIENT_ID={tas_chains_client_id}
-export TAS_CHAINS_REALM={tas_chains_realm}
-export TAS_SSO_REALM={tas_sso_realm}
-export TPA_SERVER_URL={tpa_server_url}
+This training shifts the focus from merely showing product features to demonstrating how RHADS solves real customer pain points, such as inconsistent processes and rising supply chain risks, by providing streamlined, secure developer workflows.
 
-[%hardbreaks]
-git config --global user.email '{user}@demo.redhat.com'
-git config --global user.name '{user}'
-git config --global commit.gpgsign true
-git config --global tag.gpgsign true
-git config --global gpg.x509.program /projects/home/bin/gitsign
-git config --global gpg.format x509
-git config --global gitsign.fulcio {tas_fulcio_url}
-git config --global gitsign.issuer {keycloak_admin_console}/realms/{tas_sso_realm}
-git config --global gitsign.rekor {tas_rekor_url}
-git config --global gitsign.clientid {tas_chains_client_id}
+== About Red Hat Advanced Developer Suite
 
-[%hardbreaks]
-KEYCLOAK_ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "client_id=admin-cli" \
-  -d "username={keycloak_admin_user}" \
-  -d "password={keycloak_admin_password}" \
-  -d "grant_type=password" | jq -r '.access_token')
+Red Hat Advanced Developer Suite (RHADS) scales platform engineering teams to increase developer productivity and reduce software supply chain risk in hybrid and multi-cloud environments. It is purposefully built for balancing speed and security, integrating into existing organizational workflows. The suite brings together an enterprise-grade developer portal, enhanced software supply chain security capabilities, and components that empower platform engineers to enhance developer productivity and streamline the software development lifecycle.
 
-[%hardbreaks]
-export TAS_CHAINS_CLIENT_SECRET=$(curl -s -X GET "${KEYCLOAK_URL}/admin/realms/{tas_chains_realm}/clients?clientId=$TAS_CHAINS_CLIENT_ID" \
-  -H "Authorization: Bearer $KEYCLOAK_ACCESS_TOKEN" | jq -r '.[0].secret')
+=== Core Benefits
 
-== Writing your lab
+* **Improved Developer Productivity & Efficiency**:  Accelerate development with rapid onboarding into preconfigured workspaces, automated software templates, and self-service capabilities via a central source-of-truth.
+* **Enhanced Software Integrity and Provenance**:  Protect your software supply chain with automated signing, cryptographic verification, and end-to-end provenance tracking. This strengthens supply chain trust and reduces the risk of compromised artifacts.
+* **Automated Compliance and Governance**: Implement policy-driven, verifiable build pipelines to automatically enforce security standards (e.g., SLSA) and adhere to regulatory requirements, making the business impact tangible.
+* **Real-time Risk Visibility**: Gain critical insights into the risk profile of applications across the software development lifecycle (SDLC) through SBOM management and analysis.
 
-Whatever type of content you are writing we'll refer to your *content* as "your lab" in this document.
+=== Key Components Covered
 
-=== Lab structure
+[cols="1,3"]
+|===
+| Component | Description
 
-Wether you are writing a lab
+| **Red Hat Developer Hub (RHDH)**
+|  An enterprise-grade, self-managed, and customizable internal developer portal built on Backstage.io. RHDH drives Increased Developer Velocity by drastically reducing cognitive load and setup time and streamlining development workflows with automated software templates and self-service capabilities.
 
-* First, we will build a monolithic application already compiled as RPM packages and put it into a container. This will allow us to deploy the application, copy it between machines, and update it separately from the operating system. This process affords us a portable and easily maintained component instead of tightly coupling the application with your operating system maintenance.
+| **Red Hat Trusted Artifact Signer (RHTAS)**
+|  RHTAS is a production-ready deployment of the Sigstore project that delivers Guaranteed Artifact Integrity by supporting keyless signing tied to existing user identity (SSO), eliminating complex key management, and maintaining an immutable audit trail for verification and transparency across the supply chain. RHTAS ensures the integrity, authenticity, and provenance of software artifacts.
 
-* In closing we will build a second container on a different operating system version that makes an application not packaged into RPMs. This will be similar to a web application deployment, positioning the correct files at the right locations. To do this, we will pull a project from GitHub and position the component files within our container image. The purpose of this is to achieve a portable application container that can deploy on several different versions of Red Hat Enterprise Linux. This also provides the benefit of decoupling your application maintenance, which would all happen by building new containers versus operating system maintenance. The container is no longer reliant on the operating system installed on the machine where the application is deployed.
+| **Red Hat Trusted Profile Analyzer (RHTPA)**
+| RHTPA provides platform engineers, developers, and security teams with visibility and actionable insights into the risk profile (vulnerabilities, licenses) of their software supply chain. RHTPA enables Automated Risk Management and Compliance by facilitating blast radius analysis across the entire application portfolio and ensuring compliance through system and security profile analysis.
 
-. Now let's examine this cluster a bit more by describing the cluster (the `$GUID` environment variable is already set for you so you can immediately describe your individual cluster):
-+
-[source,sh,role=execute]
-----
-podman ps
-----
-+
-.Sample Output
-[source,texinfo,subs="attributes"]
-----
-CONTAINER ID  IMAGE                        COMMAND           CREATED      STATUS      PORTS                 NAMES
-2dcfee9e50c4  docker.io/library/httpd:2.4  httpd-foreground  3 hours ago  Up 3 hours  0.0.0.0:8080->80/tcp  showroom-httpd
-----
+| **Red Hat Advanced Cluster Security (RHACS)**
+| RHACS is a comprehensive Kubernetes-native security platform that enforces security policies for containerized applications and performs image scanning and security checks.RHACS Enforces Security at Scale by ensuring that only trusted, verified, and compliant artifacts reach the cluster. It is integrated into the CI/CD pipeline to provide image scanning and security checks.
 
-=== Lab Access
+| **Red Hat Quay**
+| Quay is a secure image management and global registry that stores and manages container images and other build artifacts. Quay secures Artifact Storage by providing a centralized repository for container images and offering real-time scans and granular access controls. 
 
-The terminal window to your right is *already* logged into the lab environment as the `{ssh_user}` user via `ssh`.
-All steps of this lab are to be completed as the `{ssh_user}` user.
+| **Red Hat Build of Keycloak (RHBK)**
+| RHBK serves as the OpenID Connect (OIDC) provider for secure identity and access management. RHBK Centralizes Secure Identity Management and is critical for enabling RHTAS keyless signing workflows and user authentication for the entire RHADS ecosystem, including synchronizing User and Group entities into RHDH.
+
+| **Red Hat DevSpaces**
+| Red Hat DevSpaces provides cloud-based, containerized development environments hosted on OpenShift, allowing developers to code, build, and test software using only a browser. It Enhances Developer Experience and Consistency by ensuring instant onboarding, preconfigured workspaces, and consistent workflows, thereby eliminating complex local setup challenges.
+|===
+
+== Workshop Objectives
+
+By the end of this workshop, you will be able to:
+
+* Explain the role of RHADS in secure software delivery.
+* Understand how RHADS components (RHTPA, RHTAS, and RHDH) combine to deliver verifiable, policy-driven build pipelines.
+* Configure and integrate trusted services, including setting up authentication realms and clients in Keycloak/SSO for RHTPA and RHTAS, and deploying these services on OpenShift to verify connectivity and token-based access.
+* Generate and validate software provenance data by uploading and analyzing SBOMs through RHTPA and performing keyless artifact signing with RHTAS integrated into Tekton Chains.
+* Implement a secure developer workflow using Red Hat Developer Hub software templates, leveraging Red Hat DevSpaces and gitsign for OIDC-based commit signing, and performing image scanning using RHACS.
+* Validate the end-to-end trusted supply chain by executing a pipeline that verifies commits, uploads SBOMs, signs images, performs scans, and runs a promotion pipeline that applies Enterprise Contract (EC) checks before image advancement to stage and production
+
+== Prerequisites
+
+* Experience with Red Hat OpenShift and containerized applications
+* Understanding of CI/CD pipelines and DevOps practices
+* Basic knowledge of software supply chain security concepts
+* Familiarity with developer tools and workflows
+
+== Workshop Structure (Hands-on Modules)
+
+This workshop consists of hands-on labs designed to demonstrate how Red Hat Advanced Developer Suite (RHADS) solves key customer challenges through a highly automated, policy-driven development lifecycle.
+
+* **Module 1: Establish Trust With SBOM Validation** (20 minutes)
+    - **Customer challenge**: “We cannot verify or attest to the components that make up our software.”
+    - **Participants Will**: : Deploy Red Hat Trusted Profile Analyzer (RHTPA) and integrate Red Hat build of Keycloak (RHBK) to enable verifiable SBOM ingestion and vulnerability risk analysis.
+    - **Customer Outcome**: Builds include verifiable and trusted SBOM data from the start.
+    - **Consultant Takeaway**: A reference implementation for establishing early-stage software trust in customer environments.
+    - **Technical Seller Takeaway**: A compelling demo showing how RHADS enables visibility and integrity in the software supply chain.
+* **Module 2: Sign and Verify All Artifacts With RHTAS** (30 minutes)
+    - **Customer challenge**: “We cannot trust that our images were built and signed through our trusted CI pipeline, or that they haven’t been tampered with.”
+    - **Participants Will**: Deploy RHTAS and integrate it with Tekton Chains to automate keyless artifact signing and immutable provenance tracking.
+    - **Customer Outcome**: Images are cryptographically signed, tamper-evident, and fully auditable.
+    - **Consultant Takeaway**: Learn to embed signing workflows into CI pipelines for customer environments.
+    - **Technical Seller Takeaway**: A demo showcasing secure image provenance before deployment.
+* **Module 3: Developer Workflow Without Developer Friction ** (25 minutes)
+    - **Customer challenge**: “Developer velocity suffers when security isn’t seamlessly integrated into their workflows.”
+    - **Participants Will**: Use Red Hat Developer Hub templates and Red Hat OpenShift Dev Spaces to provision a Trusted Software Supply Chain (TSSC) pipeline and enable secure, OIDC-based commit signing with GitSign.
+    - **Customer Outcome**: With RHADS, security is baked in. Developers just write code—trust is handled automatically.
+    - **Consultant Takeaway**: Build developer-centric pipelines that meet security and compliance requirements.
+    - **Technical Seller Takeaway**: This is the demo that proves you don’t have to choose between speed and security. With RHADS, your developers stay fast — and your pipeline stays secure.
+* **Module 4: Enforce Policy and Promote Safely** (25 minutes)
+    - **Customer challenge**: “Unverified or unsafe images are slipping through to staging and production.”
+    - **Participants Will**: Execute an end-to-end trusted software supply chain pipeline, including RHACS scanning, enforce Enterprise Contract (EC) policies, and promote only when all trust conditions pass.
+    - **Customer Outcome**: Releases become safer, auditable, and fully governed — only trusted images move forward, ensuring confidence at every stage of the delivery process
+    - **Consultant Takeaway**: Gain a reusable pattern for embedding policy enforcement and release governance into real-world pipelines — without slowing teams down.
+    - **Technical Seller Takeaway**: This is the final demo story: “RHADS prevents unsafe releases and makes every deployment a controlled, compliant, and predictable outcome.”
+
+Ready to embrace the principle to "Move Fast, Stay Safe"? Let's begin implementing the policy-driven automation necessary to accelerate developer productivity and strengthen software supply chain security with RHADS.
