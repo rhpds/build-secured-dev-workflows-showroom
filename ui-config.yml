@@ -9,5 +9,3 @@ tabs:
     port: 443
   - name: OCP Console
     url: 'https://console-openshift-console.${DOMAIN}'
-  - name: Red Hat Developer Hub
-    url: https://backstage-backstage.${DOMAIN}
