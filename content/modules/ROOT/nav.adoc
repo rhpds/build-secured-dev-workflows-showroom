@@ -1,4 +1,4 @@
-* xref:module-01.adoc[1. RPM Native Container]
+* xref:module-01.adoc[Module 1: Establish Trust With SBOM Validation]
 ** xref:module-01.adoc#repositories[Repositories]
 ** xref:module-01.adoc#software[Software]
 

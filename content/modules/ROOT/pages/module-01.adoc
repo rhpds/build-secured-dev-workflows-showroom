@@ -1,149 +1,192 @@
-= Building an Application with rpms
+= Establish Trust With SBOM Validation
 
-== Downloading the UBI
+== Overview
 
-In this lab, you will be installing software into the container 
-image running as an interactive application. To do this you will
-need `yum`, but do not need `systemd` for managing services within the
-container environment.  For that reason, you will be using the *Standard*
-UBI image (as opposed to the Minimal or Multi-service images).
+In this module, you establish the foundation of the *Trusted Software Supply Chain (TSSC)*. Before securing builds or enforcing policy, you need a central, verifiable source of truth for software composition, which is why you will deploy *Red Hat Trusted Profile Analyzer (RHTPA)* and configure it to ingest Software Bills of Materials (SBOMs).
 
-Using the "buildah from" command will download and meld the container image. This particular image we are using is the Red Hat Universal Base Image or UBI. From the ourput of the command, you will notice that we are pulling down the latest one, which is for RHEL 9. 
+== Step 1: Configure Identity and Access Management
 
-. Execute the  download the Standard UBI
-image from Red Hat's registry.
+*RHTPA* requires an external *OpenID Connect (OIDC)* provider for authentication and authorisation, as it does not maintain its own internal user store. In this module, you will integrate *RHTPA* with *Red Hat Build of Keycloak (RHBK)*, which issues the tokens and identity claims that *RHTPA* ruses to validate users and permissions.
 
-+
-[source,sh,role=execute]
-----
-buildah from registry.access.redhat.com/ubi9/ubi
-----
+Access control is enforced through *Role-Based Access Control (RBAC)* defined in *RHBK*. Roles define what a user or service is allowed to do, while client scopes define the token claims the *RHTPA* backend evaluates before processing an operation.
 
-[#repositories]
-== Installing Repositories
-In this lab, you are going to containerize a software package that is already
-packaged in RPM format and stored in the Extra Packages for Enterprise Linux
-(EPEL) repository.
+You will import a pre-configured *realm* that defines the two clients:
 
-Software often has requirements for prerequisite software that must be installed
-on the machine for it to work properly.  `yum` will resolve those
-dependencies for you, as long as it can locate the required packages in
-repositories defined on the machine.  The Red Hat Universal Base Image (UBI)
-downloaded in the previous step has access to some Red Hat Enterprise Linux
-repositories.  However, the target package for the lab is from EPEL.  
+. *Frontend*: Used by human users accessing the *RHTPA* web interface.
+. *CLI*: Used by CI/CD systems, such as *Tekton* or *Jenkins*, to upload *SBOMs* programmatically. TThis client uses a service account for machine-to-machine authentication.
 
-. In the command below, `buildah` is going to run a command on the
-`ubi-working-container` image.  The `--` indicates that the command should be
-executed from within the container, which means the results will be applied into
-the container image.  Lastly, you are providing the `yum` command to install a
-package that defines all of the repositories from EPEL, `epel-release-latest-9`.
+[NOTE]
+====
+*Key Concepts: Realm and Client Scope*
 
-+
-[source,bash]
-----
-buildah run ubi-working-container -- yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-----
+* *Realm*: A realm is an isolated security domain that manages its own users, groups, roles and client configurations. In this workshop, the *tpa* realm contains the roles and client mappings required for *RHTPA* to validate incoming requests.
+
+* *Client Scope*: A client scope represents specific permissions encoded into an access token. Roles define who a user is; scopes define what the user is authorised to do. The *RHTPA* backend checks these scopes when processing API requests.
+====
+
+Log in to the RHBK console to review existing using the following details:
+
+* *RHBK Console URL*:{keycloak_admin_console}[*URL*, ,window=_blank] 
+* *Username*: {keycloak_admin_user}
+* *Password*: {keycloak_admin_password}
+* After entering your credentials, you click the *Sign In*.
+
+In the RHBK Console click on the "Manage Realm" link in the left navigation menu, you will notice that we have to realms already configured *master* and *sso* as you can see in this screenshot
+
+In the left navigation menu, select *Manage Realm*. You will see the existing realms, *master* and *sso*, as shown below:
+
+image::keycloak_manage_realms.png[Keycloak Realms,align="center"]
 
 
-. You can verify that the above command did not install the RPM on the host system.
+=== Import the TPA Realm
 
-+
-[source,bash]
-----
-rpm -q epel-release
-----
+Before importing the *tpa* realm, switch to the OpenShift Console to monitor the realm import job.
+Click the *OpenShift Console* tab in the Showroom:
 
-NOTE: If your repository configurations are not distributed as an RPM, but instead as
-individual `.repo` files, you could use the `buildah copy` command to copy
-files from the host operating system into the container image.  You will see
-an example of using `buildah copy` later in this lab.
+image::showroom_openshift_console.png[Showroom OpenShift Console,align="center"]
 
-[#software]
-== Installing Software
+Expand the Ecosystem list in the left Navigation menu and select *Installed Operators*, input "keycloak" in the name filter, and select the Red Hat build of Keycloak Operator link.
 
+From the left navigation menu, expand *Ecosystem* and select *Installed Operators*.
+Filter by “Keycloak” and select *Red Hat Build of Keycloak Operator*.
 
-. Now that the yum repositories are defined within the container, execute 
-another `yum install`, within the container, to install the target
-software: `moon-buggy`.
+image::keycloak_operator.png[Keycloak Operator ,align="center"]
+
+Then select the *KeycloakRealmImport* tab.
+At this stage, no import jobs are running. You will trigger the import in the next step.
+
+image::keycloak_realmimport.png[Keycloak Realm Import,align="center"]
+
+ Run the following command in the ShowRoom terminal to apply the configuration in the "keycloak-tpa-realm.yml" yaml file and import the new *tpa* realm configuration to the *tssc-keycloak* namespace.
+
+image::showroom_terminal.png[Keycloak Realm Import,align="center"]
 
 +
-[source,bash]
+[source,role="execute"]
 ----
-buildah run ubi-working-container -- yum -y install moon-buggy
+export TPA_REALM={tpa_realm}
+export TPA_CLI_CLIENT_SECRET={tpa_cli_client_secret}
+export TPA_ADMIN_USERNAME={tpa_admin_username}
+export TPA_ADMIN_PASSWORD={tpa_admin_password}
+export KEYCLOAK_URL={keycloak_admin_console}
+envsubst '${TPA_REALM} ${TPA_CLI_CLIENT_SECRET} ${TPA_ADMIN_USERNAME} ${TPA_ADMIN_PASSWORD}' < ~/lab-assets/keycloak-tpa-realm.yml | oc apply -n tssc-keycloak -f -
 ----
 
+Switch back to the *KeyCloakRealmImport* tab. You will see that the import job has started:
 
-== Committing the Container Image
+image::tpa_realm_import_start.png[TPA Realm Import Start,align="center"]
 
-. At this point, the container is configured.  It is time to transition from a
-working container into a committed image.  In the command below, you will use
-the `buildah` command to commit the working container to an image called:
-`moon-buggy`.
+After a short time, the status will change to *Done*.
+
+What just happened? The YAML you just applied defines roles and scopes used by the *RHTPA* evaluates when authorising user and pipeline actions:
+
+* Roles created:
+. *tpa-user*: Read-only access.
+. *tpa-manager*: Create and delete documents.
+. *tpa-admin*: Full administrative access.
+
+* Scopes created:
+. *create:document*: Required to upload an SBOM. Included for tpa-manager and tpa-admin.
+. *read:document*: Required to view dashboards and search data. Included for tpa-user.
+. *delete:document*: Required to delete SBOMs. Included only for administrators.
+
+Scopes are mapped to roles so that *RHBK* automatically includes the correct permissions in the access token.
+For example, a user with the *tpa-manager* role receives the create:document scope, allowing them to upload SBOMs via CLI or UI.
+
+Return to the *Manage Realm* view in the *RHBK* console and select the newly created *tpa* realm:
+
+image::tpa_realm.png[New TPA Realm,align="center"]
+
+WARNING: When a new realm is imported, *RHBK* restarts to refresh its configuration. During this time, you may briefly see *Application is not available* error when try to access the *RHBK* console.
+
+Navigate to *Clients* in the left menu.
+You will see the two clients created by the import: *cli* and *frontend*.
+
+image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
+
+You can continue exploring the client scopes and realm roles before proceeding to the next section, where you will deploy the RHTPA instance.
+
+
+
+=== Create the RHTPA Instance
+
+Before the *RHTPA* application can start, it must be configured to trust the Identity Provider (IdP). This requires creating a Kubernetes Secret that contains the OIDC Client ID and Client Secret used by the *CLI* client.
+
+* Run the following command to create the CLI credentials Secret
 
 +
-[source,bash]
+[source,role="execute"]
 ----
-buildah commit ubi-working-container moon-buggy
+envsubst < ~/lab-assets/tpa-cli-credentials.yml | oc apply -n tssc-tpa -f -
 ----
+
+With the credentials in place, you can now deploy the *RHTPA* instance using its Custom Resource (CR).
+This CR acts as the application blueprint and instructs the *RHTPA Operator* to deploy the following components:
+1. API Server: The backend service responsible for request handling.
+2. UI: The web dashboard used for browsing, querying and managing SBOM data.
+3. Ingestion & Analysis: Components responsible for SBOM ingestion, persistence in PostgreSQL and processing by the intelligence engine.
+
+* Run the following command to apply the *RHTPA* Instance CR:
 
 +
-. The output of `podman image list` should confirm the image was created.
+[source,role="execute"]
+----
+envsubst < ~/lab-assets/tpa-instance.yml | oc apply -n tssc-tpa -f -
+----
+
+Switch to the OpenShift Console tab in your Showroom.
+Navigate to: Operators → Installed Operators,then filter by Profile Analyzer and select the TrustedProfileAnalyzer entry under Provided APIs.
+
+image::tpa_operator.png[TPA Operator,align="center"]
+
+Wait for the *RHTPA* instance to progress to a deployed successfully state.
+
+image::tpa_operator.png[TPA Operator,align="center"]
+
+You can also verify the deployment at the pod level.
+Navigate to: Workloads → Pods and confirm that the *RHTPA* server pod is running.
+
+image::tpa_operator.png[TPA Operator,align="center"]
+
+===  Ingest an SBOM
+
+We will now simulate what a CI/CD pipeline does during a build: uploading an SBOM via the API. This verifies that our "machine-to-machine" authentication is working correctly.
+
+NOTE: {explain what an SBOM is}
+
+Run the following command to extract the RHTPA server URL
 
 +
-[source,bash]
+[source,role="execute"]
 ----
-podman image list
+export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=server -n tssc-tpa -o json \
+  | jq -r '.items[0].spec.host')"
 ----
 
-
-== Deploy the Container
-
-Now the software has been installed and a new container image created.  It is
-time to spawn a runtime of the container image and validate the software.  The
-software we are using is a command line command.  
-
-. When you `run` the container,
-it will be in interactive (`-it`) mode, based on the `moon-buggy` container
-image and the command run interactively will be `/usr/bin/moon-buggy`.
+ We need request a token from Keycloak using the client_credentials grant type. This is the standard OAuth2 flow for automated services (like Tekton).
+ Obtain an Access Token by running the following command:
 
 +
-[source,bash]
+[source,role="execute"]
 ----
-podman run -it moon-buggy /usr/bin/moon-buggy
+TOKEN_EP=$(curl "$KEYCLOAK_URL/realms/$TPA_REALM/.well-known/openid-configuration" | jq -r .token_endpoint)
+TOKEN=$(curl -s -X POST "$TOKEN_EP" \
+  -d grant_type=client_credentials \
+  -d client_id="cli" \
+  -d client_secret="$TPA_CLI_CLIENT_SECRET" | jq -r .access_token)
 ----
+
+ You will now POST the SBOM file to the API, passing the token in the header.
+ Upload the SBOM by running the following command:
 
 +
-[source,textinfo]
+[source,role="execute"]
+----
+curl -X POST ${TPA_SERVER_URL}/api/v2/sbom?id=test-sbom  -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data-binary @/home/lab-user/lab-assets/example-sbom.json
 ----
 
-<<< OUTPUT ABRIDGED >>>
-               MM     MM   OOOOO    OOOOO   NN     N
-               M M   M M  O     O  O     O  N N    N
-               M  M M  M  O     O  O     O  N  N   N
-               M   M   M  O     O  O     O  N   N  N
-               M       M  O     O  O     O  N    N N
-               M       M   OOOOO    OOOOO   N     NN
+Verification: A successful upload returns a JSON object with a UUID, e.g., {"id":"urn:uuid:..."}. This confirms the API accepted the file and the OIDC scopes (create:document) were correctly enforced.
 
-                     BBBBBB   U     U   GGGGG    GGGGG   Y     Y
-                     B     B  U     U  G     G  G     G   Y   Y
-                     BBBBBB   U     U  G        G          Y Y
-                     B     B  U     U  G   GGG  G   GGG     Y
-                     B     B  U     U  G     G  G     G    Y
-                     BBBBBB    UUUUU    GGGGG    GGGGG   YY
+Note: You are manually testing the cli client credentials now, but in Module 2, this exact client configuration is what Tekton Chains will use to automatically push SBOMs during the build pipeline.
 
-<<< OUTPUT ABRIDGED >>>
-----
-
-. You can now play the Moon Buggy game, which is a text-based version of the
-popular Moon Patrol.  When you are finished, use the `q` command to quit the
-game, which will terminate the container.
-
-+
-Alternatively, you can use `podman` to kill the running container from
-*Terminal 2*.
-
-+
-[source,bash]
-----
-podman kill $(podman ps | grep -v CONTAINER | cut -f1 -d" " )
-----
+===  View the SBOM from RHTPA UI
