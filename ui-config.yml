@@ -9,7 +9,7 @@ tabs:
     port: 443
   - name: OCP Console
     url: 'https://console-openshift-console.${DOMAIN}'
- - name: RHBK
+  - name: RHBK
     url: 'https://sso.${DOMAIN}' 
   - name: RHTPA
     url: 'https://server-tssc-tpa.${DOMAIN}'  
