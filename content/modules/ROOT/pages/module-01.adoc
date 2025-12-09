@@ -24,24 +24,31 @@ You will import a pre-configured *realm* that defines the two clients:
 * *Client Scope*: A client scope represents specific permissions encoded into an access token. Roles define who a user is; scopes define what the user is authorised to do. The *RHTPA* backend checks these scopes when processing API requests.
 ====
 
+Click the *RHBK Console* tab in the Showroom:
+
+image::showroom_rhbk_console.png[Keycloak Console,align="center"]
+
 Log in to the RHBK console to review existing using the following details:
 
-* *RHBK Console URL*:{keycloak_admin_console}[*URL*, ,window=_blank] 
 * *Username*: {keycloak_admin_user}
 * *Password*: {keycloak_admin_password}
-* After entering your credentials, you click the *Sign In*.
+* After entering your credentials,click the *Sign In* button.
 
-In the RHBK Console click on the "Manage Realm" link in the left navigation menu, you will notice that we have to realms already configured *master* and *sso* as you can see in this screenshot
-
-In the left navigation menu, select *Manage Realm*. You will see the existing realms, *master* and *sso*, as shown below:
+In the *RHBK Console* click on the "Manage Realm" link in the left navigation menu, you will notice that we have to realms already configured *master* and *sso* as you can see in this screenshot
 
 image::keycloak_manage_realms.png[Keycloak Realms,align="center"]
 
-
+[#importtparealm]
 === Import the TPA Realm
 
 Before importing the *tpa* realm, switch to the OpenShift Console to monitor the realm import job.
-Click the *OpenShift Console* tab in the Showroom:
+Click the *OpenShift Console* tab in the Showroom
+
+Log in to the OpenShift console using the following details:
+
+* *Username*: {openshift_cluster_admin_username}
+* *Password*: {openshift_cluster_admin_password}
+* After entering your credentials,click the *Sign In* button.
 
 image::showroom_openshift_console.png[Showroom OpenShift Console,align="center"]
 
@@ -57,12 +64,11 @@ At this stage, no import jobs are running. You will trigger the import in the ne
 
 image::keycloak_realmimport.png[Keycloak Realm Import,align="center"]
 
- Run the following command in the ShowRoom terminal to apply the configuration in the "keycloak-tpa-realm.yml" yaml file and import the new *tpa* realm configuration to the *tssc-keycloak* namespace.
+Execute the following command in the ShowRoom terminal to apply the configuration in the "keycloak-tpa-realm.yml" yaml file and import the new *tpa* realm configuration to the *tssc-keycloak* namespace.
 
 image::showroom_terminal.png[Keycloak Realm Import,align="center"]
 
-+
-[source,role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 export TPA_REALM={tpa_realm}
 export TPA_CLI_CLIENT_SECRET={tpa_cli_client_secret}
@@ -107,14 +113,13 @@ image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
 You can continue exploring the client scopes and realm roles before proceeding to the next section, where you will deploy the RHTPA instance.
 
 
-
+[#createrhtpainstance]
 === Create the RHTPA Instance
 
 Before the *RHTPA* application can start, it must be configured to trust the Identity Provider (IdP). This requires creating a Kubernetes Secret that contains the OIDC Client ID and Client Secret used by the *CLI* client.
 
 * Run the following command to create the CLI credentials Secret
 
-+
 [source,role="execute"]
 ----
 envsubst < ~/lab-assets/tpa-cli-credentials.yml | oc apply -n tssc-tpa -f -
@@ -128,7 +133,6 @@ This CR acts as the application blueprint and instructs the *RHTPA Operator* to 
 
 * Run the following command to apply the *RHTPA* Instance CR:
 
-+
 [source,role="execute"]
 ----
 envsubst < ~/lab-assets/tpa-instance.yml | oc apply -n tssc-tpa -f -
@@ -148,6 +152,7 @@ Navigate to: Workloads → Pods and confirm that the *RHTPA* server pod is runni
 
 image::tpa_operator.png[TPA Operator,align="center"]
 
+[#ingestansbom]
 ===  Ingest an SBOM
 
 We will now simulate what a CI/CD pipeline does during a build: uploading an SBOM via the API. This verifies that our "machine-to-machine" authentication is working correctly.
@@ -156,7 +161,6 @@ NOTE: {explain what an SBOM is}
 
 Run the following command to extract the RHTPA server URL
 
-+
 [source,role="execute"]
 ----
 export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=server -n tssc-tpa -o json \
@@ -166,7 +170,6 @@ export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=ser
  We need request a token from Keycloak using the client_credentials grant type. This is the standard OAuth2 flow for automated services (like Tekton).
  Obtain an Access Token by running the following command:
 
-+
 [source,role="execute"]
 ----
 TOKEN_EP=$(curl "$KEYCLOAK_URL/realms/$TPA_REALM/.well-known/openid-configuration" | jq -r .token_endpoint)
@@ -179,7 +182,6 @@ TOKEN=$(curl -s -X POST "$TOKEN_EP" \
  You will now POST the SBOM file to the API, passing the token in the header.
  Upload the SBOM by running the following command:
 
-+
 [source,role="execute"]
 ----
 curl -X POST ${TPA_SERVER_URL}/api/v2/sbom?id=test-sbom  -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data-binary @/home/lab-user/lab-assets/example-sbom.json

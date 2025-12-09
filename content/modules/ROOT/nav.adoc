@@ -1,6 +1,7 @@
 * xref:module-01.adoc[Module 1: Establish Trust With SBOM Validation]
-** xref:module-01.adoc#repositories[Repositories]
-** xref:module-01.adoc#software[Software]
+** xref:module-01.adoc#importtparealm[Import the TPA Realm]
+** xref:module-01.adoc#createrhtpainstance[Create the RHTPA Instance]
+** xref:module-01.adoc#ingestansbom[Ingest an SBOM]
 
 * xref:module-02.adoc[2. GitHub Sourced Container]
 ** xref:module-02.adoc#prerequisites[Install Prerequisites]
