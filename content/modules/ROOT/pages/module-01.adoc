@@ -34,57 +34,66 @@ Log in to the RHBK console to review existing using the following details:
 * *Password*: {keycloak_admin_password}
 * After entering your credentials,click the *Sign In* button.
 
-In the *RHBK Console* click on the "Manage Realm" link in the left navigation menu, you will notice that we have to realms already configured *master* and *sso* as you can see in this screenshot
+* In the *RHBK Console* click on the "Manage Realm" link in the left navigation menu, you will notice that we have to realms already configured *master* and *sso* as you can see in this screenshot
 
 image::keycloak_manage_realms.png[Keycloak Realms,align="center"]
 
 [#importtparealm]
 === Import the TPA Realm
 
-Before importing the *tpa* realm, switch to the OpenShift Console to monitor the realm import job.
-Click the *OpenShift Console* tab in the Showroom
+* Before importing the *tpa* realm, switch to the OpenShift Console to monitor the realm import job.
+* Click the *OpenShift Console* tab in the Showroom
 
 Log in to the OpenShift console using the following details:
 
-* *Username*: {openshift_cluster_admin_username}
-* *Password*: {openshift_cluster_admin_password}
+* *Username*: {openshift_gitops_admin_user}
+* *Password*: {openshift_gitops_server_url}
 * After entering your credentials,click the *Sign In* button.
 
 image::showroom_openshift_console.png[Showroom OpenShift Console,align="center"]
 
-Expand the Ecosystem list in the left Navigation menu and select *Installed Operators*, input "keycloak" in the name filter, and select the Red Hat build of Keycloak Operator link.
+* Expand the Ecosystem list in the left Navigation menu and select *Installed Operators*, input "keycloak" in the name filter, and select the Red Hat build of Keycloak Operator link.
 
-From the left navigation menu, expand *Ecosystem* and select *Installed Operators*.
-Filter by “Keycloak” and select *Red Hat Build of Keycloak Operator*.
+* From the left navigation menu, expand *Ecosystem* and select *Installed Operators*.
+* Filter by “Keycloak” and select *Red Hat Build of Keycloak Operator*.
 
 image::keycloak_operator.png[Keycloak Operator ,align="center"]
 
-Then select the *KeycloakRealmImport* tab.
-At this stage, no import jobs are running. You will trigger the import in the next step.
+* Then select the *KeycloakRealmImport* tab.
+* At this stage, no import jobs are running. You will trigger the import in the next step.
 
 image::keycloak_realmimport.png[Keycloak Realm Import,align="center"]
 
-Execute the following command in the ShowRoom terminal to apply the configuration in the "keycloak-tpa-realm.yml" yaml file and import the new *tpa* realm configuration to the *tssc-keycloak* namespace.
+* Execute the following command in the ShowRoom terminal to set the required variables for this module.
 
 image::showroom_terminal.png[Keycloak Realm Import,align="center"]
 
 [source, role="execute", subs="attributes"]
 ----
+cat << 'EOF' >> ~/.bashrc
 export TPA_REALM={tpa_realm}
 export TPA_CLI_CLIENT_SECRET={tpa_cli_client_secret}
 export TPA_ADMIN_USERNAME={tpa_admin_username}
 export TPA_ADMIN_PASSWORD={tpa_admin_password}
 export KEYCLOAK_URL={keycloak_admin_console}
+EOF
+source ~/.bashrc
+----
+
+* Execute the following command to apply the configuration in the "keycloak-tpa-realm.yml" yaml file and import the new *tpa* realm configuration to the *tssc-keycloak* namespace.
+
+[source, role="execute"]
+----
 envsubst '${TPA_REALM} ${TPA_CLI_CLIENT_SECRET} ${TPA_ADMIN_USERNAME} ${TPA_ADMIN_PASSWORD}' < ~/lab-assets/keycloak-tpa-realm.yml | oc apply -n tssc-keycloak -f -
 ----
 
-Switch back to the *KeyCloakRealmImport* tab. You will see that the import job has started:
+* Switch back to the *KeyCloakRealmImport* tab. You will see that the import job has started:
 
 image::tpa_realm_import_start.png[TPA Realm Import Start,align="center"]
 
-After a short time, the status will change to *Done*.
+* After a short time, the status will change to *Done*.
 
-What just happened? The YAML you just applied defines roles and scopes used by the *RHTPA* evaluates when authorising user and pipeline actions:
+* What just happened? The YAML you just applied defines roles and scopes that *RHTPA* evaluates when authorizing user and pipeline actions:
 
 * Roles created:
 . *tpa-user*: Read-only access.
@@ -96,21 +105,21 @@ What just happened? The YAML you just applied defines roles and scopes used by t
 . *read:document*: Required to view dashboards and search data. Included for tpa-user.
 . *delete:document*: Required to delete SBOMs. Included only for administrators.
 
-Scopes are mapped to roles so that *RHBK* automatically includes the correct permissions in the access token.
-For example, a user with the *tpa-manager* role receives the create:document scope, allowing them to upload SBOMs via CLI or UI.
+* Scopes are mapped to roles so that *RHBK* automatically includes the correct permissions in the access token.
+* For example, a user with the *tpa-manager* role receives the create:document scope, allowing them to upload SBOMs via CLI or UI.
 
-Return to the *Manage Realm* view in the *RHBK* console and select the newly created *tpa* realm:
+* Return to the *Manage Realm* view in the *RHBK* console and select the newly created *tpa* realm:
 
 image::tpa_realm.png[New TPA Realm,align="center"]
 
 WARNING: When a new realm is imported, *RHBK* restarts to refresh its configuration. During this time, you may briefly see *Application is not available* error when try to access the *RHBK* console.
 
-Navigate to *Clients* in the left menu.
-You will see the two clients created by the import: *cli* and *frontend*.
+* Navigate to *Clients* in the left menu.
+* You will see the two clients created by the import: *cli* and *frontend*.
 
 image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
 
-You can continue exploring the client scopes and realm roles before proceeding to the next section, where you will deploy the RHTPA instance.
+* You can continue exploring the client scopes and realm roles before proceeding to the next section, where you will deploy the RHTPA instance.
 
 
 [#createrhtpainstance]
@@ -118,18 +127,18 @@ You can continue exploring the client scopes and realm roles before proceeding t
 
 Before the *RHTPA* application can start, it must be configured to trust the Identity Provider (IdP). This requires creating a Kubernetes Secret that contains the OIDC Client ID and Client Secret used by the *CLI* client.
 
-* Run the following command to create the CLI credentials Secret
+* Run the following command in the showroom terminal to create the CLI credentials Secret
 
 [source,role="execute"]
 ----
 envsubst < ~/lab-assets/tpa-cli-credentials.yml | oc apply -n tssc-tpa -f -
 ----
 
-With the credentials in place, you can now deploy the *RHTPA* instance using its Custom Resource (CR).
+* With the credentials in place, you can now deploy the *RHTPA* instance using its Custom Resource (CR).
 This CR acts as the application blueprint and instructs the *RHTPA Operator* to deploy the following components:
-1. API Server: The backend service responsible for request handling.
-2. UI: The web dashboard used for browsing, querying and managing SBOM data.
-3. Ingestion & Analysis: Components responsible for SBOM ingestion, persistence in PostgreSQL and processing by the intelligence engine.
+. API Server: The backend service responsible for request handling.
+. UI: The web dashboard used for browsing, querying and managing SBOM data.
+. Ingestion & Analysis: Components responsible for SBOM ingestion, persistence in PostgreSQL and processing by the intelligence engine.
 
 * Run the following command to apply the *RHTPA* Instance CR:
 
@@ -138,28 +147,29 @@ This CR acts as the application blueprint and instructs the *RHTPA Operator* to 
 envsubst < ~/lab-assets/tpa-instance.yml | oc apply -n tssc-tpa -f -
 ----
 
-Switch to the OpenShift Console tab in your Showroom.
-Navigate to: Operators → Installed Operators,then filter by Profile Analyzer and select the TrustedProfileAnalyzer entry under Provided APIs.
+* Switch to the OpenShift Console tab in your Showroom.
+* Navigate to: Operators → Installed Operators,then filter by Profile Analyzer and select the TrustedProfileAnalyzer entry under Provided APIs.
 
 image::tpa_operator.png[TPA Operator,align="center"]
 
 Wait for the *RHTPA* instance to progress to a deployed successfully state.
 
-image::tpa_operator.png[TPA Operator,align="center"]
+image::tpa_instance_ready.png[TPA Operator,align="center"]
 
 You can also verify the deployment at the pod level.
+
 Navigate to: Workloads → Pods and confirm that the *RHTPA* server pod is running.
 
-image::tpa_operator.png[TPA Operator,align="center"]
+image::tpa_server_pod.png[TPA Server Pod,align="center"]
 
 [#ingestansbom]
 ===  Ingest an SBOM
 
-We will now simulate what a CI/CD pipeline does during a build: uploading an SBOM via the API. This verifies that our "machine-to-machine" authentication is working correctly.
+In this step, you simulate what a CI/CD pipeline does during a build: uploading an SBOM to *RHTPA* via the API. This validates that machine-to-machine authentication is configured correctly and that the cli client has the required permissions.
 
-NOTE: {explain what an SBOM is}
+NOTE: An SBOM (Software Bill of Materials) is a structured inventory of all components, libraries and dependencies that make up an application. *RHTPA* ingests SBOMs to analyze software composition, track vulnerabilities and maintain a verifiable record of your supply chain.
 
-Run the following command to extract the RHTPA server URL
+* Run the following command to extract the external route for the RHTPA server:
 
 [source,role="execute"]
 ----
@@ -167,8 +177,9 @@ export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=ser
   | jq -r '.items[0].spec.host')"
 ----
 
- We need request a token from Keycloak using the client_credentials grant type. This is the standard OAuth2 flow for automated services (like Tekton).
- Obtain an Access Token by running the following command:
+* The cli client uses the client_credentials grant type to authenticate. This is the standard OAuth2 flow for non-interactive workloads such as Tekton, Jenkins or GitHub Actions.
+ 
+* Run the following commands to discover the token endpoint and obtain an access token:
 
 [source,role="execute"]
 ----
@@ -179,16 +190,54 @@ TOKEN=$(curl -s -X POST "$TOKEN_EP" \
   -d client_secret="$TPA_CLI_CLIENT_SECRET" | jq -r .access_token)
 ----
 
- You will now POST the SBOM file to the API, passing the token in the header.
- Upload the SBOM by running the following command:
+* Use the token to POST an SBOM file to the ingestion API:
 
 [source,role="execute"]
 ----
 curl -X POST ${TPA_SERVER_URL}/api/v2/sbom?id=test-sbom  -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data-binary @/home/lab-user/lab-assets/example-sbom.json
 ----
 
-Verification: A successful upload returns a JSON object with a UUID, e.g., {"id":"urn:uuid:..."}. This confirms the API accepted the file and the OIDC scopes (create:document) were correctly enforced.
+* A successful upload returns a JSON payload containing a UUID, for example: {"id":"urn:uuid:..."}. 
+* This confirms three things:
+. The API accepted the SBOM.
+. Authentication using the cli client succeeded.
+. The required OIDC scope (create:document) was correctly enforced.
 
-Note: You are manually testing the cli client credentials now, but in Module 2, this exact client configuration is what Tekton Chains will use to automatically push SBOMs during the build pipeline.
+Note: You are manually exercising the cli client credentials here.
+In Module 2, Tekton Chains will use this same client configuration to automatically push SBOMs during the build pipeline.
 
+[#viewsbom]
 ===  View the SBOM from RHTPA UI
+
+* Click the *RHTPA Console* tab in the Showroom
+
+image::showroom_rhtpa_console.png[RHTPA Console,align="center"]
+
+Log in to the RHTPA console using the following details:
+
+* *Username*: {tpa_admin_username}
+* *Password*: {tpa_admin_password}
+* After entering your credentials,click the *Sign In* button.
+
+* Once logged in, check the dashboard. You should see test-sbom listed in the inventory.
+* Click on the SBOM link to view it's details
+
+image::view_test_sbom.png[View Test SBOM,align="center"]
+
+[NOTE]
+====
+Why is the vulnerability report empty? If the test-sbom entry shows 0 vulnerabilities, or the dependency graph appears empty, this is expected behaviour for a fresh installation. 
+Reason: RHTPA relies on background importer jobs to download large advisory datasets (NVD, GitHub Advisories and others). These datasets must be fully synced before the system can correlate vulnerabilities to SBOM components. The first sync can take a significant amount of time, especially in new environments.
+====
+
+
+===  Module 1 Summary
+
+* By completing this module, you configured identity in *RHBK*, deployed *RHTPA* and validated your first SBOM—establishing a reliable source of truth for software composition. This is a great starting point for consultants to to implement early-stage in real customer environments. .
+* For technical sellers, when a customer says, “We cannot verify or attest to the components that make up our software,” you now know exactly where to start. RHTPA gives customers an auditable view of their software composition, enabling risk assessment from the very first stage of the software delivery process.
+* And now that we know what is in our software, the next question naturally follows: “How do we know these artifacts haven’t been tampered with?” That is the next trust boundary we will solve.
+* Head to Module 2 to learn how to cryptographically sign and verify artifacts using *Red Hat Trusted Artifact Signer (RHTAS)*, ensuring every image you build can be traced, trusted and validated.
+
+
+
+

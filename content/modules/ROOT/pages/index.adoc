@@ -34,18 +34,25 @@ Red Hat Advanced Developer Suite (RHADS) scales platform engineering teams to in
 | **Red Hat Trusted Profile Analyzer (RHTPA)**
 | RHTPA provides platform engineers, developers, and security teams with visibility and actionable insights into the risk profile (vulnerabilities, licenses) of their software supply chain. RHTPA enables Automated Risk Management and Compliance by facilitating blast radius analysis across the entire application portfolio and ensuring compliance through system and security profile analysis.
 
-| **Red Hat Advanced Cluster Security (RHACS)**
-| RHACS is a comprehensive Kubernetes-native security platform that enforces security policies for containerized applications and performs image scanning and security checks.RHACS Enforces Security at Scale by ensuring that only trusted, verified, and compliant artifacts reach the cluster. It is integrated into the CI/CD pipeline to provide image scanning and security checks.
+| **Red Hat DevSpaces**
+| Red Hat DevSpaces provides cloud-based, containerized development environments hosted on OpenShift, allowing developers to code, build, and test software using only a browser. It Enhances Developer Experience and Consistency by ensuring instant onboarding, preconfigured workspaces, and consistent workflows, thereby eliminating complex local setup challenges.
+|===
 
-| **Red Hat Quay**
-| Quay is a secure image management and global registry that stores and manages container images and other build artifacts. Quay secures Artifact Storage by providing a centralized repository for container images and offering real-time scans and granular access controls. 
+=== Complementary Components included
+
+[cols="1,3"]
+|===
+| Component | Description
 
 | **Red Hat Build of Keycloak (RHBK)**
 | RHBK serves as the OpenID Connect (OIDC) provider for secure identity and access management. RHBK Centralizes Secure Identity Management and is critical for enabling RHTAS keyless signing workflows and user authentication for the entire RHADS ecosystem, including synchronizing User and Group entities into RHDH.
 
-| **Red Hat DevSpaces**
-| Red Hat DevSpaces provides cloud-based, containerized development environments hosted on OpenShift, allowing developers to code, build, and test software using only a browser. It Enhances Developer Experience and Consistency by ensuring instant onboarding, preconfigured workspaces, and consistent workflows, thereby eliminating complex local setup challenges.
-|===
+| **Red Hat Advanced Cluster Security (RHACS)**
+| RHACS is a comprehensive Kubernetes-native security platform that enforces security policies for containerized applications and performs image scanning and security checks.RHACS Enforces Security at Scale by ensuring that only trusted, verified, and compliant artifacts reach the cluster. It is integrated into the CI/CD pipeline to provide image scanning and security checks.
+
+| **Red Hat Quay**
+| Quay is a secure image management and global registry that stores and manages container images and other build artifacts. Quay secures Artifact Storage by providing a centralized repository for container images and offering real-time scans and granular access controls.
+|=== 
 
 == Workshop Objectives
 

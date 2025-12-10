@@ -1,16 +1,67 @@
-= Managing an Application from GitHub
+= Module 2: Sign and Verify All Artifacts With *RHTAS* 
 
-In the first half of this workshop, we packaged an application into this portable container format manually using rpms.
-In the second half, we will consider that you may want to manage software from GitHub or some kind of software versioning application.
-Rather than installing rpms, we have individual software files and pull them out of that version control into a group of systems.
+In Module 1, you established trust in what is inside your software. The next challenge customers face is: “How do we know these artifacts were really built by us and haven’t been tampered with?” They need assurance that both code commits and build artifacts originate from trusted sources—not rogue machines or compromised pipelines.
 
-== Install RHEL 8 UBI
+In this module, you will deploy Red Hat Trusted Artifact Signer (RHTAS) to establish the Root of Trust for the entire build system. Unlike "traditional" signing which uses long-lived static keys (which are a nightmare to rotate and secure), RHTAS uses Keyless Signing.
+How Keyless Signing Works here:
+1. Identity (Keycloak): We authenticate an entity (user or machine) via OIDC.
+2. Certificate Authority (Fulcio): RHTAS issues a short-lived X.509 certificate bound to that OIDC identity.
+3. Transparency Log (Rekor): The signature and the certificate are logged in an immutable ledger.
+4. Verification: We trust the artifact not because we have a public key, but because we can cryptographically prove the certificate was valid at the time of signing and belongs to a trusted OIDC identity.
 
-In this lab, we will be using a different Red Hat Enterprise Linux version in my container. 
 
-. Verify the host system release 
+== 1: Configure the Machine Identity
 
-+
+Tekton Chains requires its own realm and client to sign images on behalf of the pipeline.
+This isolates automated signing from human user identities and is considered best practice in customer deployments.
+
+=== Step 1: Create tas-chains realm
+
+If you skipped module 1, click the *RHBK Console* tab in the Showroom and log in to the RHBK console using the following details:
+* *Username*: {keycloak_admin_user}
+* *Password*: {keycloak_admin_password}
+* After entering your credentials,click the *Sign In* button.
+
+* In the *RHBK Console* click on the "Manage Realm" link in the left navigation menu, then click on the *Create realm* button.
+
+image::create_tas_realm.png[Create Realm,align="center"]
+
+* In the create realm pop up, enter the name *tas-chains* and click the *Create* button.
+
+image::create_tas_chains_realm.png[Create TAS Chains realm,align="center"]
+
+=== Step 2: Create tas-chains client
+
+* Next you you will create a new client, click on the "Clients" link in the left navigation menu, then click on the *Create client* button.
+
+image::create_client.png[Create Client,align="center"]
+
+* In the Create Client view, under General setting, set the following:
+. Client ID: trusted-artifact-signer
+. Name: trusted-artifact-signer
+* Then click Next
+
+image::tas_client_general_settings.png[New Client General Settings,align="center"]
+
+* Under Capability Config set the following:
+. Client authentication: toggle to on
+. standardflow: Make sure is ticked
+. Service accounts roles: Tick
+. Front channel logout: Scroll down and make sure is toggled on
+
+* Switch to the service account roles tab
+* Click the service-account-trusted-artifact-signer user link and provide the following:
+. VerifyEmail: Toggle to on
+. Email: trusted-artifact-signer@demo.redhat.com
+. First name: Trusted
+. Last name: Content
+* The click on *Save*
+
+
+
+
+WARNING: This is the most common failure point in RHTAS deployments. Fulcio requires the OIDC token to contain a verified email claim. If this is missing, certificate issuance fails.
+
 [source,bash]
 ----
 cat /etc/redhat-release
