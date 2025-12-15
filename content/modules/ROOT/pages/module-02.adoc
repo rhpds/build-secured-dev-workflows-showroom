@@ -20,15 +20,19 @@ This isolates automated signing from human user identities and is considered bes
 * If you skipped module 1:
 * Click the *RHBK Console* tab in the Showroom and log in using:
 . *Username*:
+
 [source, role="execute", subs="attributes"]
 ----
 {keycloak_admin_user}
 ----
+
 . *Password*:
+
 [source, role="execute", subs="attributes"]
 ----
 {keycloak_admin_password}
 ----
+
 * After entering your credentials,click *Sign In* .
 
 * In the *RHBK Console*, click *Manage Realm*  in the left navigation menu.
@@ -77,10 +81,12 @@ image::tas_client_service_account_roles.png[New Client Service Account Roles,ali
 * Set the following attributes:
 . *Email Verified*: toggle on
 . *Email*: 
+
 [source, role="execute", subs="attributes"]
 ----
 trusted-artifact-signer@demo.redhat.com
 ----
+
 . *First name*: Trusted
 . *Last name*: Content
 * The click *Save*
@@ -106,10 +112,12 @@ image::tas_create_client.png[TAS Create Client,align="center"]
 
 * In the *General setting* page:
 . Set the *Client ID* to:
+
 [source, role="execute", subs="attributes"]
 ----
 *trusted-artifact-signer*
 ----
+
 . Click *Next*.
 
 image::tas_client_general_settings.png[New Client General Settings,align="center"]
@@ -123,15 +131,19 @@ image::tas_commit_client_capability_config.png[New Client Capability Config,alig
 
 * In the *Login Settings* page, add the following *Valid Direct URIs*:
 . Add the first URI: 
+
 [source, role="execute", subs="attributes"]
 ----
 *urn:ietf:wg:oauth:2.0:oob*
 ----
+
 . Click *Add valid redirect URIs*, then input:
+
 [source, role="execute", subs="attributes"]
 ----
 *
 ----
+
 * Click *Save*
 * This allows tools like *RHTAS* to complete the OAuth authentication flow.
 
@@ -241,7 +253,7 @@ watch -n 2 "oc get pods -n openshift-pipelines | awk '/^oidc-token-refresher/ { 
 
 * Patch the Tekton configuration to point Chains at the RHTAS services and token source:
 
-[source,role=“execute”]
+[source, role=“execute”]
 ----
 oc patch tektonconfig config -n openshift-pipelines --type=merge  --patch "$(cat ~/lab-assets/tekton-chains-patch.yml)"
 ----
