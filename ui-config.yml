@@ -12,4 +12,10 @@ tabs:
   - name: RHBK
     url: 'https://sso.${DOMAIN}' 
   - name: RHTPA
-    url: 'https://server-tssc-tpa.${DOMAIN}'  
+    url: 'https://server-tssc-tpa.${DOMAIN}'
+  - name: Quay
+    url: 'https://quay-${GUID}-1.${DOMAIN}'
+  - name: ACS
+    url: 'https://central-stackrox.${DOMAIN}'
+  - name: ARGOCD
+    url: 'https://argocd-server-tssc-gitops.${DOMAIN}'

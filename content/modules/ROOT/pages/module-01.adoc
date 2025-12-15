@@ -13,7 +13,7 @@ Access control is enforced through *Role-Based Access Control (RBAC)* defined in
 You will import a pre-configured *realm* that defines the two clients:
 
 . *Frontend*: Used by human users accessing the *RHTPA* web interface.
-. *CLI*: Used by CI/CD systems, such as *Tekton* or *Jenkins*, to upload *SBOMs* programmatically. TThis client uses a service account for machine-to-machine authentication.
+. *CLI*: Used by CI/CD systems, such as *Tekton* or *Jenkins*, to upload *SBOMs* programmatically. This client uses a service account for machine-to-machine authentication.
 
 [NOTE]
 ====
@@ -30,8 +30,16 @@ image::showroom_rhbk_console.png[Keycloak Console,align="center"]
 
 Log in to the RHBK console to review existing using the following details:
 
-* *Username*: {keycloak_admin_user}
-* *Password*: {keycloak_admin_password}
+* *Username*:
+[source, role="execute", subs="attributes"]
+----
+{keycloak_admin_user}
+----
+* *Password*:
+[source, role="execute", subs="attributes"]
+----
+{keycloak_admin_password}
+----
 * After entering your credentials,click the *Sign In* button.
 
 * In the *RHBK Console* click on the "Manage Realm" link in the left navigation menu, you will notice that we have two realms already configured *master* and *sso* as you can see in this screenshot
@@ -46,8 +54,16 @@ image::keycloak_manage_realms.png[Keycloak Realms,align="center"]
 
 Log in to the OpenShift console using the following details:
 
-* *Username*: {openshift_gitops_admin_user}
-* *Password*: {openshift_gitops_server_url}
+* *Username*: 
+[source, role="execute", subs="attributes"]
+----
+{openshift_gitops_admin_user}
+----
+* *Password*:
+[source, role="execute", subs="attributes"]
+----
+{openshift_gitops_admin_password}
+----
 * After entering your credentials,click the *Sign In* button.
 
 image::showroom_openshift_console.png[Showroom OpenShift Console,align="center"]
@@ -217,8 +233,16 @@ image::showroom_rhtpa_console.png[RHTPA Console,align="center"]
 
 Log in to the RHTPA console using the following details:
 
-* *Username*: {tpa_admin_username}
-* *Password*: {tpa_admin_password}
+* *Username*:
+[source, role="execute", subs="attributes"]
+----
+{tpa_admin_username}
+----
+* *Password*:
+[source, role="execute", subs="attributes"]
+----
+{tpa_admin_password}
+----
 * After entering your credentials,click the *Sign In* button.
 
 * Once logged in, check the dashboard. You should see test-sbom listed in the inventory.

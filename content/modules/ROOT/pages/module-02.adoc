@@ -17,53 +17,73 @@ This isolates automated signing from human user identities and is considered bes
 
 === Step 1: Create tas-chains realm and tas client
 
-* If you skipped module 1, click the *RHBK Console* tab in the Showroom and log in to the RHBK console using the following details:
-* *Username*: {keycloak_admin_user}
-* *Password*: {keycloak_admin_password}
-* After entering your credentials,click the *Sign In* button.
+* If you skipped module 1:
+* Click the *RHBK Console* tab in the Showroom and log in using:
+. *Username*:
+[source, role="execute", subs="attributes"]
+----
+{keycloak_admin_user}
+----
+. *Password*:
+[source, role="execute", subs="attributes"]
+----
+{keycloak_admin_password}
+----
+* After entering your credentials,click *Sign In* .
 
-* In the *RHBK Console* click on the "Manage Realm" link in the left navigation menu, then click on the *Create realm* button.
+* In the *RHBK Console*, click *Manage Realm*  in the left navigation menu.
+* Click the *Create realm* button.
 
 image::create_tas_realm.png[Create Realm,align="center"]
 
-* In the create realm pop up, enter the name *tas-chains* and click the *Create* button.
+* In the *Create realm* pop up, enter the name *tas-chains* and click *Create*.
 
 image::create_tas_chains_realm.png[Create TAS Chains realm,align="center"]
 
-* Next you you will create a new client, click on the "Clients" link in the left navigation menu, then click on the *Create client* button.
+* Next you you will create a new client, in the left navigation menu, click *Clients*, then click *Create client*.
 
 image::create_client.png[Create Client,align="center"]
 
-* In the Create Client view, under General setting, set the Client ID to trusted-artifact-signer, then click Next.
+* In the *General setting* page:
+. Set the *Client ID* to *trusted-artifact-signer*
+. Click *Next*.
 
 image::tas_client_general_settings.png[New Client General Settings,align="center"]
 
-* Under Capability Config set the following:
-. Client authentication: toggle to on
-. Standard flow: Make sure is ticked
-. Service accounts roles: Tick
-* Then click Next
+* Under *Capability Config*, set:
+. *Client authentication*: toggle on
+. *Standard flow*: make sure this checkbox is ticked
+. *Service accounts* roles: Tick this checkbox
+* Then click *Next*.
 
 image::tas_client_capability_config.png[New Client Capability Config,align="center"]
 
-* Under Login Settings leave the default values and click Save.
+* Under *Login Settings*, leave the default values as they are.
+* Click *Save*.
 
 image::tas_client_login_settings.png[New Client Login Settings,align="center"]
 
-* Now scroll down and make sure Front channel logout is toggled on before you hit Save.
+* Scroll down to *Logout Settings*:
+. Make sure *Front channel logout* is toggled on.
+. Click *Save*.
 
 image::tas_client_logout_settings.png[New Client Logout Settings,align="center"]
 
-* Next Switch to the service account roles tab and click the service-account-trusted-artifact-signer link
+* Next click the *Service account roles* tab 
+* Click the *service-account-trusted-artifact-signer* link
 
 image::tas_client_service_account_roles.png[New Client Service Account Roles,align="center"]
 
-* Set the following:
-. VerifyEmail: Toggle to on
-. Email: trusted-artifact-signer@demo.redhat.com
-. First name: Trusted
-. Last name: Content
-* The click on *Save*
+* Set the following attributes:
+. *Email Verified*: toggle on
+. *Email*: 
+[source, role="execute", subs="attributes"]
+----
+trusted-artifact-signer@demo.redhat.com
+----
+. *First name*: Trusted
+. *Last name*: Content
+* The click *Save*
 
 image::tas_client_service_account_details.png[New Client Service Account Roles,align="center"]
 
@@ -85,7 +105,11 @@ image::tas_sso_realm.png[TAS SSO Realm,align="center"]
 image::tas_create_client.png[TAS Create Client,align="center"]
 
 * In the *General setting* page:
-. Set the *Client ID* to *trusted-artifact-signer*.
+. Set the *Client ID* to:
+[source, role="execute", subs="attributes"]
+----
+*trusted-artifact-signer*
+----
 . Click *Next*.
 
 image::tas_client_general_settings.png[New Client General Settings,align="center"]
@@ -98,8 +122,16 @@ image::tas_client_general_settings.png[New Client General Settings,align="center
 image::tas_commit_client_capability_config.png[New Client Capability Config,align="center"]
 
 * In the *Login Settings* page, add the following *Valid Direct URIs*:
-. Add the first URI: *urn:ietf:wg:oauth:2.0:oob*
-. Click *Add valid redirect URIs*, then input: ***
+. Add the first URI: 
+[source, role="execute", subs="attributes"]
+----
+*urn:ietf:wg:oauth:2.0:oob*
+----
+. Click *Add valid redirect URIs*, then input:
+[source, role="execute", subs="attributes"]
+----
+*
+----
 * Click *Save*
 * This allows tools like *RHTAS* to complete the OAuth authentication flow.
 
@@ -113,22 +145,148 @@ image::tas_commit_client_logout_settings.png[New Client Logout Settings,align="c
 
 === Step 3: Deploy the RHTAS Instance
 
-Now you can deploy the RHTAS components—Fulcio, Rekor, Trillian and TUF—using the Operator-backed Custom Resource by running the following commands:
-
-* Set the required variables
-
-[source, role="execute", subs="attributes"]
-----
-cat << 'EOF' >> ~/.bashrc
-export TAS_CHAINS_REALM={tas_chains_realm}
-export TAS_SSO_REALM={tas_sso_realm}
-EOF
-source ~/.bashrc
-----
+Now that both machine and developer identities are configured, you can deploy the RHTAS components (Fulcio, Rekor, Trillian and TUF) using the Custom Resource.
 
 * Run the following command to apply the *RHTAS* Instance CR:
 
 [source, role="execute"]
 ----
+cat << 'EOF' >> ~/.bashrc
+export TAS_CHAINS_CLIENT_ID={tas_chains_client_id}
+export TAS_CHAINS_REALM={tas_chains_realm}
+export TAS_SSO_REALM={tas_sso_realm}
+EOF
+source ~/.bashrc
 envsubst < ~/lab-assets/tas-instance.yml | oc apply -n tssc-tas -f -
 ----
+
+* Verify Deployment Readiness
+. Switch to the *OpenShift console*
+. Navigate to *Workloads → Pods*
+. Change the project/namespace to *tssc-tas*
+. Wait until the tuf pod is in Running state.
+
+image::tas_verify_deploy.png[Verify RHTAS deploy,align="center"]
+
+== Step 4: Deploy The OIDC Refresher App 
+
+* In this step you will deploy a small helper application that continuously refreshes the OIDC token required for signing.
+
+===  Why is the OIDC Refresher App needed?
+
+* Fulcio issues short-lived certificates based on OIDC tokens.
+* For security reasons, these tokens typically expire within 5 minute
+* However, a CI/CD pipeline (such as a Tekton build) may run for 20 minutes or more before reaching the Sign Image step.
+* If Tekton Chains attempts to sign an image using the token obtained at pipeline start, that token will almost certainly have expired.
+* To solve this, you will deploy the OIDC Refresher App which does the following:
+. Authenticates with Keycloak using the trusted-artifact-signer client credentials you created in Step 1.
+. Fetches a fresh access token.
+. Writes the token into a Kubernetes Secret named oidc-token in the openshift-pipelines namespace.
+. Refreshes the token every 2 minutes, ensuring Tekton always signs using a valid identity.
+
+===  Deploy OIDC Refresher App
+
+* First, retrieve the Keycloak admin credentials from the keycloak-initial-admin secret in the tssc-keycloak namespace:
+
+[source, role="execute"]
+export keycloak_admin_user=$(oc get secret keycloak-initial-admin -n tssc-keycloak -o jsonpath='{.data.username}' | base64 -d)
+export keycloak_admin_password=$(oc get secret keycloak-initial-admin -n tssc-keycloak -o jsonpath='{.data.password}' | base64 -d)
+----
+
+* Next, use the credentials to request an admin access token:
+
+[source, role="execute"]
+----
+KEYCLOAK_ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d "client_id=admin-cli" \
+-d "username=$keycloak_admin_user" \
+-d "password=$keycloak_admin_password" \
+-d "grant_type=password" | jq -r '.access_token')
+----
+
+* Next, retrieve the client secret for the trusted-artifact-signer client from the tas-chains realm:
+
+[source, role="execute"]
+----
+export TAS_CHAINS_CLIENT_SECRET=$(curl -s -X GET "${KEYCLOAK_URL}/admin/realms/$TAS_CHAINS_REALM/clients?clientId=$TAS_CHAINS_CLIENT_ID" \
+  -H "Authorization: Bearer $KEYCLOAK_ACCESS_TOKEN" | jq -r '.[0].secret')
+----
+
+* Finally, create the Kubernetes Secret containing the OIDC configuration, then deploy the refresher application:
+
+[source, role="execute"]
+----
+envsubst < ~/lab-assets/oidc-info-secret.yml | oc apply -n openshift-pipelines -f -
+oc apply -f ~/lab-assets/oidc-refresher-app.yml -n openshift-pipelines
+----
+
+* Use the following command to continuously monitor the refresher pod until it reaches the Running state:
+
+[source, role="execute"]
+----
+watch -n 2 "oc get pods -n openshift-pipelines | awk '/^oidc-token-refresher/ { print; exit }'"
+----
+
+* Once the pod is running, the OIDC refresher is actively maintaining valid tokens for Tekton Chains.
+
+
+== Step 5: Configure Tekton Chains
+
+* By default, Tekton Chains expects static signing secrets.
+* In this step, you will reconfigure Chains to use the RHTAS infrastructure and the continuously refreshed OIDC token instead.
+* This allows Chains to perform keyless signing using short-lived identities, rather than long-lived keys.
+
+=== Apply the Tekton Chains Configuration Patch
+
+* Patch the Tekton configuration to point Chains at the RHTAS services and token source:
+
+[source,role=“execute”]
+----
+oc patch tektonconfig config -n openshift-pipelines --type=merge  --patch "$(cat ~/lab-assets/tekton-chains-patch.yml)"
+----
+
+* The patch updates Tekton Chains to integrate with RHTAS as follows:
+. Points Tekton Chains to the local Rekor instance for transparency logging.
+. Configures Chains to request signing certificates from the local Fulcio service.
+. Instructs Chains to read the OIDC access token from the mounted file written by the OIDC Refresher App.
+. Configures Chains to store signatures as OCI artifacts alongside the container image in the registry, rather than as separate text resources.
+
+== Step 6: Verify Signing (Smoke Test)
+
+* In this step, you will run a simple end-to-end smoke test to confirm that artifact signing is working as expected.
+* You will manually trigger a Tekton Task that builds and pushes a container image. Because Tekton Chains was configured in Step 5, it should automatically:
+. Detect the successful task completion.
+. Sign the resulting image using the refreshed OIDC token.
+. Upload the signature to Quay.
+* This validates that keyless signing is correctly integrated into the pipeline.
+
+=== Set Up Permissions for the Test Task
+
+* Create a temporary service account with the permissions required to run buildah, which requires elevated SCCs.
+
+[source,role=“execute”]
+----
+oc create sa chains-signing-image-tester -n tssc-app-ci
+oc adm policy add-scc-to-user anyuid -z chains-signing-image-tester -n tssc-app-ci
+oc adm policy add-scc-to-user privileged -z chains-signing-image-tester -n tssc-app-ci
+oc secret link  chains-signing-image-tester tssc-image-registry-auth -n tssc-app-ci --for=mount
+----
+
+* Trigger the example Tekton Task that builds and pushes an image:
+[source,role=“execute”]
+----
+oc create -f ~/lab-assets/example-image-sign.yml -n tssc-app-ci
+----
+
+* Tekton will execute the task, and upon successful completion, Tekton Chains will automatically sign the resulting image.
+* Wait for the PipelineTask to reach the Succeeded status.
+
+[source,role="execute"]
+----
+watch -n 2 "oc get taskrun -n tssc-app-ci"
+----
+
+* or you can switch to the OpenShift console, navigate to Pipelines -> Tasks and select the TaskRuns tab 
+
+image::check_chains_task_run.png[Check Chains Task Run,align="center"]
