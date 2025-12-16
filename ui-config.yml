@@ -4,7 +4,7 @@ default_width: 50
 persist_url_state: true
 
 tabs:
-  - name: Bastion
+  - name: Terminal
     path: /wetty
     port: 443
   - name: OCP Console

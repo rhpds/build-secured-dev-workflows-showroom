@@ -6,11 +6,11 @@ In this module, you establish the foundation of the *Trusted Software Supply Cha
 
 == Step 1: Configure Identity and Access Management
 
-*RHTPA* requires an external *OpenID Connect (OIDC)* provider for authentication and authorization, as it does not maintain its own internal user store. In this module, you will integrate *RHTPA* with *Red Hat Build of Keycloak (RHBK)*, which issues the tokens and identity claims that *RHTPA* ruses to validate users and permissions.
+*RHTPA* requires an external *OpenID Connect (OIDC)* provider for authentication and authorization, as it does not maintain its own internal user store. In this module, you will integrate *RHTPA* with *Red Hat Build of Keycloak (RHBK)*, which issues the tokens and identity claims that *RHTPA* uses to validate users and permissions.
 
 Access control is enforced through *Role-Based Access Control (RBAC)* defined in *RHBK*. Roles define what a user or service is allowed to do, while client scopes define the token claims the *RHTPA* backend evaluates before processing an operation.
 
-You will import a pre-configured *realm* that defines the two clients:
+In this step, you will import a pre-configured *realm* that defines the two clients:
 
 . *Frontend*: Used by human users accessing the *RHTPA* web interface.
 . *CLI*: Used by CI/CD systems, such as *Tekton* or *Jenkins*, to upload *SBOMs* programmatically. This client uses a service account for machine-to-machine authentication.
@@ -44,7 +44,7 @@ Log in to the RHBK console to review existing using the following details:
 {keycloak_admin_password}
 ----
 
-* After entering your credentials,click the *Sign In* button.
+* After entering your credentials, click the *Sign In* button.
 
 * In the *RHBK Console* click on the "Manage Realm" link in the left navigation menu, you will notice that we have two realms already configured *master* and *sso* as you can see in this screenshot
 
@@ -72,11 +72,19 @@ Log in to the OpenShift console using the following details:
 {openshift_gitops_admin_password}
 ----
 
-* After entering your credentials,click the *Sign In* button.
+* After entering your credentials, click the *Sign In* button.
 
 image::showroom_openshift_console.png[Showroom OpenShift Console,align="center"]
 
-* Expand the Ecosystem list in the left Navigation menu and select *Installed Operators*, input "keycloak" in the name filter, and select the Red Hat build of Keycloak Operator link.
+* Expand the Ecosystem list in the left Navigation menu and select *Installed Operators*
+* In the name filter input: 
+
+[source, role="execute", subs="attributes"]
+----
+keycloak
+----
+
+* Select the Red Hat build of *Keycloak Operator* link.
 
 * From the left navigation menu, expand *Ecosystem* and select *Installed Operators*.
 * Filter by “Keycloak” and select *Red Hat Build of Keycloak Operator*.
@@ -106,14 +114,14 @@ EOF
 source ~/.bashrc
 ----
 
-* Execute the following command to apply the configuration in the "keycloak-tpa-realm.yml" yaml file and import the new *tpa* realm configuration to the *tssc-keycloak* namespace.
+* Execute the following command to apply the configuration in the *"*keycloak-tpa-realm.yml* yaml file and import the new *tpa* realm configuration to the *tssc-keycloak* namespace.
 
 [source, role="execute"]
 ----
 envsubst '${TPA_REALM} ${TPA_CLI_CLIENT_SECRET} ${TPA_ADMIN_USERNAME} ${TPA_ADMIN_PASSWORD}' < ~/lab-assets/keycloak-tpa-realm.yml | oc apply -n tssc-keycloak -f -
 ----
 
-* Switch back to the *KeyCloakRealmImport* tab. You will see that the import job has started:
+* Switch back to the *KeyCloakRealmImport* tab in the *OpenShift console*. You will see that the import job has started:
 
 image::tpa_realm_import_start.png[TPA Realm Import Start,align="center"]
 
@@ -133,7 +141,7 @@ image::tpa_realm_import_start.png[TPA Realm Import Start,align="center"]
 
 * Scopes are mapped to roles so that *RHBK* automatically includes the correct permissions in the access token.
 * For example, a user with the *tpa-manager* role receives the create:document scope, allowing them to upload SBOMs via CLI or UI.
-
+* Refresh the *RHBK console* in *Showroom*
 * Return to the *Manage Realm* view in the *RHBK* console and select the newly created *tpa* realm:
 
 image::tpa_realm.png[New TPA Realm,align="center"]
@@ -149,7 +157,7 @@ image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
 
 
 [#createrhtpainstance]
-=== Create the RHTPA Instance
+== Step 2: Create the RHTPA Instance
 
 Before the *RHTPA* application can start, it must be configured to trust the Identity Provider (IdP). This requires creating a Kubernetes Secret that contains the OIDC Client ID and Client Secret used by the *CLI* client.
 
@@ -174,22 +182,20 @@ envsubst < ~/lab-assets/tpa-instance.yml | oc apply -n tssc-tpa -f -
 ----
 
 * Switch to the OpenShift Console tab in your Showroom.
-* Navigate to: Operators → Installed Operators,then filter by Profile Analyzer and select the TrustedProfileAnalyzer entry under Provided APIs.
+* Select the project:
 
-image::tpa_operator.png[TPA Operator,align="center"]
+[source,role="execute"]
+tssc-tpa
+----
 
-Wait for the *RHTPA* instance to progress to a deployed successfully state.
+image::select_tssc-tpa_project.png[Select tssc-tpa project,align="center"]
 
-image::tpa_instance_ready.png[TPA Operator,align="center"]
-
-You can also verify the deployment at the pod level.
-
-Navigate to: Workloads → Pods and confirm that the *RHTPA* server pod is running.
+* Navigate to: Workloads → Pods and confirm that the *RHTPA* server pod is running.
 
 image::tpa_server_pod.png[TPA Server Pod,align="center"]
 
 [#ingestansbom]
-===  Ingest an SBOM
+== Step 3: Ingest an SBOM
 
 In this step, you simulate what a CI/CD pipeline does during a build: uploading an SBOM to *RHTPA* via the API. This validates that machine-to-machine authentication is configured correctly and that the cli client has the required permissions.
 
@@ -233,9 +239,9 @@ Note: You are manually exercising the cli client credentials here.
 In Module 2, Tekton Chains will use this same client configuration to automatically push SBOMs during the build pipeline.
 
 [#viewsbom]
-===  View the SBOM from RHTPA UI
+== Step 4:  View the SBOM from RHTPA UI
 
-* Click the *RHTPA Console* tab in the Showroom
+* Click the *RHTPA Console* tab in the Showroom, you may need to refresh the tap.
 
 image::showroom_rhtpa_console.png[RHTPA Console,align="center"]
 
@@ -250,15 +256,13 @@ Log in to the RHTPA console using the following details:
 
 * *Password*:
 [source, role="execute", subs="attributes"]
-
 ----
 {tpa_admin_password}
 ----
 
-* After entering your credentials,click the *Sign In* button.
-
-* Once logged in, check the dashboard. You should see test-sbom listed in the inventory.
-* Click on the SBOM link to view it's details
+* After entering your credentials, click the *Sign In* button.
+* Once logged in, check the dashboard. You should see *test-sbom* listed in the inventory.
+* Click on the SBOM link to view it's details.
 
 image::view_test_sbom.png[View Test SBOM,align="center"]
 

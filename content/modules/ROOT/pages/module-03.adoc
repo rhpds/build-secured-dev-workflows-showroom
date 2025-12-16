@@ -1,0 +1,6 @@
+= Module 3: Developer Workflow Without Developer Friction 
+
+In the previous modules, we established the security infrastructure (TPA and TAS). Now, we bridge the gap between Ops and Dev.
+* This module demonstrates the Platform Engineering value proposition. You will act as the Platform Engineer to "hydrate" the Developer Hub with configuration, and then switch personas to the Developer to consume a "Golden Path" template.
+* The "Magic": We will inject TAS configuration (Fulcio/Rekor URLs) directly into the developer's IDE (Dev Spaces) via a ConfigMap and Devfile. This means the developer never has to configure GPG keys manually; they just write code, and the environment handles the trust.
+

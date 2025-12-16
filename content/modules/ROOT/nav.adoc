@@ -2,8 +2,10 @@
 ** xref:module-01.adoc#importtparealm[Import the TPA Realm]
 ** xref:module-01.adoc#createrhtpainstance[Create the RHTPA Instance]
 ** xref:module-01.adoc#ingestansbom[Ingest an SBOM]
-** xref:module-01.adoc#viewsbom[View the SBOM from RHTPA UI]
+** xref:module-01.adoc#viewsbom[View the SBOM]
 
 * xref:module-02.adoc[Module 2: Sign and Verify All Artifacts With RHTAS]
 ** xref:module-02.adoc#prerequisites[Install Prerequisites]
 ** xref:module-02.adoc#container[Enable Container]
+
+* xref:module-03.adoc[Module 2: Developer Workflow Without Developer Friction]

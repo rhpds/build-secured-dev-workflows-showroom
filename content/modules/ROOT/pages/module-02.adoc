@@ -19,28 +19,35 @@ This isolates automated signing from human user identities and is considered bes
 
 * If you skipped module 1:
 * Click the *RHBK Console* tab in the Showroom and log in using:
-. *Username*:
+* *Username*:
 
 [source, role="execute", subs="attributes"]
 ----
 {keycloak_admin_user}
 ----
 
-. *Password*:
+* *Password*:
 
 [source, role="execute", subs="attributes"]
 ----
 {keycloak_admin_password}
 ----
 
-* After entering your credentials,click *Sign In* .
+* After entering your credentials, click *Sign In*.
 
 * In the *RHBK Console*, click *Manage Realm*  in the left navigation menu.
 * Click the *Create realm* button.
 
 image::create_tas_realm.png[Create Realm,align="center"]
 
-* In the *Create realm* pop up, enter the name *tas-chains* and click *Create*.
+* In the *Create realm* pop up, enter the *Realm name*:
+
+[source, role="execute", subs="attributes"]
+----
+tas-chains 
+----
+
+* Click *Create*.
 
 image::create_tas_chains_realm.png[Create TAS Chains realm,align="center"]
 
@@ -49,8 +56,14 @@ image::create_tas_chains_realm.png[Create TAS Chains realm,align="center"]
 image::create_client.png[Create Client,align="center"]
 
 * In the *General setting* page:
-. Set the *Client ID* to *trusted-artifact-signer*
-. Click *Next*.
+* Set the *Client ID* to:
+
+[source, role="execute", subs="attributes"]
+----
+trusted-artifact-signer
+----
+
+* Click *Next*.
 
 image::tas_client_general_settings.png[New Client General Settings,align="center"]
 
@@ -73,22 +86,34 @@ image::tas_client_login_settings.png[New Client Login Settings,align="center"]
 
 image::tas_client_logout_settings.png[New Client Logout Settings,align="center"]
 
-* Next click the *Service account roles* tab 
+* Scroll back up to top of the screen, and click the *Service account roles* tab 
 * Click the *service-account-trusted-artifact-signer* link
 
 image::tas_client_service_account_roles.png[New Client Service Account Roles,align="center"]
 
 * Set the following attributes:
-. *Email Verified*: toggle on
-. *Email*: 
+* *Email Verified*: toggle on
+* *Email*: 
 
 [source, role="execute", subs="attributes"]
 ----
 trusted-artifact-signer@demo.redhat.com
 ----
 
-. *First name*: Trusted
-. *Last name*: Content
+*.* *First name*:
+
+[source, role="execute", subs="attributes"]
+----
+Trusted
+----
+
+* *Last name*: 
+
+[source, role="execute", subs="attributes"]
+----
+Content
+----
+
 * The click *Save*
 
 image::tas_client_service_account_details.png[New Client Service Account Roles,align="center"]
@@ -115,7 +140,7 @@ image::tas_create_client.png[TAS Create Client,align="center"]
 
 [source, role="execute", subs="attributes"]
 ----
-*trusted-artifact-signer*
+trusted-artifact-signer
 ----
 
 . Click *Next*.
@@ -134,7 +159,7 @@ image::tas_commit_client_capability_config.png[New Client Capability Config,alig
 
 [source, role="execute", subs="attributes"]
 ----
-*urn:ietf:wg:oauth:2.0:oob*
+urn:ietf:wg:oauth:2.0:oob
 ----
 
 . Click *Add valid redirect URIs*, then input:
@@ -161,7 +186,7 @@ Now that both machine and developer identities are configured, you can deploy th
 
 * Run the following command to apply the *RHTAS* Instance CR:
 
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 cat << 'EOF' >> ~/.bashrc
 export TAS_CHAINS_CLIENT_ID={tas_chains_client_id}
@@ -175,8 +200,14 @@ envsubst < ~/lab-assets/tas-instance.yml | oc apply -n tssc-tas -f -
 * Verify Deployment Readiness
 . Switch to the *OpenShift console*
 . Navigate to *Workloads → Pods*
-. Change the project/namespace to *tssc-tas*
-. Wait until the tuf pod is in Running state.
+. Change the project/namespace to:
+
+[source, role="execute", subs="attributes"]
+----
+tssc-tas
+----
+
+* Wait until the tuf pod is in Running state.
 
 image::tas_verify_deploy.png[Verify RHTAS deploy,align="center"]
 
@@ -200,14 +231,15 @@ image::tas_verify_deploy.png[Verify RHTAS deploy,align="center"]
 
 * First, retrieve the Keycloak admin credentials from the keycloak-initial-admin secret in the tssc-keycloak namespace:
 
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
+----
 export keycloak_admin_user=$(oc get secret keycloak-initial-admin -n tssc-keycloak -o jsonpath='{.data.username}' | base64 -d)
 export keycloak_admin_password=$(oc get secret keycloak-initial-admin -n tssc-keycloak -o jsonpath='{.data.password}' | base64 -d)
 ----
 
 * Next, use the credentials to request an admin access token:
 
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 KEYCLOAK_ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
 -H "Content-Type: application/x-www-form-urlencoded" \
@@ -219,7 +251,7 @@ KEYCLOAK_ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/
 
 * Next, retrieve the client secret for the trusted-artifact-signer client from the tas-chains realm:
 
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 export TAS_CHAINS_CLIENT_SECRET=$(curl -s -X GET "${KEYCLOAK_URL}/admin/realms/$TAS_CHAINS_REALM/clients?clientId=$TAS_CHAINS_CLIENT_ID" \
   -H "Authorization: Bearer $KEYCLOAK_ACCESS_TOKEN" | jq -r '.[0].secret')
@@ -253,7 +285,7 @@ watch -n 2 "oc get pods -n openshift-pipelines | awk '/^oidc-token-refresher/ { 
 
 * Patch the Tekton configuration to point Chains at the RHTAS services and token source:
 
-[source, role=“execute”]
+[source, role="execute"]
 ----
 oc patch tektonconfig config -n openshift-pipelines --type=merge  --patch "$(cat ~/lab-assets/tekton-chains-patch.yml)"
 ----
@@ -277,7 +309,7 @@ oc patch tektonconfig config -n openshift-pipelines --type=merge  --patch "$(cat
 
 * Create a temporary service account with the permissions required to run buildah, which requires elevated SCCs.
 
-[source,role=“execute”]
+[source, role="execute", subs="attributes"]
 ----
 oc create sa chains-signing-image-tester -n tssc-app-ci
 oc adm policy add-scc-to-user anyuid -z chains-signing-image-tester -n tssc-app-ci
@@ -286,6 +318,7 @@ oc secret link  chains-signing-image-tester tssc-image-registry-auth -n tssc-app
 ----
 
 * Trigger the example Tekton Task that builds and pushes an image:
+
 [source,role=“execute”]
 ----
 oc create -f ~/lab-assets/example-image-sign.yml -n tssc-app-ci
@@ -302,3 +335,50 @@ watch -n 2 "oc get taskrun -n tssc-app-ci"
 * or you can switch to the OpenShift console, navigate to Pipelines -> Tasks and select the TaskRuns tab 
 
 image::check_chains_task_run.png[Check Chains Task Run,align="center"]
+
+=== Verify the Signature in Quay
+
+* Log in to the Quay registry UI.
+* Click the *Quay Console* tab in the Showroom and log in using:
+* *Username*:
+
+[source, role="execute", subs="attributes"]
+----
+{quay_admin_user}
+----
+
+* *Password*:
+
+[source, role="execute", subs="attributes"]
+----
+{quay_admin_password}
+----
+
+* Navigate to the tssc/tekton-chains-test repository.
+
+image::select_tekton_chains_image.png[select tekton_chains image,align="center"]
+
+* Locate the image tag created by the task.
+* You should see a shield icon next to the image tag as seen in the following screenshot. 
+* This indicates that a valid Cosign signature is attached to the image.
+
+image::Cosign_signature_shield.png[Cosign signature shield,align="center"]
+
+=== Clean Up Temporary Permissions
+
+Once verification is complete, remove the elevated permissions and delete the service account:
+
+[source, role="execute", subs="attributes"]
+----
+oc adm policy remove-scc-from-user anyuid -z chains-signing-image-tester -n tssc-app-ci
+oc adm policy remove-scc-from-user privileged -z chains-signing-image-tester -n tssc-app-ci
+oc delete sa chains-signing-image-tester -n tssc-app-ci
+----
+
+===  Module 2 Summary
+
+In this module, you solved the problem of proving who produced your code and artifacts. You deployed RHTAS, configured separate identities for humans and pipelines and validated keyless signing end to end. Code commits and container images are now cryptographically signed, verifiable and protected from tampering.
+
+For customers, this means build integrity is no longer assumed — it’s provable. For consultants and technical sellers, this becomes the clear demo moment: “This is how we prove your software really came from you.”
+
+With identity and integrity established, the next challenge is keeping developers fast. In Module 3, you’ll focus on developer workflows and show how RHADS embeds security without slowing developers down.
