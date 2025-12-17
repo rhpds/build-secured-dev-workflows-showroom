@@ -14,7 +14,7 @@ tabs:
   - name: RHTPA
     url: 'https://server-tssc-tpa.${DOMAIN}'
   - name: Quay
-    url: 'https://quay-${GUID}-1.${DOMAIN}'
+    url: 'https://quay-${GUID}.${DOMAIN}'
   - name: Gitlab
     url: 'https://gitlab-gitlab.${DOMAIN}'
   - name: RHDH
