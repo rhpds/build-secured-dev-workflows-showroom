@@ -1,19 +1,19 @@
 = Module 2: Sign and Verify All Artifacts With *RHTAS* 
 
-In Module 1, you established trust in what is inside your software. The next challenge customers face is: “How do we know these artifacts were really built by us and haven’t been tampered with?” They need assurance that both code commits and build artifacts originate from trusted sources—not rogue machines or compromised pipelines.
-
-In this module, you will deploy Red Hat Trusted Artifact Signer (RHTAS) to establish the Root of Trust for the entire build system. Unlike "traditional" signing which uses long-lived static keys (which are a nightmare to rotate and secure), RHTAS uses Keyless Signing.
-How Keyless Signing Works here:
-1. Identity (Keycloak): We authenticate an entity (user or machine) via OIDC.
-2. Certificate Authority (Fulcio): RHTAS issues a short-lived X.509 certificate bound to that OIDC identity.
-3. Transparency Log (Rekor): The signature and the certificate are logged in an immutable ledger.
-4. Verification: We trust the artifact not because we have a public key, but because we can cryptographically prove the certificate was valid at the time of signing and belongs to a trusted OIDC identity.
-
+* In Module 1, you established trust in what is inside your software. The next challenge customers face is: “How do we know these artifacts were really built by us and haven’t been tampered with?” 
+* They need assurance that both code commits and build artifacts originate from trusted sources—not rogue machines or compromised pipelines.
+* In this module, you will deploy Red Hat Trusted Artifact Signer (RHTAS) to establish the Root of Trust for the entire build system. 
+* Unlike "traditional" signing which uses long-lived static keys (which are a nightmare to rotate and secure), RHTAS uses Keyless Signing.
+* How Keyless Signing Works here:
+. Identity (Keycloak): We authenticate an entity (user or machine) via OIDC.
+. Certificate Authority (Fulcio): RHTAS issues a short-lived X.509 certificate bound to that OIDC identity.
+. Transparency Log (Rekor): The signature and the certificate are logged in an immutable ledger.
+. Verification: We trust the artifact not because we have a public key, but because we can cryptographically prove the certificate was valid at the time of signing and belongs to a trusted OIDC identity.
 
 == 1: Configure the Machine Identity
 
-Tekton Chains requires its own realm and client to sign images on behalf of the pipeline.
-This isolates automated signing from human user identities and is considered best practice in customer deployments.
+* Tekton Chains requires its own realm and client to sign images on behalf of the pipeline.
+* This isolates automated signing from human user identities and is considered best practice in customer deployments.
 
 === Step 1: Create tas-chains realm and tas client
 

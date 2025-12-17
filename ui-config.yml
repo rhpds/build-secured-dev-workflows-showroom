@@ -17,6 +17,8 @@ tabs:
     url: 'https://quay-${GUID}-1.${DOMAIN}'
   - name: Gitlab
     url: 'https://gitlab-gitlab.${DOMAIN}'
+  - name: RHDH
+    url: 'https://backstage-backstage.${DOMAIN}'
   - name: ARGOCD
     url: 'https://argocd-server-tssc-gitops.${DOMAIN}'
   - name: ACS
