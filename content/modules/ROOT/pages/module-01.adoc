@@ -24,11 +24,11 @@ In this step, you will import a pre-configured *realm* that defines the two clie
 * *Client Scope*: A client scope represents specific permissions encoded into an access token. Roles define who a user is; scopes define what the user is authorised to do. The *RHTPA* backend checks these scopes when processing API requests.
 ====
 
-Click the *RHBK Console* tab in the Showroom:
+* Click the *RHBK Console* tab in the Showroom:
 
 image::showroom_rhbk_console.png[Keycloak Console,align="center"]
 
-Log in to the RHBK console to review existing using the following details:
+* Log in to the RHBK console to review existing using the following details:
 
 * *Username*:
 
@@ -114,7 +114,7 @@ EOF
 source ~/.bashrc
 ----
 
-* Execute the following command to apply the configuration in the *"*keycloak-tpa-realm.yml* yaml file and import the new *tpa* realm configuration to the *tssc-keycloak* namespace.
+* Execute the following command to apply the configuration in the *keycloak-tpa-realm.yml* yaml file and import the new *tpa* realm configuration to the *tssc-keycloak* namespace.
 
 [source, role="execute"]
 ----
@@ -140,7 +140,7 @@ image::tpa_realm_import_start.png[TPA Realm Import Start,align="center"]
 . *delete:document*: Required to delete SBOMs. Included only for administrators.
 
 * Scopes are mapped to roles so that *RHBK* automatically includes the correct permissions in the access token.
-* For example, a user with the *tpa-manager* role receives the create:document scope, allowing them to upload SBOMs via CLI or UI.
+* For example, a user with the *tpa-manager* role receives the *create:document* scope, allowing them to upload SBOMs via CLI or UI.
 * Refresh the *RHBK console* in *Showroom*
 * Return to the *Manage Realm* view in the *RHBK* console and select the newly created *tpa* realm:
 
@@ -149,7 +149,7 @@ image::tpa_realm.png[New TPA Realm,align="center"]
 WARNING: When a new realm is imported, *RHBK* restarts to refresh its configuration. During this time, you may briefly see *Application is not available* error when try to access the *RHBK* console.
 
 * Navigate to *Clients* in the left menu.
-* You will see the two clients created by the import: *cli* and *frontend*.
+* You will see the two clients created by the import job: *cli* and *frontend*.
 
 image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
 
@@ -185,12 +185,13 @@ envsubst < ~/lab-assets/tpa-instance.yml | oc apply -n tssc-tpa -f -
 * Select the project:
 
 [source,role="execute"]
+----
 tssc-tpa
 ----
 
 image::select_tssc-tpa_project.png[Select tssc-tpa project,align="center"]
 
-* Navigate to: Workloads → Pods and confirm that the *RHTPA* server pod is running.
+* Navigate to: Workloads → Pods and confirm that the *RHTPA* server pod is running. The pod name will follow the format *server-<hash>*.
 
 image::tpa_server_pod.png[TPA Server Pod,align="center"]
 
@@ -201,7 +202,7 @@ In this step, you simulate what a CI/CD pipeline does during a build: uploading 
 
 NOTE: An SBOM (Software Bill of Materials) is a structured inventory of all components, libraries and dependencies that make up an application. *RHTPA* ingests SBOMs to analyze software composition, track vulnerabilities and maintain a verifiable record of your supply chain.
 
-* Run the following command to extract the external route for the RHTPA server:
+* In the Showroom terminal, run the following command to extract the external route for the RHTPA server:
 
 [source,role="execute"]
 ----
@@ -235,13 +236,13 @@ curl -X POST ${TPA_SERVER_URL}/api/v2/sbom?id=test-sbom  -H "Authorization: Bear
 . Authentication using the cli client succeeded.
 . The required OIDC scope (create:document) was correctly enforced.
 
-Note: You are manually exercising the cli client credentials here.
+NOTE: You are manually exercising the cli client credentials here.
 In Module 2, Tekton Chains will use this same client configuration to automatically push SBOMs during the build pipeline.
 
 [#viewsbom]
 == Step 4:  View the SBOM from RHTPA UI
 
-* Click the *RHTPA Console* tab in the Showroom, you may need to refresh the tap.
+* Click the *RHTPA Console* tab in the Showroom, you may need to refresh the tab.
 
 image::showroom_rhtpa_console.png[RHTPA Console,align="center"]
 
@@ -255,6 +256,7 @@ Log in to the RHTPA console using the following details:
 ----
 
 * *Password*:
+
 [source, role="execute", subs="attributes"]
 ----
 {tpa_admin_password}
@@ -268,14 +270,14 @@ image::view_test_sbom.png[View Test SBOM,align="center"]
 
 [NOTE]
 ====
-Why is the vulnerability report empty? If the test-sbom entry shows 0 vulnerabilities, or the dependency graph appears empty, this is expected behaviour for a fresh installation. 
+Why is the vulnerability report empty? If the test-sbom entry shows 0 vulnerabilities, or the dependency graph appears empty, this is expected behavior for a fresh installation. 
 Reason: RHTPA relies on background importer jobs to download large advisory datasets (NVD, GitHub Advisories and others). These datasets must be fully synced before the system can correlate vulnerabilities to SBOM components. The first sync can take a significant amount of time, especially in new environments.
 ====
 
 
 ===  Module 1 Summary
 
-* By completing this module, you configured identity in *RHBK*, deployed *RHTPA* and validated your first SBOM—establishing a reliable source of truth for software composition. This is a great starting point for consultants to to implement early-stage in real customer environments. .
+* By completing this module, you configured identity in *RHBK*, deployed *RHTPA* and validated your first SBOM—establishing a reliable source of truth for software composition. This is a great starting point for consultants to to implement early-stage in real customer environments.
 * For technical sellers, when a customer says, “We cannot verify or attest to the components that make up our software,” you now know exactly where to start. RHTPA gives customers an auditable view of their software composition, enabling risk assessment from the very first stage of the software delivery process.
 * And now that we know what is in our software, the next question naturally follows: “How do we know these artifacts haven’t been tampered with?” That is the next trust boundary we will solve.
 * Head to Module 2 to learn how to cryptographically sign and verify artifacts using *Red Hat Trusted Artifact Signer (RHTAS)*, ensuring every image you build can be traced, trusted and validated.

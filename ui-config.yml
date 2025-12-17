@@ -15,7 +15,9 @@ tabs:
     url: 'https://server-tssc-tpa.${DOMAIN}'
   - name: Quay
     url: 'https://quay-${GUID}-1.${DOMAIN}'
-  - name: ACS
-    url: 'https://central-stackrox.${DOMAIN}'
+  - name: Gitlab
+    url: 'https://gitlab-gitlab.${DOMAIN}'
   - name: ARGOCD
     url: 'https://argocd-server-tssc-gitops.${DOMAIN}'
+  - name: ACS
+    url: 'https://central-stackrox.${DOMAIN}'

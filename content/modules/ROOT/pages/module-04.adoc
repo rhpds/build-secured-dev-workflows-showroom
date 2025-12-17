@@ -1,0 +1,130 @@
+Module 4: Enforce Policy and Promote Safely
+
+* In the previous modules, you established trust signals across the software supply chain.
+You identified what’s in the software, proved who built it and ensured artifacts are signed and verifiable.
+
+* In this module, you answer the final customer question:
+“How do we make sure only trusted software is allowed to move forward?”
+
+* This module demonstrates policy as code in action. Instead of relying on manual approvals or disconnected security checks, you will enforce trust automatically at release time. A simple developer action, creating a Git tag, becomes the trigger for governance.
+
+* You will observe how Enterprise Contract evaluates the release candidate by validating its SBOM, signature and provenance. If the artifact meets policy requirements, it is promoted through GitOps into the Staging environment. If it does not, promotion is blocked automatically.
+
+* The result is automated governance.
+* Security decisions are made by policy, enforced by the platform and applied consistently, without slowing down delivery.
+
+== Step 1: Analyse the Dev Build (Security Audit)
+
+Before promoting anything, review the evidence produced by the pipeline in Module 3.
+This evidence is what the Enterprise Contract will later enforce.
+
+1.1 Inspect the Pipeline Run
+	1.	Open Red Hat Developer Hub (RHDH).
+	2.	Select your component (for example, my-secure-app) from the Catalog.
+	3.	Click the CI tab and locate the pipeline run triggered in Module 3.
+The status should be Succeeded.
+
+⸻
+
+1.2 Review the Security Artifacts
+
+Expand the pipeline run and highlight the following steps:
+	•	acs-image-scan
+The image was scanned by Red Hat Advanced Cluster Security (RHACS) during the build.
+	•	sbom-json / upload-sbom
+An SBOM was generated and uploaded to RHTPA (Module 1).
+	•	sign-image
+The image was signed using an OIDC identity and recorded in Rekor (Module 2).
+
+Consultant deep dive – the invisible security officer:
+The developer did not run scans, manage keys, or make security decisions.
+The pipeline definition, owned by the platform team, enforced these controls automatically.
+If a critical policy violation had occurred, the pipeline would have failed before the image was ever published.
+
+⸻
+
+Step 2: Trigger the Release (Developer Action)
+
+Now simulate a developer indicating that the code is ready for release.
+
+2.1 Access the Source Repository
+	1.	In RHDH, stay on the component Overview tab.
+	2.	Click View Source to open the GitLab repository.
+	3.	Log in to GitLab if prompted.
+
+⸻
+
+2.2 Create a Release Tag
+	1.	In GitLab, navigate to Code → Tags (or use the + menu).
+	2.	Click New Tag.
+	3.	Set:
+	•	Tag name: v1.0 (or prod-rc-1)
+	•	Create from: main
+	4.	Click Create tag.
+
+What just happened:
+The Golden Path template configured a webhook that treats tags differently from commits.
+Creating a tag triggers a release pipeline, not the standard development pipeline.
+
+⸻
+
+Step 3: Enterprise Contract Gate (Operations View)
+
+Return to RHDH to observe automated policy enforcement.
+
+3.1 Observe the Release Pipeline
+	1.	Navigate back to the CI tab.
+	2.	A new PipelineRun should appear (for example, release-pipeline-…).
+	3.	Click into the pipeline to follow its progress.
+
+⸻
+
+3.2 Inspect the verify-enterprise-contract Task
+
+This is the critical control point.
+	1.	Wait for the verify-enterprise-contract task to reach Succeeded.
+	2.	Click the task and review the logs.
+
+What EC validates:
+	1.	Provenance: Was the image built by a trusted pipeline?
+	2.	Identity: Does the signature match the expected OIDC issuer and subject?
+	3.	Integrity: Is the SLSA attestation valid and untampered?
+
+
+
+⸻
+
+Step 4: GitOps Promotion (Platform View)
+
+Once policy passes, promotion happens automatically through GitOps.
+
+4.1 Verify Argo CD State
+	1.	In RHDH, open the CD tab.
+	2.	Observe the Argo CD applications (for example, my-app-dev, my-app-stage).
+	3.	Confirm that my-app-stage is syncing or has synced to the new image tag.
+
+⸻
+
+4.2 Verify the Application Topology
+	1.	Click the Topology tab in RHDH.
+	2.	Confirm the application is now running in the Staging namespace.
+
+⸻
+
+Troubleshooting: Enterprise Contract Failure
+
+If the verify-enterprise-contract task fails:
+	1.	Review the task logs.
+	2.	Common cause: OIDC issuer or subject mismatch.
+	3.	Resolution: Update the Enterprise Contract policy to match the signing identity configured in Module 2.
+
+⸻
+
+Module 4 Takeaway
+	•	In this module, you addressed the final customer challenge: enforcing policy consistently without slowing delivery.
+	•	As a consultant, you demonstrated automated governance using Enterprise Contract and GitOps-based promotion.
+	•	For customers, this means releases are approved by policy, not process. No spreadsheets, no manual gates, no trust assumptions.
+	•	For technical sellers, this completes the story: RHADS enforces trust from commit to production, automatically and at scale.
+
+Final customer message:
+“With RHADS, you move fast because the platform verifies trust for you, and you stay safe because policy guarantees only verified software reaches production.”

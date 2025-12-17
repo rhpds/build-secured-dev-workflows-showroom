@@ -1,6 +1,305 @@
 = Module 3: Developer Workflow Without Developer Friction 
 
-In the previous modules, we established the security infrastructure (TPA and TAS). Now, we bridge the gap between Ops and Dev.
-* This module demonstrates the Platform Engineering value proposition. You will act as the Platform Engineer to "hydrate" the Developer Hub with configuration, and then switch personas to the Developer to consume a "Golden Path" template.
-* The "Magic": We will inject TAS configuration (Fulcio/Rekor URLs) directly into the developer's IDE (Dev Spaces) via a ConfigMap and Devfile. This means the developer never has to configure GPG keys manually; they just write code, and the environment handles the trust.
+* In the previous modules, you established the core security infrastructure using RHTPA and RHTAS.
+* In this module, you close the gap between platform security and developer experience.
+* This module demonstrates the platform engineering value proposition. You will first act as the Platform Engineer, configuring Red Hat Developer Hub with opinionated defaults, then switch personas to the Developer to consume a pre-built Golden Path.
+* The key outcome is frictionless security. RHTAS configuration, including Fulcio and Rekor endpoints, is injected directly into the developer environment (Dev Spaces) using a ConfigMap and Devfile. Developers do not manage keys, certificates or signing tools manually. They simply write code, while the platform transparently enforces trust in the background.
 
+== Step 1: User and Identity Configuration
+
+* Before enabling *Red Hat Developer Hub (RHDH)* features, you need a standard developer identity.
+* In this step, you will create a developer user (user1) in the sso realm.
+
+NOTE: In this lab, RHDH, OpenShift, and OpenShift Dev Spaces all share the *sso* realm. This is intentionally different from the *tpa* realm used in Module 1. Using a shared realm enables seamless Single Sign-On (SSO) across the OpenShift Console, OpenShift Dev Spaces, and Red Hat Developer Hub.
+
+=== 1.1 Create the Developer User
+
+* If you are not already logged in to *RHBK*, click the RHBK Console tab in the Showroom and log in using:
+
+* *Username*:
+
+[source, role="execute", subs="attributes"]
+----
+{keycloak_admin_user}
+----
+
+* *Password*:
+
+[source, role="execute", subs="attributes"]
+----
+{keycloak_admin_password}
+----
+
+* After entering your credentials, click *Sign In*.
+* In the *RHBK Console*, click *Manage Realm*, switch to the sso realm.
+
+image::switch_to_sso_realm.png[Switch to SSO Realm,align="center"]
+
+*	Navigate to Users and click Add user.
+* Set the following values:
+*	Username:
+
+[source, role="execute"]
+----
+user1
+----
+
+* Email:
+
+[source, role="execute"]
+----
+user1@demo.redhat.com
+----
+
+*	First Name: 
+	
+[source, role="execute"]
+----
+User1
+----
+  
+*Last Name: 
+	
+[source, role="execute"]
+----
+Demo
+----
+  
+* Email Verified: Toggle on (required for TAS signing)
+* Click Create.
+
+=== 1.2 Assign Group Membership
+
+* In the user details view, click the Groups tab.
+* Click Join Group.
+* Select the following groups:
+	•	tssc
+	•	users
+* Click Join.
+
+NOTE: The tssc group mapping in RHDH ensures this user has ownership and management rights over the components you will scaffold later in this module.
+
+=== 1.3 Set User Credentials
+
+* Click the Credentials tab.
+* Click Set Password.
+* Enter the password:
+
+[source, role="execute", subs="attributes"]
+----
+{developer_hub_user_password}
+----
+
+* Ensure Temporary is toggled off.
+* Click Save.
+* At this point, the developer identity is fully configured and ready to authenticate across OpenShift, Dev Spaces, and Red Hat Developer Hub.
+
+* Step 2: Hydrating the Developer Hub (GitOps Flow)
+
+* When Red Hat Developer Hub (RHDH) first starts in this lab, it runs in a vanilla state, guest access only and an empty catalog.
+* Rather than enabling integrations through the UI, you will configure the portal using GitOps, demonstrating how customers should manage portal configuration at scale.
+
+== 2.1 Verify the “Before” State
+
+* Open the Red Hat Developer Hub URL:
+
+[source, role="execute", subs="attributes"]
+----
+{developer_hub_url}
+----
+
+* Confirm that only Guest login is available and the Catalog is empty.
+
+=== 2.2 Enable Configuration via Code
+
+* In Showroom, Switch to the GitLab tab and login using the following credentials: 
+
+* *Username*:
+
+[source, role="execute", subs="attributes"]
+----
+{gitlab_root_user}
+----
+
+* *Password*:
+
+[source, role="execute", subs="attributes"]
+----
+{gitlab_root_password}
+----
+
+* Navigate to the repo *backstage-gitops*. 
+*	Locate the file *backstage-values.yaml*.
+* Edit the file and uncomment the *RHADS-specific* configuration blocks:
+	•	Authentication (OIDC / Keycloak)
+	•	Catalog ingestion (GitLab)
+	•	appConfig sections related to TAS and TPA
+* Commit the changes to the main branch.
+
+=== 2.3 Sync via Argo CD
+
+* In Showroom, Switch to the ArgoCD tab and login using the following credentials: 
+
+* *Username*:
+
+[source, role="execute", subs="attributes"]
+----
+{openshift_gitops_admin_user}
+----
+
+* *Password*:
+
+[source, role="execute", subs="attributes"]
+----
+{openshift_gitops_admin_password}
+----
+
+* Switch to the tssc-gitops namespace.
+*	Locate the backstage application.
+* Click Refresh and Sync (if not auto-syncing).
+* What’s happening: The RHDH pod restarts and mounts the updated configuration from Git. This typically takes 2–3 minutes.
+
+== Step 3: IDE Injection (The “Secret Sauce”)
+
+* This step makes security transparent to developers.
+* You will create a global ConfigMap in the openshift-devspaces namespace. Every new Dev Workspace automatically inherits this configuration, pointing tools such as gitsign to your RHTAS instance.
+
+=== 3.1 Create the TAS Configuration ConfigMap
+
+* Run the following command to extract the application domain
+
+[source, role="execute", subs="attributes"]
+----
+cat << 'EOF' >> ~/.bashrc
+export APPS_DOMAIN={openshift_cluster_ingress_domain}
+EOF
+source ~/.bashrc
+----
+
+* Run the following command to inject the lab-specific values:
+
+[source, role="execute"]
+cat <<EOF | oc apply -n openshift-devspaces -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tas-git-config
+  annotations:
+    controller.devfile.io/mount-as: env
+  labels:
+    app.kubernetes.io/part-of: che.eclipse.org
+    app.kubernetes.io/component: workspaces-config
+data:
+  TAS_FULCIO_URL: "https://fulcio-server-tssc-tas.${APPS_DOMAIN}"
+  TAS_REKOR_URL: "https://rekor-server-tssc-tas.${APPS_DOMAIN}"
+  TAS_ISSUER_URL: "https://sso.${APPS_DOMAIN}/realms/sso"
+  TAS_CLIENT_ID: "trusted-artifact-signer"
+EOF
+----
+
+TIP: The label app.kubernetes.io/component=workspaces-config instructs Dev Spaces to inject these values into every developer workspace as environment variables.
+
+Step 4: Execute the Golden Path Template
+
+* Now you switch personas, from Platform Engineer to Developer.
+
+--- 4.1 Log in to RHDH
+
+* Open RHDH in a Private/Incognito window using the link:{developer_hub_url}[*RHDH URL*,window=_blank] 
+* Click Sign in with OIDC.
+* Log in using the following credentials:
+
+* *Username*:
+
+[source, role="execute"]
+----
+user1
+----
+
+* *Password*:
+
+[source, role="execute", subs="attributes"]
+----
+{developer_hub_user_password}
+----
+
+WARNING: If you do not use Private/Incognito window you will be logged in using the admin credentials and will not be able to impersonate a developer.
+
+=== 4.2 Run the Software Template
+
+*	Click Create or Self Service.
+* Select Securing a Quarkus Service Software Supply Chain.
+* Set the following attributes:
+* Name: 
+
+[source, role="execute"]
+----
+my-secure-app
+----
+
+*	Owner: group:
+
+[source, role="execute"]
+----
+default/tssc
+----
+
+* Registry: leave default (Quay)
+* Review and click Create.
+* What’s happening:
+* RHDH orchestrates the creation of:
+. A GitLab repository
+. A Tekton pipeline with ACS scanning and TAS signing
+. Argo CD applications for Dev, Stage, and Prod
+. Webhooks connecting Git to CI/CD
+
+== Step 5: Secure Developer Workflow (Inner Loop)
+
+* This is the frictionless security moment.
+
+=== 5.1 Open the Cloud IDE
+
+* In RHDH, open the Catalog and select my-secure-app.
+* Click OpenShift Dev Spaces.
+* Log in as user1 if prompted.
+* Wait for the workspace to start.
+
+=== 5.2 Make a Change
+
+*	Open src/main/resources/application.properties.
+* Make a trivial change (for example, add a comment).
+* Open the IDE terminal.
+
+[source, role="execute"]
+----
+git add .
+git commit -m "feat: updated configuration with secure signing"
+----
+
+Observation:
+. You are prompted to authenticate via an OIDC browser flow.
+. The login redirects to your Keycloak, not the public Sigstore service.
+. After authentication, the commit is signed automatically.
+
+[source, role="execute"]
+----
+git push origin main
+----
+
+* Return to RHDH → CI tab.
+* A new pipeline run is triggered.
+* The pipeline automatically:
+. verifies the commit signature,
+. builds the image,
+. scans it with ACS,
+. signs the image with TAS.
+
+Module 3 Summary and Handover
+
+* In this module, you addressed the customer challenge of balancing security with developer productivity.
+	•	As a consultant, you learned how to configure Red Hat Developer Hub using GitOps, inject trust configuration into developer environments and deliver a secure Golden Path without adding friction.
+	•	For customers, this means developers can build, commit and deploy software without managing keys or security tooling, while the platform enforces trust automatically.
+	•	For technical sellers, this is where the platform engineering story lands: security is built in, not bolted on.
+	•	With trusted and frictionless developer workflows established, the next customer question becomes inevitable: “How do we continuously validate risk and enforce standards as this scales?”
+
+In Module 4, you will focus on policy and governance, showing how trust signals generated across the supply chain are evaluated and enforced at scale to prevent risky software from reaching production.

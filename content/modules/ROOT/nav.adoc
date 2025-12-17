@@ -8,4 +8,6 @@
 ** xref:module-02.adoc#prerequisites[Install Prerequisites]
 ** xref:module-02.adoc#container[Enable Container]
 
-* xref:module-03.adoc[Module 2: Developer Workflow Without Developer Friction]
+* xref:module-03.adoc[Module 3: Developer Workflow Without Developer Friction]
+
+* xref:module-04.adoc[Module 4: Enforce Policy and Promote Safely]
