@@ -1,10 +1,17 @@
 = Establish Software Composition Trust with SBOMs
 
-== Overview
+== Introduction 
 
-* In this module, you establish the foundation of the *Trusted Software Supply Chain (TSSC)*. 
-* Before securing builds or enforcing policy, organisations need a central, verifiable source of truth for software composition.
-* To achieve this, you will deploy *Red Hat Trusted Profile Analyzer (RHTPA)* and configure it to ingest Software Bills of Materials (SBOMs), creating an auditable inventory of what is included in every build.
+* In this module you help a customer answer a foundational supply-chain question: “Do we actually trust the software components inside our applications?”
+* Software today is assembled — not written. Images contain hundreds of upstream packages, transitive dependencies, libraries, CVEs and advisories. 
+* Without visibility into that composition, trust becomes an assumption rather than evidence.
+* That is the role of *Red Hat Trusted Profile Analyzer (RHTPA)*, Red Hat’s supported distribution of the upstream trustify project in the *GUAC* community (Graph for Understanding Artifact Composition). 
+* *RHTPA* ingests SBOMs, correlates their package inventory with CVEs and security advisories, and gives customers a 360° view of their software stack. 
+* In this module you will:
+. Configure Identity and Access Management using *Red Hat Build of Keycloak (RHBK)*
+. Install an *RHTPA* Instance using an operator
+. Ingest an *SBOM* and view it in *RHTPA*
+
 
 ---
 
@@ -232,8 +239,6 @@ clients:
 * *clientAuthenticatorType* is set to *client-secret* means this client can use the client credentials flow (machine-to-machine).
 * Client scopes again include the document permissions, so a service account based on cli can upload and manage SBOMs without a human logging in.
 
-
-
 ==== 4. Roles created:
 
 * In the YAML, the roles block defines three realm roles:
@@ -318,20 +323,30 @@ image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
 [#createrhtpainstance]
 == Step 2: Create the RHTPA Instance
 
-* Before the *RHTPA* application can start, it must be configured to trust the Identity Provider (IdP). 
-* This requires creating a Kubernetes Secret that contains the OIDC Client ID and Client Secret used by the *CLI* client.
+* Now that identity is configured, you can deploy a *Red Hat Trusted Profile Analyzer (RHTPA)* instance.
+* RHTPA can be deployed using Helm or an Operator. In enterprise clusters, the Operator model is preferred because it manages CR lifecycle, upgrades and dependent components.
+* In this lab, you will apply a Custom Resource (CR) that instructs the Operator to deploy all backend components. 
 
-* Run the following command in the showroom terminal to create the CLI credentials Secret
+=== Configure the Client Secret
+
+* Before the *RHTPA* application can start, it must be configured to trust the Identity Provider (IdP). 
+* This requires creating a Kubernetes Secret that contains the OIDC Client ID and Client Secret used by the *cli* client.
+* Run the following command in the showroom terminal to create the secret
 
 [source,role="execute"]
 ----
 envsubst < ~/lab-assets/tpa-cli-credentials.yml | oc apply -n tssc-tpa -f -
 ----
 
+---
+
+=== Deploy RHTPA Instance
+
+
 * With the credentials in place, you can now deploy the *RHTPA* instance using its Custom Resource (CR).
 * The Custom Resource defines the desired state of the *RHTPA* deployment and instructs the *RHTPA Operator* to provision:
 . *API Server*: Handles authenticated API requests and enforces scope-based authorization.
-.* Web UI*: The web dashboard used for browsing, querying and managing SBOM data.
+. *Web UI*: The web dashboard used for browsing, querying and managing SBOM data.
 . *Ingestion & Analysis Services*: Components responsible for ingesting SBOM, persisting in PostgreSQL and correlate SBOMs with vulnerability intelligence as importer data becomes available.
 
 * Run the following command to apply the *RHTPA* Instance CR:
@@ -340,6 +355,92 @@ envsubst < ~/lab-assets/tpa-cli-credentials.yml | oc apply -n tssc-tpa -f -
 ----
 envsubst < ~/lab-assets/tpa-instance.yml | oc apply -n tssc-tpa -f -
 ----
+
+* This CR is your application blueprint. It defines:
+. Authentication to PostgreSQL to store SBOM metadata
+. OIDC to authenticate users and pipelines
+. Persistent storage to store importer data and indexed graphs
+. Importers where vulnerability data comes from
+
+==== 1. PostgreSQL authentication configuration
+
+* This is how RHTPA authenticates to Postgres
+
+[source]
+----
+database:
+  host:
+    valueFrom:
+      secretKeyRef:
+        key: host
+        name: tpa-pgsql-user
+  name:
+    valueFrom:
+      secretKeyRef:
+        key: dbname
+        name: tpa-pgsql-user
+----
+
+==== 2. OIDC configuration 
+
+* This tells *RHTPA* how to validate OIDC tokens and which clients are allowed to act on it.
+
+[source]
+----
+oidc:
+  issuerUrl: '${KEYCLOAK_URL}/realms/${TPA_REALM}'
+  clients:
+    cli:
+      clientId: cli
+      clientSecret:
+        valueFrom:
+          secretKeyRef:
+            key: cli
+            name: tpa-realm-cli-clients
+    frontend:
+      clientId: frontend
+----
+
+=== 3 Storage provisioning (PVC definition)
+
+* This allocates persistent volume storage for imported SBOM data and vulnerability feeds.
+
+[source]
+----
+storage:
+  size: 32Gi
+  type: filesystem
+----
+
+=== 4 Importers (where vulnerability data comes from)
+
+* RHTPA isn’t useful without ingestion. The CR enables daily importers:
+
+[source]
+----
+modules:
+  createImporters:
+    enabled: true
+    importers:
+      cve:
+        cve:
+          period: 1d
+          source: 'https://github.com/CVEProject/cvelistV5'
+      osv-github:
+        osv:
+          period: 1d
+          source: 'https://github.com/github/advisory-database'
+----
+
+* Meaning:
+. CVE list from CVEProject
+. GitHub Security Advisory feed
+. refreshed daily (period: 1d)
+* This is what allows RHTPA to correlate SBOM components with actual vulnerabilities.
+
+---
+
+=== Validate the RHTPA deployment
 
 * Switch to the OpenShift Console tab in your Showroom.
 * Select the project:
