@@ -6,6 +6,8 @@
 * Before securing builds or enforcing policy, organisations need a central, verifiable source of truth for software composition.
 * To achieve this, you will deploy *Red Hat Trusted Profile Analyzer (RHTPA)* and configure it to ingest Software Bills of Materials (SBOMs), creating an auditable inventory of what is included in every build.
 
+---
+
 == Step 1: Configure Identity and Access Management
 
 * *RHTPA* requires an external *OpenID Connect (OIDC)* provider for authentication and authorization, as it does not maintain its own internal user store.
@@ -26,8 +28,12 @@
 * *Client Scope*: A client scope represents specific permissions encoded into an access token. While roles are assigned to users or service accounts, scopes are what the *RHTPA* backend checks to authorize API operations such as uploading or reading SBOMs.
 ====
 
+---
+
+=== Explore Red Hat Build of Keycloak (RHBK)
+
 * Click the *RHBK Console* tab in the Showroom.
-* Log in to the RHBK console using the following details:
+* Log in to the *RHBK console* using the following details:
 
 * *Username*:
 
@@ -47,6 +53,8 @@
 * In the *RHBK Console* click on the "Manage Realm" link in the left navigation menu, you will notice that we have two realms already configured *master* and *sso* as you can see in this screenshot
 
 image::keycloak_manage_realms.png[Keycloak Realms,align="center"]
+
+---
 
 [#importtparealm]
 === Import the TPA Realm
@@ -96,10 +104,6 @@ image::keycloak_realmimport.png[Keycloak Realm Import,align="center"]
 
 * Execute the following command in the ShowRoom terminal to set the required variables for this module.
 
-image::showroom_terminal.png[Keycloak Realm Import,align="center"]
-
-* Set the required variables
-
 [source, role="execute", subs="attributes"]
 ----
 cat << 'EOF' >> ~/.bashrc
@@ -125,34 +129,112 @@ image::tpa_realm_import_start.png[TPA Realm Import Start,align="center"]
 
 * After a short time, the status will change to *Done*.
 
+---
+
 === What just happened?
 
 * The YAML you applied creates the identity- and authorization-model that *Red Hat Trusted Profile Analyzer (RHTPA)* uses to control SBOM upload, search, and deletion.
 * It created:
+. A dedicated realm for *RHTPA*
 . Client scopes that act as concrete API permissions
+. Two clients frontend and cli
 . Realm roles used to assign high-level identity
 . Scope mappings that attach permissions to roles
 
-==== 1. Client scopes created
+==== 1. Dedicated tpa realm for RHTPA
 
-RHTPA authorises API calls using OIDC scopes, not Keycloak role names.
-Those scopes are defined here:
+* The file creates a dedicated realm *tpa* for *Red Hat Trusted Profile Analyzer (RHTPA)*:
+
+[source]
+----
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
+spec:
+  keycloakCRName: keycloak
+  realm:
+    realm: ${TPA_REALM}
+    displayName: Trusted Content
+    enabled: true
+    ...
+----
+
+* This isolates *RHTPA*’s identities and settings from the shared *sso* realm used by other components.
+
+==== 2. Client scopes created
+
+* *RHTPA* authorizes API calls using OIDC scopes, those scopes are defined here:
 
 [source]
 ----
 clientScopes:
-  - name: create:document
-  - name: read:document
-  - name: delete:document
+  ...
+  - attributes: {}
+    name: create:document
+    protocol: openid-connect
+  ...
+  - attributes: {}
+    name: read:document
+    protocol: openid-connect
+  ...
+  - attributes: {}
+    name: delete:document
+    protocol: openid-connect
 ----
 
-* These map directly to operations in the RHTPA APIs:
-. *read:document*: required to query SBOMs, load dashboards, or list inventory.
-. *create:document*: required to upload an SBOM (human CLI or Tekton pipeline).
-. *delete:document*: required to remove previously uploaded SBOMs.
+* These scope names are not arbitrary, the *RHTPA* backend expects them and enforces API permissions based on their presence in the access token:
+. *read:document*: required to query and view SBOM inventory.
+. *create:document*: required to upload an SBOM.
+. *delete:document*: required to remove SBOMs.
 * If a user or pipeline identity calls the API without the required scope, RHTPA denies the request.
 
-==== 2. Roles created:
+==== 3. Frontend and cli clients
+
+* The YAML defines two clients: *frontend* named *cli* 
+* The frontend client is used by human users via the *RHTPA* UI:
+
+[source]
+----
+- clientId: frontend
+  publicClient: true
+  defaultClientScopes:
+    - web-origins
+    - delete:document
+    - profile
+    - roles
+    - read:document
+    - email
+    - create:document
+----
+
+* When a user signs in through the UI, the token issued for the frontend client is able to carry the client scopes (read:document, create:document, delete:document), subject to role and scope mapping.
+
+* The *cli* client is the machine identity used later by *Tekton Chains*:
+
+[source]
+----
+clients:
+  - clientId: cli
+    clientAuthenticatorType: client-secret
+    secret: ${TPA_CLI_CLIENT_SECRET}
+    serviceAccountsEnabled: true
+    defaultClientScopes:
+      - web-origins
+      - profile
+      - roles
+      - read:document
+      - email
+      - create:document
+      - update:document
+      - delete:document
+----
+
+* Because *serviceAccountsEnabled* is set to true, *RHBK* automatically creates a backing user called *service-account-cli* that can request tokens without a browser redirect. This is the identity your CI/CD pipelines will authenticate as.
+* *clientAuthenticatorType* is set to *client-secret* means this client can use the client credentials flow (machine-to-machine).
+* Client scopes again include the document permissions, so a service account based on cli can upload and manage SBOMs without a human logging in.
+
+
+
+==== 4. Roles created:
 
 * In the YAML, the roles block defines three realm roles:
 
@@ -167,42 +249,57 @@ roles:
 
 * These roles do not grant permission by themselves — they are labels that a human user or a Tekton machine identity can be assigned.
 
-==== 3. Scope-to-role mapping
+==== 5. Scope-to-role mapping
 
 * The next YAML block maps those scopes to specific roles so that when a user logs in, the access token carries the correct permissions:
 
 [source]
 ----
 scopeMappings:
-  - clientScope: read:document
-    roles: [ tpa-user, tpa-manager, tpa-admin ]
-  - clientScope: create:document
-    roles: [ tpa-manager, tpa-admin ]
   - clientScope: delete:document
-    roles: [ tpa-admin ]
+    roles:
+      - tpa-manager
+  - clientScope: create:document
+    roles:
+      - tpa-manager
 ----
 
-* These mappings result in three effective permissions levels
-. *tpa-user* → read only
-. *tpa-manager* → read + create
-. *tpa-admin* → read + create + delete
-
-* RHBK is responsible for issuing these scopes in the token.
-* RHTPA is responsible for interpreting them and enforcing which operations are allowed.
-* For example when we assign the tpa-manager role to Tekton's service account, the the resulting OIDC token automatically contains:
+* This mean only identities with tpa-manager are allowed to have create:document and delete:document scopes issued to them.
+* The mapping between the service-account-cli and this role is configured here:
 
 [source]
 ----
-"scope": "openid email profile create:document read:document"
+realmRoles:
+  - default-roles-tpa
+  - tpa-manager
+serviceAccountClientId: cli
+username: service-account-cli
 ----
 
-* That token is sent to RHTPA with the SBOM upload API call.
+* So the *service-account-cli* user:
+. Authenticates as the cli client
+. Has the tpa-manager realm role
+* This service account is entitled to receive *create:document* and *delete:document* scopes in its token, when it requests a token for the cli client.
+
+==== Putting it all together 
+
+* *RHBK* is responsible for issuing client scopes in the token.
+* *RHTPA* is responsible for interpreting them and enforcing which operations are allowed.
+* When *Tekton* authenticates using the *cli* client and secret, *RHBK* issues a token for *service-account-cli*.
+* Because that identity has tpa-manager role, the the resulting OIDC token automatically contains the *create:document* and *delete:document* client scopes:
+
+[source]
+----
+"scope": "openid email profile create:document delete:document"
+----
+
+* That token is sent to *RHTPA* with the SBOM upload API call.
 . If create:document is present — upload succeeds.
-. If it is missing — RHTPA rejects the request with 403.
+. If it is missing — *RHTPA* rejects the request with 403.
 
+---
 
-
-* Refresh the *RHBK console* in *Showroom*
+* Refresh the *RHBK* console in *Showroom*
 * Return to the *Manage Realm* view in the *RHBK* console and select the newly created *tpa* realm:
 
 image::tpa_realm.png[New TPA Realm,align="center"]
@@ -216,11 +313,13 @@ image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
 
 * You can continue exploring the client scopes and realm roles before proceeding to the next section, where you will deploy the RHTPA instance.
 
+---
 
 [#createrhtpainstance]
 == Step 2: Create the RHTPA Instance
 
-Before the *RHTPA* application can start, it must be configured to trust the Identity Provider (IdP). This requires creating a Kubernetes Secret that contains the OIDC Client ID and Client Secret used by the *CLI* client.
+* Before the *RHTPA* application can start, it must be configured to trust the Identity Provider (IdP). 
+* This requires creating a Kubernetes Secret that contains the OIDC Client ID and Client Secret used by the *CLI* client.
 
 * Run the following command in the showroom terminal to create the CLI credentials Secret
 
@@ -231,9 +330,9 @@ envsubst < ~/lab-assets/tpa-cli-credentials.yml | oc apply -n tssc-tpa -f -
 
 * With the credentials in place, you can now deploy the *RHTPA* instance using its Custom Resource (CR).
 * The Custom Resource defines the desired state of the *RHTPA* deployment and instructs the *RHTPA Operator* to provision:
-. API Server: Handles authenticated API requests and enforces scope-based authorization.
-. Web UI: The web dashboard used for browsing, querying and managing SBOM data.
-. Ingestion & Analysis Services: Components responsible for ingesting SBOM, persisting in PostgreSQL and correlate SBOMs with vulnerability intelligence as importer data becomes available.
+. *API Server*: Handles authenticated API requests and enforces scope-based authorization.
+.* Web UI*: The web dashboard used for browsing, querying and managing SBOM data.
+. *Ingestion & Analysis Services*: Components responsible for ingesting SBOM, persisting in PostgreSQL and correlate SBOMs with vulnerability intelligence as importer data becomes available.
 
 * Run the following command to apply the *RHTPA* Instance CR:
 
@@ -255,6 +354,8 @@ image::select_tssc-tpa_project.png[Select tssc-tpa project,align="center"]
 * Navigate to: Workloads → Pods and confirm that the *RHTPA* server pod is running. The pod name will follow the format *server-<hash>*.
 
 image::tpa_server_pod.png[TPA Server Pod,align="center"]
+
+---
 
 [#ingestansbom]
 == Step 3: Ingest an SBOM
@@ -302,6 +403,8 @@ curl -X POST ${TPA_SERVER_URL}/api/v2/sbom?id=test-sbom  -H "Authorization: Bear
 NOTE: You are manually exercising the cli client credentials here.
 In Module 2, Tekton Chains will use this same client configuration to automatically push SBOMs during the build pipeline.
 
+___
+
 [#viewsbom]
 == Step 4:  View the SBOM from RHTPA UI
 
@@ -337,6 +440,7 @@ Why is the vulnerability report empty? If the test-sbom entry shows 0 vulnerabil
 Reason: RHTPA relies on background importer jobs to download large advisory datasets (NVD, GitHub Advisories and others). These datasets must be fully synced before the system can correlate vulnerabilities to SBOM components. The first sync can take a significant amount of time, especially in new environments.
 ====
 
+---
 
 ===  Module 1 Summary
 
