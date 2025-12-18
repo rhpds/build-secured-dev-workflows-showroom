@@ -3,10 +3,10 @@
 == Introduction 
 
 * In this module you help a customer answer a foundational supply-chain question: “Do we actually trust the software components inside our applications?”
-* Software today is assembled — not written. Images contain hundreds of upstream packages, transitive dependencies, libraries, CVEs and advisories. 
+* Modern applications are assembled rather than written. Container images typically bundle hundreds of upstream packages, transitive dependencies, and libraries, each carrying its own CVE and advisory exposure.
 * Without visibility into that composition, trust becomes an assumption rather than evidence.
 * That is the role of *Red Hat Trusted Profile Analyzer (RHTPA)*, Red Hat’s supported distribution of the upstream trustify project in the *GUAC* community (Graph for Understanding Artifact Composition). 
-* *RHTPA* ingests SBOMs, correlates their package inventory with CVEs and security advisories, and gives customers a 360° view of their software stack. 
+* *RHTPA* ingests SBOM documents, indexes every component inside them, and continuously correlates that inventory against known CVEs and security advisories, producing an auditable view of software composition. 
 * In this module you will:
 . Configure Identity and Access Management using *Red Hat Build of Keycloak (RHBK)*
 . Install an *RHTPA* Instance using an operator
@@ -20,7 +20,7 @@
 * *RHTPA* requires an external *OpenID Connect (OIDC)* provider for authentication and authorization, as it does not maintain its own internal user store.
 * In this module, you will integrate *RHTPA* with *Red Hat Build of Keycloak (RHBK)*,  which is responsible for issuing identity tokens and embedding the claims and permissions that *RHTPA* evaluates when processing API and UI requests.
 * In this configuration, access control is implemented using *Role-Based Access Control (RBAC)* defined in *Red Hat Build of Keycloak (RHBK)*.
-* Roles describe who a user or service is, while client scopes define what actions are permitted.
+* Authorization in *RHTPA* is determined entirely by client scopes present inside the OIDC access token.
 * *RHTPA* does not evaluate roles directly. Instead, it authorizes requests by checking for specific scopes embedded in the OIDC access token.
 * In this step, you will import a pre-configured *realm* that defines the two clients:
 . *Frontend*: Used by human users accessing the *RHTPA* web interface.
@@ -31,6 +31,12 @@
 *Key Concepts: Realm and Client Scope*
 
 * *Realm*: A realm is an isolated security domain that manages its own users, groups, roles and clients. In this workshop, the *tpa* realm contains the identity configuration that *RHTPA* trusts when validating incoming requests.
+
+* *Client*: A client represents an application that requests tokens from the realm.  
+  Each client defines how identities authenticate (browser login, CLI, or service account),  
+  and which client scopes may be embedded into the issued tokens. In this workshop,  
+  the *cli* client is used by machine automation (Tekton), while the *frontend* client  
+  is used by human users accessing the RHTPA web console.
 
 * *Client Scope*: A client scope represents specific permissions encoded into an access token. While roles are assigned to users or service accounts, scopes are what the *RHTPA* backend checks to authorize API operations such as uploading or reading SBOMs.
 ====
@@ -190,14 +196,14 @@ clientScopes:
 
 * These scope names are not arbitrary, the *RHTPA* backend expects them and enforces API permissions based on their presence in the access token:
 . *read:document*: required to query and view SBOM inventory.
-. *create:document*: required to upload an SBOM.
+. *create:document*: required to POST SBOMs into *RHTPA* via API.
 . *delete:document*: required to remove SBOMs.
 * If a user or pipeline identity calls the API without the required scope, RHTPA denies the request.
 
 ==== 3. Frontend and cli clients
 
 * The YAML defines two clients: *frontend* named *cli* 
-* The frontend client is used by human users via the *RHTPA* UI:
+* The frontend client issues browser-based tokens for the Web UI. When a user logs in, any client scopes mapped to their identity can be embedded in that token.
 
 [source]
 ----
@@ -235,7 +241,8 @@ clients:
       - delete:document
 ----
 
-* Because *serviceAccountsEnabled* is set to true, *RHBK* automatically creates a backing user called *service-account-cli* that can request tokens without a browser redirect. This is the identity your CI/CD pipelines will authenticate as.
+* Because *serviceAccountsEnabled* is set to true, *RHBK* automatically creates a backing user called *service-account-cli* 
+* This identity is what Tekton Chains and other CI tools authenticate as when uploading SBOMs.
 * *clientAuthenticatorType* is set to *client-secret* means this client can use the client credentials flow (machine-to-machine).
 * Client scopes again include the document permissions, so a service account based on cli can upload and manage SBOMs without a human logging in.
 
@@ -269,7 +276,7 @@ scopeMappings:
       - tpa-manager
 ----
 
-* This mean only identities with tpa-manager are allowed to have create:document and delete:document scopes issued to them.
+* This mapping ensures only identities assigned the tpa-manager role receive create:document and delete:document scopes embedded in their access tokens.
 * The mapping between the service-account-cli and this role is configured here:
 
 [source]
@@ -291,7 +298,7 @@ username: service-account-cli
 * *RHBK* is responsible for issuing client scopes in the token.
 * *RHTPA* is responsible for interpreting them and enforcing which operations are allowed.
 * When *Tekton* authenticates using the *cli* client and secret, *RHBK* issues a token for *service-account-cli*.
-* Because that identity has tpa-manager role, the the resulting OIDC token automatically contains the *create:document* and *delete:document* client scopes:
+* Because that identity has tpa-manager role, the resulting OIDC token automatically contains the *create:document* and *delete:document* client scopes:
 
 [source]
 ----
@@ -403,7 +410,7 @@ oidc:
 
 === 3 Storage provisioning (PVC definition)
 
-* This allocates persistent volume storage for imported SBOM data and vulnerability feeds.
+* This PVC backs importer datasets and RHTPA’s indexed internal graph store. Without persistent storage, importer snapshots would be lost between pod restarts.
 
 [source]
 ----
@@ -436,7 +443,7 @@ modules:
 . CVE list from CVEProject
 . GitHub Security Advisory feed
 . refreshed daily (period: 1d)
-* This is what allows RHTPA to correlate SBOM components with actual vulnerabilities.
+* These importers pull upstream vulnerability intelligence daily, enabling RHTPA to match component identifiers from SBOM documents against known advisories (NVD and GitHub Security). Without importer data, correlation would return empty results.
 
 ---
 
@@ -463,10 +470,18 @@ image::tpa_server_pod.png[TPA Server Pod,align="center"]
 
 === What is an SBOM anyway?
 
-* A Software Bill of Materials (SBOM) is a machine-readable inventory that describes the components, libraries, and dependencies included in a software artifact.
-* SBOMs provide the factual basis for understanding what is inside an application and are a prerequisite for supply chain risk analysis.
+* A Software Bill of Materials (SBOM) is a machine-readable inventory (CycloneDX, SPDX, etc.) describing all dependencies in a software artifact. It is the prerequisite for provenance, vulnerability correlation, and build attestation.
+* An *attestation* is a signed, tamper-evident statement that proves something about how an artifact was produced.  
+* Where an SBOM describes *what* is in the software, an attestation proves *how, when and by whom* it was built.  
+* Attestations are generated during the pipeline and are later verified by policy engines to ensure the build process  
+was trusted, repeatable and compliant.
 * In this step, you simulate what a CI/CD pipeline does during a build: you will authenticate using the client_credentials OAuth 2.0 grant.
 * This is the same machine-to-machine authentication flow used by automated systems such as Tekton to upload SBOMs during a build.
+
+---
+
+=== Ingest the SBOM into RHTPA
+
 * In the Showroom terminal, run the following command to extract the external route for the RHTPA server:
 
 [source,role="execute"]
@@ -545,7 +560,7 @@ Reason: RHTPA relies on background importer jobs to download large advisory data
 
 ===  Module 1 Summary
 
-* By completing this module, you configured identity in *RHBK*, deployed *RHTPA* and validated your first SBOM—establishing a reliable source of truth for software composition. This is a great starting point for consultants to to implement early-stage in real customer environments.
+* By completing this module, you configured identity in *RHBK*, deployed *RHTPA* and validated your first SBOM—establishing a reliable source of truth for software composition. This is a realistic starting point for consultants implementing early-stage supply-chain controls for customers.
 * For technical sellers, when a customer says, “We cannot verify or attest to the components that make up our software,” you now know exactly where to start. RHTPA gives customers an auditable view of their software composition, enabling risk assessment from the very first stage of the software delivery process.
 * And now that we know what is in our software, the next question naturally follows: “How do we know these artifacts haven’t been tampered with?” That is the next trust boundary we will solve.
 * Head to Module 2 to learn how to cryptographically sign and verify artifacts using *Red Hat Trusted Artifact Signer (RHTAS)*, ensuring every image you build can be traced, trusted and validated.
