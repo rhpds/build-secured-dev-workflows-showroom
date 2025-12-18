@@ -85,9 +85,9 @@ NOTE: The tssc group mapping in RHDH ensures this user has ownership and managem
 * Click Set Password.
 * Enter the password:
 
-[source, role="execute", subs="attributes"]
+[source, role="execute"]
 ----
-{developer_hub_user_password}
+r3dh4t1
 ----
 
 * Ensure Temporary is toggled off.
@@ -203,7 +203,7 @@ Step 4: Execute the Golden Path Template
 
 * Now you switch personas, from Platform Engineer to Developer.
 
---- 4.1 Log in to RHDH
+=== 4.1 Log in to RHDH
 
 * Open RHDH in a Private/Incognito window using the link:{developer_hub_url}[*RHDH URL*,window=_blank] 
 * Click Sign in with OIDC.
@@ -218,9 +218,9 @@ user1
 
 * *Password*:
 
-[source, role="execute", subs="attributes"]
+[source, role="execute" ]
 ----
-{developer_hub_user_password}
+r3dh4t1
 ----
 
 WARNING: If you do not use Private/Incognito window you will be logged in using the admin credentials and will not be able to impersonate a developer.

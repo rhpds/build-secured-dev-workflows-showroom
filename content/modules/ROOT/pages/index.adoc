@@ -76,7 +76,7 @@ By the end of this workshop, you will be able to:
 
 This workshop consists of hands-on labs designed to demonstrate how Red Hat Advanced Developer Suite (RHADS) solves key customer challenges through a highly automated, policy-driven development lifecycle.
 
-* **Module 1: Establish Trust With SBOM Validation** (20 minutes)
+* **Module 1: Establish Software Composition Trust with SBOMs** (20 minutes)
     - **Customer challenge**: “We cannot verify or attest to the components that make up our software.”
     - **Participants Will**: : Deploy Red Hat Trusted Profile Analyzer (RHTPA) and integrate Red Hat build of Keycloak (RHBK) to enable verifiable SBOM ingestion and vulnerability risk analysis.
     - **Customer Outcome**: Builds include verifiable and trusted SBOM data from the start.
