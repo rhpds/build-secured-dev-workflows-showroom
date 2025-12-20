@@ -1,14 +1,64 @@
 = Module 2: Sign and Verify All Artifacts With *RHTAS* 
 
+== Introduction 
+
 * In Module 1, you established trust in what is inside your software. The next challenge customers face is: “How do we know these artifacts were really built by us and haven’t been tampered with?” 
 * They need assurance that both code commits and build artifacts originate from trusted sources—not rogue machines or compromised pipelines.
-* In this module, you will deploy Red Hat Trusted Artifact Signer (RHTAS) to establish the Root of Trust for the entire build system. 
-* Unlike "traditional" signing which uses long-lived static keys (which are a nightmare to rotate and secure), RHTAS uses Keyless Signing.
-* How Keyless Signing Works here:
-. Identity (Keycloak): We authenticate an entity (user or machine) via OIDC.
-. Certificate Authority (Fulcio): RHTAS issues a short-lived X.509 certificate bound to that OIDC identity.
-. Transparency Log (Rekor): The signature and the certificate are logged in an immutable ledger.
-. Verification: We trust the artifact not because we have a public key, but because we can cryptographically prove the certificate was valid at the time of signing and belongs to a trusted OIDC identity.
+
+
+=== Enter Red Hat Trusted Artifact Signer (RHTAS) 
+
+* In this module, you will deploy *RHTAS* to establish the Root of Trust for the entire build system.
+* *RHTAS* is an enterprise deployment of the *Sigstore* project. 
+* It provides cryptographic signing, verification, provenance attestation and transparency, ensuring software artifacts can be proven authentic at every stage of delivery. 
+* It supports keyless signing via OIDC, and also key-based workflows when required in tightly controlled environments.
+
+=== RHTAS component overview
+
+* Architecturally, RHTAS combines Sigstore components to deliver identity-based, auditable signing:
+. *Fulcio*: a certificate authority (CA) that issues short-lived X.509 signing certificates bound to an authenticated OpenID Connect (OIDC) identity, such as a Keycloak user or service account.
+. *Rekor*: a transparency log that records signatures, certificates and attestations in an append-only, tamper-evident log. It allows anyone to independently verify that a signing event occurred.
+. *Trillian*: the cryptographic storage engine behind *Rekor*. It organizes log entries in a *Merkle tree* so that every entry is provably recorded and cannot be removed or altered without detection.
+. *TUF (The Update Framework)*: Manages the root keys and trust metadata that the signing system relies on. TUF ensures clients know which public keys and certificates are legitimate, providing a cryptographic “root of trust” when verifying signatures from *Rekor* or certificates from *Fulcio*.
+. *Cosign*: A CLI used to sign and verify signed artifacts. Pipelines (Tekton Chains) invoke cosign to generate signatures and publish them to the image registry and Rekor.
+
+NOTE: A *Merkle tree* is a data structure where each entry is represented by a hash, and those hashes are combined up a tree — meaning a single “root hash” represents the entire log. If anyone tries to change or delete an entry, the hashes won’t match anymore, so the tampering is immediately visible.
+
+* Together, these components establish an auditable chain of trust across container images, code commits and other artifacts. Every signature is tied to a real identity, recorded in a transparency log and verifiable against a well-defined trust root.
+
+=== How does keyless signing work?
+*  Traditional signing models rely on long-lived private keys that developers or CI systems must generate, store, rotate and protect. In contrast, RHTAS uses keyless signing and short lived certificates. The following explains the flow for image signing:
+. Tekton finishes building and pushing a container image
+** A pipeline task builds and pushes an image to a registry such as Quay.io.
+** At this point, the image exists, but has no provenance or cryptographic signature.
+** Chains watches the cluster for completed TaskRuns.
+** When it detects a success event, it issues a signing request to Cosign.
+. Cosign initiates an OIDC-based identity request
+** To perform keyless signing, Cosign must obtain an OIDC identity token from the configured identity provider (RHBK in this workshop).
+** Cosign authenticates using the Kubernetes service account identity that Tekton Chains is running under.
+** Cosign performs a standard OIDC authentication flow and receives a JWT identity token that includes claims such as email (the identity), issuer (RHBK), expiry timestamp, and audience (Fulcio).
+. Cosign requests a signing certificate from Fulcio
+** Cosign sends the OIDC identity token to Fulcio and asks for a certificate.
+** Fulcio validates that:
+*** the token came from a trusted issuer
+*** an email claim (identity) is present and verified
+*** the signature on the token is valid and has not expired
+** If validation succeeds, Fulcio issues a short-lived X.509 certificate bound to that identity.
+. Cosign prepares to create a singing event for the Trust Authority (Rekor + Trillian)
+** Cosign generates signs the image digest
+** Cosign creates a one-time signing key in memory only and pairs it with the Fulcio certificate.
+** Cosign signs the image digest (not the image file) and produces a cryptographic signature.
+** Cosign submits the signing event to the transparency log (Rekor + Trillian)
+** Cosign forwards the signature, the certificate chain and associated metadata to Rekor.
+** Rekor stores the record in a tamper-evident Merkle-tree (backed by Trillian) and returns an inclusion proof.
+** This guarantees the signing event cannot be hidden or rewritten.
+. Cosign pushes the signature to the OCI registry
+** Cosign pushes a separate OCI artefact containing the signature and certificate alongside the original image tag (for example :latest).
+
+image::keyless_signing_flow.png[keyless_signing_flow,align="center"]
+
+NOTE: In an interactive keyless signing flow (for example, when signing code from your IDE), Cosign will prompt you to authenticate with the OIDC provider, such as RHBK in this workshop. It prints a login URL (and sometimes a short verification code), you complete the login in your browser, and provide the OIDC access token to Cosign, which behind the scenes requests a signing certificate from Fulcio.  
+
 
 == 1: Configure the Machine Identity
 

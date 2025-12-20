@@ -2,10 +2,13 @@
 
 == Introduction 
 
-* In this module you help a customer answer a foundational supply-chain question: “Do we actually trust the software components inside our applications?”
+* In this module you help customers answer a foundational supply-chain question: “Do we actually trust the software components inside our applications?”
 * Modern applications are assembled rather than written. Container images typically bundle hundreds of upstream packages, transitive dependencies, and libraries, each carrying its own CVE and advisory exposure.
 * Without visibility into that composition, trust becomes an assumption rather than evidence.
-* That is the role of *Red Hat Trusted Profile Analyzer (RHTPA)*, Red Hat’s supported distribution of the upstream trustify project in the *GUAC* community (Graph for Understanding Artifact Composition). 
+
+=== Enter *Red Hat Trusted Profile Analyzer (RHTPA)*
+
+* That is the role of *RHTPA*, Red Hat’s supported distribution of the upstream trustify project in the *GUAC* community (Graph for Understanding Artifact Composition). 
 * *RHTPA* ingests SBOM documents, indexes every component inside them, and continuously correlates that inventory against known CVEs and security advisories, producing an auditable view of software composition. 
 * In this module you will:
 . Configure Identity and Access Management using *Red Hat Build of Keycloak (RHBK)*
