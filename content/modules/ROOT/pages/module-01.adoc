@@ -548,11 +548,11 @@ image::view_test_sbom.png[View Test SBOM,align="center"]
 
 * Switch to the *Packages* tab. *RHTPA* shows an inventory of all packages contained in the *SBOM* you uploaded.
 
-images::rhtpa_packages.png[rhtpa_packages,align="center"]
+image::rhtpa_packages.png[rhtpa_packages,align="center"]
 
 * Switch to the *Vulnerabilities* tab. You will notice that the view is currently empty.
 
-images::rhtpa_vulnerabilities.png[rhtpa_vulnerabilities,align="center"]
+image::rhtpa_vulnerabilities.png[rhtpa_vulnerabilities,align="center"]
 
 [NOTE]
 ====
@@ -566,12 +566,12 @@ The initial sync can take significant time, especially in new environments.
 * In the left navigation, select *Importers*.
 * You will see the advisory import jobs running for the sources configured in the *tssc-tpa* yaml you applied.
 
-images::rhtpa_importers.png[rhtpa_importers,align="center"]
+image::rhtpa_importers.png[rhtpa_importers,align="center"]
 
 * These import jobs can take quite a while to complete, so you may not see full results during today’s lab.
 * Once imports are finished, you will see identified vulnerabilities, similar to the example below:
 
-images::rhtpa_vulnerabilities_complete.png[rhtpa_vulnerabilities_complete,align="center"]
+image::rhtpa_vulnerabilities_complete.png[rhtpa_vulnerabilities_complete,align="center"]
 
 ---
 
