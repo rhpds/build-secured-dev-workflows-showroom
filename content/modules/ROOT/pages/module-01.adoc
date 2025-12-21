@@ -9,7 +9,7 @@
 === Enter *Red Hat Trusted Profile Analyzer (RHTPA)*
 
 * That is the role of *RHTPA*, Red Hat’s supported distribution of the upstream trustify project in the *GUAC* community (Graph for Understanding Artifact Composition). 
-* *RHTPA* ingests SBOM documents, indexes every component inside them, and continuously correlates that inventory against known CVEs and security advisories, producing an auditable view of software composition. 
+* *RHTPA* ingests *SBOM* documents, indexes every component inside them, and continuously correlates that inventory against known CVEs and security advisories, producing an auditable view of software composition. 
 * In this module you will:
 . Configure Identity and Access Management using *Red Hat Build of Keycloak (RHBK)*
 . Install an *RHTPA* Instance using an operator
@@ -95,9 +95,6 @@ Log in to the OpenShift console using the following details:
 ----
 
 * After entering your credentials, click the *Sign In* button.
-
-image::showroom_openshift_console.png[Showroom OpenShift Console,align="center"]
-
 * Expand the Ecosystem list in the left Navigation menu and select *Installed Operators*
 * In the name filter input: 
 
@@ -205,8 +202,8 @@ clientScopes:
 
 ==== 3. Frontend and cli clients
 
-* The YAML defines two clients: *frontend* named *cli* 
-* The frontend client issues browser-based tokens for the Web UI. When a user logs in, any client scopes mapped to their identity can be embedded in that token.
+* The YAML defines two clients: *frontend* and *cli* 
+* When a user signs in through the UI, the token issued for the frontend client is able to carry the client scopes (read:document, create:document, delete:document), subject to role and scope mapping.
 
 [source]
 ----
@@ -221,8 +218,6 @@ clientScopes:
     - email
     - create:document
 ----
-
-* When a user signs in through the UI, the token issued for the frontend client is able to carry the client scopes (read:document, create:document, delete:document), subject to role and scope mapping.
 
 * The *cli* client is the machine identity used later by *Tekton Chains*:
 
@@ -247,7 +242,7 @@ clients:
 * Because *serviceAccountsEnabled* is set to true, *RHBK* automatically creates a backing user called *service-account-cli* 
 * This identity is what Tekton Chains and other CI tools authenticate as when uploading SBOMs.
 * *clientAuthenticatorType* is set to *client-secret* means this client can use the client credentials flow (machine-to-machine).
-* Client scopes again include the document permissions, so a service account based on cli can upload and manage SBOMs without a human logging in.
+* Client scopes again include the document permissions, so a service account based on the client *cli* can upload and manage SBOMs.
 
 ==== 4. Roles created:
 
@@ -292,9 +287,9 @@ username: service-account-cli
 ----
 
 * So the *service-account-cli* user:
-. Authenticates as the cli client
+. Authenticates as the *cli* client
 . Has the tpa-manager realm role
-* This service account is entitled to receive *create:document* and *delete:document* scopes in its token, when it requests a token for the cli client.
+* This service account is entitled to receive *create:document* and *delete:document* scopes in its token, when it requests a token for the *cli* client.
 
 ==== Putting it all together 
 
@@ -310,7 +305,7 @@ username: service-account-cli
 
 * That token is sent to *RHTPA* with the SBOM upload API call.
 . If create:document is present — upload succeeds.
-. If it is missing — *RHTPA* rejects the request with 403.
+. If it is missing — *RHTPA* rejects the request with a 403 error.
 
 ---
 
@@ -319,14 +314,21 @@ username: service-account-cli
 
 image::tpa_realm.png[New TPA Realm,align="center"]
 
-WARNING: When a new realm is imported, *RHBK* restarts to refresh its configuration. During this time, you may briefly see *Application is not available* error when try to access the *RHBK* console.
+WARNING: When a new realm is imported, *RHBK* restarts to refresh its configuration. During this time, you may briefly see *Application is not available* error when you try to access the *RHBK* console.
 
 * Navigate to *Clients* in the left menu.
 * You will see the two clients created by the import job: *cli* and *frontend*.
 
 image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
 
-* You can continue exploring the client scopes and realm roles before proceeding to the next section, where you will deploy the RHTPA instance.
+* Select the *cli* client then navigate to *Client scopes*.
+* You will see the three client scopes (create,delete,read) assigned to this client as per our configuration.
+
+image::cli_client_scopes.png[cli_client_scopes,align="center"]
+
+* Select *service_account_roles*, here you will find that the *cli* client is assigned the *tpa-manager* role as expected.
+
+image::cli_account_roles.png[cli_account_roles,align="center"]
 
 ---
 
@@ -334,14 +336,13 @@ image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
 == Step 2: Create the RHTPA Instance
 
 * Now that identity is configured, you can deploy a *Red Hat Trusted Profile Analyzer (RHTPA)* instance.
-* RHTPA can be deployed using Helm or an Operator. In enterprise clusters, the Operator model is preferred because it manages CR lifecycle, upgrades and dependent components.
-* In this lab, you will apply a Custom Resource (CR) that instructs the Operator to deploy all backend components. 
+* *RHTPA* can be deployed using Helm or an Operator. In enterprise clusters, the Operator model is preferred because it manages CR lifecycle, upgrades and dependent components.
+* In this lab, you will apply a Custom Resource (CR) that instructs the Operator to deploy all *RHTAP* backend components. 
 
 === Configure the Client Secret
 
-* Before the *RHTPA* application can start, it must be configured to trust the Identity Provider (IdP). 
-* This requires creating a Kubernetes Secret that contains the OIDC Client ID and Client Secret used by the *cli* client.
-* Run the following command in the showroom terminal to create the secret
+* The *RHTPA* components authenticate to the Identity Provider using an OIDC Client ID and Client Secret stored in a Kubernetes Secret.
+* Run the following command in the showroom terminal to create the secret:
 
 [source,role="execute"]
 ----
@@ -354,11 +355,7 @@ envsubst < ~/lab-assets/tpa-cli-credentials.yml | oc apply -n tssc-tpa -f -
 
 
 * With the credentials in place, you can now deploy the *RHTPA* instance using its Custom Resource (CR).
-* The Custom Resource defines the desired state of the *RHTPA* deployment and instructs the *RHTPA Operator* to provision:
-. *API Server*: Handles authenticated API requests and enforces scope-based authorization.
-. *Web UI*: The web dashboard used for browsing, querying and managing SBOM data.
-. *Ingestion & Analysis Services*: Components responsible for ingesting SBOM, persisting in PostgreSQL and correlate SBOMs with vulnerability intelligence as importer data becomes available.
-
+* The Custom Resource defines the desired state of the *RHTPA* deployment and instructs the *RHTPA Operator* to provision it's components.
 * Run the following command to apply the *RHTPA* Instance CR:
 
 [source,role="execute"]
@@ -368,7 +365,7 @@ envsubst < ~/lab-assets/tpa-instance.yml | oc apply -n tssc-tpa -f -
 
 * This CR is your application blueprint. It defines:
 . Authentication to PostgreSQL to store SBOM metadata
-. OIDC to authenticate users and pipelines
+. OID configuration to authenticate users and pipelines
 . Persistent storage to store importer data and indexed graphs
 . Importers where vulnerability data comes from
 
@@ -478,8 +475,7 @@ image::tpa_server_pod.png[TPA Server Pod,align="center"]
 * Where an SBOM describes *what* is in the software, an attestation proves *how, when and by whom* it was built.  
 * Attestations are generated during the pipeline and are later verified by policy engines to ensure the build process  
 was trusted, repeatable and compliant.
-* In this step, you simulate what a CI/CD pipeline does during a build: you will authenticate using the client_credentials OAuth 2.0 grant.
-* This is the same machine-to-machine authentication flow used by automated systems such as Tekton to upload SBOMs during a build.
+* In this step, you simulate what a CI/CD pipeline does during a build: authenticate using the client_credentials OAuth 2.0 grant and then upload an SBOM to RHTPA.
 
 ---
 
@@ -493,7 +489,7 @@ export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=ser
   | jq -r '.items[0].spec.host')"
 ----
 
-* The cli client uses the client_credentials grant type to authenticate. This is the standard OAuth2 flow for non-interactive workloads such as Tekton, Jenkins or GitHub Actions.
+* The *cli* client uses the client_credentials grant type to authenticate. This is the standard OAuth2 flow for non-interactive workloads such as Tekton, Jenkins or GitHub Actions.
  
 * Run the following commands to discover the token endpoint and obtain an access token:
 
@@ -517,10 +513,10 @@ curl -X POST ${TPA_SERVER_URL}/api/v2/sbom?id=test-sbom  -H "Authorization: Bear
 * This confirms three things:
 . Authentication via OIDC is functioning.
 . Scope-based authorization is correctly enforced.
-. The SBOM ingestion pipeline is operational.
+. The RHTPA ingestion service is accepting SBOM uploads..
 
 NOTE: You are manually exercising the cli client credentials here.
-In Module 2, Tekton Chains will use this same client configuration to automatically push SBOMs during the build pipeline.
+In Module 4, Tekton Chains will use this same client configuration to automatically push SBOMs during the build pipeline.
 
 ___
 
@@ -528,10 +524,7 @@ ___
 == Step 4:  View the SBOM from RHTPA UI
 
 * Click the *RHTPA Console* tab in the Showroom, you may need to refresh the tab.
-
-image::showroom_rhtpa_console.png[RHTPA Console,align="center"]
-
-Log in to the RHTPA console using the following details:
+* Log in to the RHTPA console using the following credentials:
 
 * *Username*:
 
@@ -547,17 +540,38 @@ Log in to the RHTPA console using the following details:
 {tpa_admin_password}
 ----
 
-* After entering your credentials, click the *Sign In* button.
+* After entering your credentials, click *Sign In*.
 * Once logged in, check the dashboard. You should see *test-sbom* listed in the inventory.
-* Click on the SBOM link to view it's details.
+* Click *test-sbom* link to view its details.
 
 image::view_test_sbom.png[View Test SBOM,align="center"]
 
+* Switch to the *Packages* tab. *RHTPA* shows an inventory of all packages contained in the *SBOM* you uploaded.
+
+images::rhtpa_packages.png[rhtpa_packages,align="center"]
+
+* Switch to the *Vulnerabilities* tab. You will notice that the view is currently empty.
+
+images::rhtpa_vulnerabilities.png[rhtpa_vulnerabilities,align="center"]
+
 [NOTE]
 ====
-Why is the vulnerability report empty? If the test-sbom entry shows 0 vulnerabilities, or the dependency graph appears empty, this is expected behavior for a fresh installation. 
-Reason: RHTPA relies on background importer jobs to download large advisory datasets (NVD, GitHub Advisories and others). These datasets must be fully synced before the system can correlate vulnerabilities to SBOM components. The first sync can take a significant amount of time, especially in new environments.
+Why is the vulnerability report empty? 
+If the test-sbom entry shows zero vulnerabilities, or the dependency graph appears empty, this is expected in a fresh installation.
+*Reason*: *RHTPA* relies on background importer jobs (configured in the YAML) to download large advisory datasets — including NVD, GitHub Advisories, and others.
+These datasets must be fully synced before *RHTPA* can correlate vulnerabilities with SBOM components.
+The initial sync can take significant time, especially in new environments.
 ====
+
+* In the left navigation, select *Importers*.
+* You will see the advisory import jobs running for the sources configured in the *tssc-tpa* yaml you applied.
+
+images::rhtpa_importers.png[rhtpa_importers,align="center"]
+
+* These import jobs can take quite a while to complete, so you may not see full results during today’s lab.
+* Once imports are finished, you will see identified vulnerabilities, similar to the example below:
+
+images::rhtpa_vulnerabilities_complete.png[rhtpa_vulnerabilities_complete,align="center"]
 
 ---
 
@@ -571,3 +585,4 @@ Reason: RHTPA relies on background importer jobs to download large advisory data
 
 
 
+ 
