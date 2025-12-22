@@ -21,6 +21,8 @@ Red Hat Advanced Developer Suite (RHADS) scales platform engineering teams to in
 
 === Key Components Covered
 
+image::rhads-architecture.png[rhads-architecture,align="center"]
+
 [cols="1,3"]
 |===
 | Component | Description

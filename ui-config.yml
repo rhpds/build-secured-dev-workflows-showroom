@@ -13,6 +13,8 @@ tabs:
     url: 'https://sso.${DOMAIN}' 
   - name: RHTPA
     url: 'https://server-tssc-tpa.${DOMAIN}'
+  - name: REKOR Search UI
+    url: 'https://rekor-search-ui-tssc-tas.${DOMAIN}'
   - name: Quay
     url: 'https://quay-${GUID}.${DOMAIN}'
   - name: Gitlab
