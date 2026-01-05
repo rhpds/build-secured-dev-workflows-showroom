@@ -506,6 +506,7 @@ image::enable_integration_proxy.png[enable_integration_proxy,align="center"]
 
 image::switch_to_backstage_app.png[switch_to_backstage_app,align="center"]
 
+
 * *Argo CD* is configured to automatically synchronise every two minutes. To avoid waiting for the next sync cycle, click *Hard Refresh* to trigger an immediate reconciliation.
 
 image::hard_refresh.png[hard_refresh,align="center"]
