@@ -552,16 +552,7 @@ WARNING: If you do not use Private/Incognito window you will be logged in using 
 
 image::catalog_users.png[catalog_users,align="center"]
 
-Module 3 Summary and Handover
-
-* In this module, you addressed the customer challenge of balancing security with developer productivity.
-	•	As a consultant, you learned how to configure Red Hat Developer Hub using GitOps, inject trust configuration into developer environments and deliver a secure Golden Path without adding friction.
-	•	For customers, this means developers can build, commit and deploy software without managing keys or security tooling, while the platform enforces trust automatically.
-	•	For technical sellers, this is where the platform engineering story lands: security is built in, not bolted on.
-	•	With trusted and frictionless developer workflows established, the next customer question becomes inevitable: “How do we continuously validate risk and enforce standards as this scales?”
-
-In Module 4, you will focus on policy and governance, showing how trust signals generated across the supply chain are evaluated and enforced at scale to prevent risky software from reaching production.
-
+=== Module 3 Summary
 
 * In this module, you acted as a platform engineer, configuring Red Hat Developer Hub using GitOps and configuration as code.
 * For consultants, this module demonstrates how to design and implement an Internal Developer Platform in practice: translating customer requirements into repeatable, version-controlled platform configuration that scales across teams and environments.
