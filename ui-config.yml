@@ -22,6 +22,6 @@ tabs:
   - name: RHDH
     url: 'https://backstage-backstage.${DOMAIN}'
   - name: ARGOCD
-    url: 'https://argocd-server-tssc-gitops.${DOMAIN}'
+    url: 'https://argocd-server-openshift-gitops.${DOMAIN}'
   - name: ACS
     url: 'https://central-stackrox.${DOMAIN}'

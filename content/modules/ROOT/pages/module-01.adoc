@@ -11,7 +11,8 @@
 * This is where *RHTPA* comes into play.
 * *RHTPA* is Red Hat’s supported distribution of the upstream link:https://github.com/guacsec/trustify[*trustify  project*,window=_blank] project, which is part of the link:https://guac.sh/trustify/[*GUAC Community*,window=_blank] (Graph for Understanding Artifact Composition).
 * *RHTPA* ingests *SBOM* documents, indexes every component inside them, and continuously correlates that inventory against known CVEs and security advisories, producing an auditable view of software composition. 
-* In this module you will:
+
+=== By the end of this module you will be able to: 
 . Configure Identity and Access Management using *Red Hat Build of Keycloak (RHBK)*
 . Install an *RHTPA* Instance using an operator
 . Ingest an *SBOM* and view it in *RHTPA*
@@ -22,13 +23,7 @@
 == Step 1: Configure Identity and Access Management
 
 * *RHTPA* requires an external *OpenID Connect (OIDC)* provider for authentication and authorization, as it does not maintain its own internal user store.
-* In this module, you will integrate *RHTPA* with *Red Hat Build of Keycloak (RHBK)*,  which is responsible for issuing identity tokens and embedding the claims and permissions that *RHTPA* evaluates when processing API and UI requests.
-* In this configuration, access control is implemented using *Role-Based Access Control (RBAC)* defined in *Red Hat Build of Keycloak (RHBK)*.
-* Authorization in *RHTPA* is determined entirely by client scopes present inside the OIDC access token.
-* *RHTPA* does not evaluate roles directly. Instead, it authorizes requests by checking for specific scopes embedded in the OIDC access token.
-* In this step, you will import a pre-configured *realm* that defines the two clients:
-. *Frontend*: Used by human users accessing the *RHTPA* web interface.
-. *CLI*: Used by CI/CD systems, such as *Tekton* or *Jenkins*, to upload *SBOMs* programmatically. This client uses a service account for machine-to-machine authentication.
+* In this module, you will integrate *RHTPA* with *Red Hat Build of Keycloak (RHBK)*, which is responsible for issuing identity tokens and embedding the claims and permissions that *RHTPA* evaluates when processing API and UI requests.
 
 [NOTE]
 ====
@@ -44,6 +39,12 @@
 
 * *Client Scope*: A client scope represents specific permissions encoded into an access token. While roles are assigned to users or service accounts, scopes are what the *RHTPA* backend checks to authorize API operations such as uploading or reading SBOMs. Scopes are mapped to Roles in Keycloak. When a user with a specific role logs in, the corresponding scope is stamped onto their access token.
 ====
+
+* Access control is enforced through *RBAC* configured in Red Hat Build of Keycloak (RHBK).
+* *RHTPA* authorises requests based on client scopes embedded in the OIDC access token, roles in *RHBK* map to scopes, and those scopes inside the token are what *RHTPA* evaluates to allow or deny access.
+* In this step, you will import a pre-configured *realm* that defines the two clients:
+. *Frontend*: Used by human users accessing the *RHTPA* web interface.
+. *CLI*: Used by CI/CD systems, such as *Tekton* or *Jenkins*, to upload *SBOMs* programmatically. This client uses a service account for machine-to-machine authentication.
 
 ---
 
@@ -150,7 +151,7 @@ image::tpa_realm_import_start.png[TPA Realm Import Start,align="center"]
 * The YAML you applied creates the identity- and authorization-model that *Red Hat Trusted Profile Analyzer (RHTPA)* uses to control SBOM upload, search, and deletion.
 * It created:
 . A dedicated realm for *RHTPA*
-. Client scopes that act as concrete API permissions
+. Client scopes that represent specific API access permissions
 . Two clients *frontend* and *cli*
 . Realm roles used to assign high-level identity
 . Scope mappings that attach permissions to roles
@@ -371,7 +372,7 @@ envsubst < ~/lab-assets/tpa-instance.yml | oc apply -n tssc-tpa -f -
 
 * This CR is your application blueprint. It defines:
 . Authentication to PostgreSQL to store SBOM metadata
-. OID configuration to authenticate users and pipelines
+. OIDC configuration to authenticate users and pipelines
 . Persistent storage to store importer data and indexed graphs
 . Importers where vulnerability data comes from
 
@@ -476,10 +477,8 @@ image::tpa_server_pod.png[TPA Server Pod,align="center"]
 
 === What is an SBOM anyway?
 
-* A Software Bill of Materials (SBOM) is a machine-readable inventory (CycloneDX, SPDX, etc.) describing all dependencies in a software artifact. It is the prerequisite for provenance, vulnerability correlation, and build attestation.
-* An *attestation* is a signed, tamper-evident statement that proves something about how an artifact was produced.  
-* Where an SBOM describes *what* is in the software, an attestation proves *how, when and by whom* it was built. You will learn more about attestation in module 2.
-* In this step, you simulate what a CI/CD pipeline does during a build: authenticate using the client_credentials OAuth 2.0 grant and then upload an SBOM to RHTPA.
+* A Software Bill of Materials (SBOM) is a machine-readable inventory that lists all components, libraries, and dependencies included in a software artifact, along with their metadata (such as version, licence, and source). Common formats include SPDX and CycloneDX.
+* In this step, you simulate a CI/CD pipeline by uploading an *SBOM* to *RHTPA* using its API.
 
 ---
 
@@ -493,8 +492,8 @@ export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=ser
   | jq -r '.items[0].spec.host')"
 ----
 
-* The *cli* client uses the client_credentials grant type to authenticate. This is the standard OAuth2 flow for non-interactive workloads such as Tekton, Jenkins or GitHub Actions.
- 
+* To upload an SBOM to RHTPA you must authenticate every API request.
+* The CLI client does this by obtaining an access token from Red Hat Build of Keycloak (RHBK), which is then included in each API call.
 * Run the following commands to discover the token endpoint and obtain an access token:
 
 [source,role="execute"]

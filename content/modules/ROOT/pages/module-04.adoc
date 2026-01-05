@@ -13,6 +13,122 @@ You identified what’s in the software, proved who built it and ensured artifac
 * The result is automated governance.
 * Security decisions are made by policy, enforced by the platform and applied consistently, without slowing down delivery.
 
+
+
+== Step 3: IDE Injection (The “Secret Sauce”)
+
+* This step makes security transparent to developers.
+* You will create a global ConfigMap in the openshift-devspaces namespace. Every new Dev Workspace automatically inherits this configuration, pointing tools such as gitsign to your RHTAS instance.
+
+=== 3.1 Create the TAS Configuration ConfigMap
+
+* Run the following command to extract the application domain
+
+[source, role="execute", subs="attributes"]
+----
+cat << 'EOF' >> ~/.bashrc
+export APPS_DOMAIN={openshift_cluster_ingress_domain}
+EOF
+source ~/.bashrc
+----
+
+* Run the following command to inject the lab-specific values:
+
+[source, role="execute"]
+cat <<EOF | oc apply -n openshift-devspaces -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tas-git-config
+  annotations:
+    controller.devfile.io/mount-as: env
+  labels:
+    app.kubernetes.io/part-of: che.eclipse.org
+    app.kubernetes.io/component: workspaces-config
+data:
+  TAS_FULCIO_URL: "https://fulcio-server-tssc-tas.${APPS_DOMAIN}"
+  TAS_REKOR_URL: "https://rekor-server-tssc-tas.${APPS_DOMAIN}"
+  TAS_ISSUER_URL: "https://sso.${APPS_DOMAIN}/realms/sso"
+  TAS_CLIENT_ID: "trusted-artifact-signer"
+EOF
+----
+
+TIP: The label app.kubernetes.io/component=workspaces-config instructs Dev Spaces to inject these values into every developer workspace as environment variables.
+
+Step 4: Execute the Golden Path Template
+
+* Now you switch personas, from Platform Engineer to Developer.
+
+
+=== 4.2 Run the Software Template
+
+*	Click Create or Self Service.
+* Select Securing a Quarkus Service Software Supply Chain.
+* Set the following attributes:
+* Name: 
+
+[source, role="execute"]
+----
+my-secure-app
+----
+
+*	Owner: group:
+
+[source, role="execute"]
+----
+default/tssc
+----
+
+* Registry: leave default (Quay)
+* Review and click Create.
+* What’s happening:
+* RHDH orchestrates the creation of:
+. A GitLab repository
+. A Tekton pipeline with ACS scanning and TAS signing
+. Argo CD applications for Dev, Stage, and Prod
+. Webhooks connecting Git to CI/CD
+
+== Step 5: Secure Developer Workflow (Inner Loop)
+
+* This is the frictionless security moment.
+
+=== 5.1 Open the Cloud IDE
+
+* In RHDH, open the Catalog and select my-secure-app.
+* Click OpenShift Dev Spaces.
+* Log in as user1 if prompted.
+* Wait for the workspace to start.
+
+=== 5.2 Make a Change
+
+*	Open src/main/resources/application.properties.
+* Make a trivial change (for example, add a comment).
+* Open the IDE terminal.
+
+[source, role="execute"]
+----
+git add .
+git commit -m "feat: updated configuration with secure signing"
+----
+
+Observation:
+. You are prompted to authenticate via an OIDC browser flow.
+. The login redirects to your Keycloak, not the public Sigstore service.
+. After authentication, the commit is signed automatically.
+
+[source, role="execute"]
+----
+git push origin main
+----
+
+* Return to RHDH → CI tab.
+* A new pipeline run is triggered.
+* The pipeline automatically:
+. verifies the commit signature,
+. builds the image,
+. scans it with ACS,
+. signs the image with TAS.
+
 == Step 1: Analyse the Dev Build (Security Audit)
 
 Before promoting anything, review the evidence produced by the pipeline in Module 3.
