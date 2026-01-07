@@ -1,40 +1,138 @@
-Module 4: Enforce Policy and Promote Safely
+= Module 4: Enforce Policy and Promote Safely
 
-* In the previous modules, you established trust signals across the software supply chain.
-You identified what’s in the software, proved who built it and ensured artifacts are signed and verifiable.
+== Introduction
 
-* In this module, you answer the final customer question:
-“How do we make sure only trusted software is allowed to move forward?”
+* By this point in the workshop, you have established strong foundations of trust across the software supply chain.
+* In Module 1, you made software composition visible by ingesting and analysing SBOMs, turning dependency risk from an assumption into evidence.
+* In Module 3, you reduced developer friction by centralising access to tools and security capabilities through *Red Hat Developer Hub*. Authentication, plugins, and catalog discovery were configured using GitOps to create a consistent, secure entry point for developers.
+* One critical challenge remains: “How do we prevent unverified or unsafe images from reaching staging and production?”
+* Security controls only scale when developers do not have to think about them. If teams must manually assemble pipelines, remember which checks to enable, or decide when policies apply, trust quickly erodes.
+* This is where Software Templates (Golden Paths) come in.
+* In this module, you will use software templates to define opinionated, secure workflows.
+* These templates embed the guardrails established in the earlier modules by design. SBOM generation and analysis, code and image signing, vulnerability scanning, and Enterprise Contract policy checks are all included by default.
+* Developers consume a single, self-service workflow. Security teams gain consistent enforcement. Platform teams retain control over how software is built, verified, and promoted.
+* By the end of this module, you will see how RHADS turns trusted building blocks into repeatable, production-ready Golden Paths. Every application starts secure. Every promotion is governed. And teams move fast without bypassing trust.
 
-* This module demonstrates policy as code in action. Instead of relying on manual approvals or disconnected security checks, you will enforce trust automatically at release time. A simple developer action, creating a Git tag, becomes the trigger for governance.
-
-* You will observe how Enterprise Contract evaluates the release candidate by validating its SBOM, signature and provenance. If the artifact meets policy requirements, it is promoted through GitOps into the Staging environment. If it does not, promotion is blocked automatically.
-
-* The result is automated governance.
-* Security decisions are made by policy, enforced by the platform and applied consistently, without slowing down delivery.
+---
 
 
+== Step 1: Set up image vulnerability scanning
 
-== Step 3: IDE Injection (The “Secret Sauce”)
+* *Red Hat Advanced Cluster Security (ACS)* provides vulnerability analysis and policy evaluation for container images. It integrates directly with container registries to scan images before they are deployed or promoted.
 
-* This step makes security transparent to developers.
-* You will create a global ConfigMap in the openshift-devspaces namespace. Every new Dev Workspace automatically inherits this configuration, pointing tools such as gitsign to your RHTAS instance.
+=== Configure ACS - Quay Integration
 
-=== 3.1 Create the TAS Configuration ConfigMap
+* In this step, you will configure *ACS* to scan images stored in *Quay* and validate that vulnerability data can be evaluated as part of the trusted supply chain.
+* In Showroom, Switch to the *ACS* tab and login using the following credentials: 
+* *Username*:
++
+[source, role="execute", subs="attributes"]
+----
+{rhacs_admin_user}
+----
++
+* *Password*:
++
+[source, role="execute", subs="attributes"]
+----
+{rhacs_admin_password}
+----
++
+* In the ACS console, navigate to Platform Configuration → Integrations
+* Select Red Hat Quay.io
 
-* Run the following command to extract the application domain
+image::acs_quay_integration.png[acs_quay_integration,align=center"]
+
+* Click *New Integration*.
+
+image::acs_new_integration.png[acs_new_integration,align=center"]
+
+* Provide the following details:
+. Integration name:
++
+[source, role="execute"]
+----
+acs_quay
+----
++
+. Type: Select *Registry + Scanner*
+. *End Point*:
++
+[source, role="execute", subs="attributes"]
+----
+{quay_host}
+----
++
+. *OAuth token*:
++
+[source, role="execute", subs="attributes"]
+----
+{quay_admin_token}
+----
++
+. *Username*:
++
+[source, role="execute", subs="attributes"]
+----
+{quay_admin_user}
+----
++
+. *Password*:
++
+[source, role="execute", subs="attributes"]
+----
+{quay_admin_password}
+----
++
+. *Disable TLS certificate validation (insecure)*: Should be ticked
+. *Create integration without testing*: Should not be ticked
+
+image::acs_quay_inegration.png[acs_quay_inegration,align=center"]
+
+* Click *Test* to validate the connection.
+
+image::test_quay_connection.png[test_quay_connection,align=center"]
+
+* Once the test succeeds, click Sa*ve to create the integration.
+* At this point, ACS can securely access images stored in Quay and perform scans automatically.
+
+
+---
+
+=== Scan and evaluate an image
+
+* To confirm that scanning and policy evaluation are working end to end, you will now scan the signed image you produced in module 2.
+* This next command retrieves vulnerability data for the image and returns a detailed scan report.
+* In the Showroom terminal, run:
 
 [source, role="execute", subs="attributes"]
 ----
-cat << 'EOF' >> ~/.bashrc
-export APPS_DOMAIN={openshift_cluster_ingress_domain}
-EOF
-source ~/.bashrc
+roxctl image scan --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekton-chains-test:latest
 ----
 
-* Run the following command to inject the lab-specific values:
+* This command evaluates the image against ACS policies and reports whether it meets deployment requirements.
 
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
+----
+roxctl image check --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekton-chains-test:latest
+----
+
+* Together, these checks demonstrate that:
+. Container images can be scanned deterministically from the registry using ACS
+. Vulnerability findings are associated with a specific image digest, not a mutable tag
+. Policy evaluation can be performed programmatically as part of a CI/CD workflow
+* This ensures that vulnerability scanning and policy evaluation are applied consistently across all workloads, as an integrated part of the delivery pipeline exposed through our Software Template.
+
+---
+
+== Step 2: Configure Git Signing in OpenShift Dev Spaces
+
+* link:https://developers.redhat.com/products/openshift-dev-spaces[*OpenShift Dev Spaces*,window=_blank] provides cloud-hosted development environments that run inside the cluster. These environments are defined declaratively using link:https://devfile.io/[*Devfiles*,window=_blank], which describe the tools, configuration, and lifecycle behaviour of a developer workspace.
+* In this step, you will configure *Dev Spaces* so that every developer workspace automatically inherits the information required for OIDC-based Git commit signing, without manual setup.
+
+* First, create a new ConfigMap in the openshift-devspaces namespace:
+
+[source, role="execute", subs="attributes"]
 cat <<EOF | oc apply -n openshift-devspaces -f -
 apiVersion: v1
 kind: ConfigMap
@@ -46,21 +144,223 @@ metadata:
     app.kubernetes.io/part-of: che.eclipse.org
     app.kubernetes.io/component: workspaces-config
 data:
-  TAS_FULCIO_URL: "https://fulcio-server-tssc-tas.${APPS_DOMAIN}"
-  TAS_REKOR_URL: "https://rekor-server-tssc-tas.${APPS_DOMAIN}"
-  TAS_ISSUER_URL: "https://sso.${APPS_DOMAIN}/realms/sso"
+  TAS_FULCIO_URL: "{tas_fulcio_url}"
+  TAS_REKOR_URL: "{tas_rekor_url}"
+  TAS_ISSUER_URL: "https://sso.${openshift_cluster_ingress_domain}/realms/sso"
   TAS_CLIENT_ID: "trusted-artifact-signer"
 EOF
 ----
 
+* This ConfigMap defines the endpoints and identity configuration required by gitsign, the tool used to perform keyless Git commit signing via RHTAS.
+
+
 TIP: The label app.kubernetes.io/component=workspaces-config instructs Dev Spaces to inject these values into every developer workspace as environment variables.
 
-Step 4: Execute the Golden Path Template
+== Step 3: Execute the Software template
 
+===  Step introduction
+
+* Up to this point, you have been working as a platform engineer.
 * Now you switch personas, from Platform Engineer to Developer.
 
 
-=== 4.2 Run the Software Template
+=== Introduction to Software Templates 
+
+* Software Templates are the primary mechanism used by *Red Hat Developer Hub* to expose Golden Paths to development teams.
+* Templates are defined using YAML and rendered as rich, validated forms in the Red Hat Developer Hub UI. Developers interact with a simple form. Behind the scenes, the platform does all the heavy lifting.
+* This YAML is processed by the *Scaffolder*, *RHDH*'s templating engine, which executes the steps outlined in the template.
+* This ensures that every new service is created in a standerdize, automated , self service way.
+* Let’s examine the structure of a template using 
+
+=== Software Template YAML Structure
+
+* At a basic level, the Template Entity resembles a Kubernetes Custom Resource.
+* Where the Template Entity differs is that it contains additional fields: 
+. *Header*: Here, you provide essential information about the template.
+. *Parameters*: This section is for gathering inputs from the user.
+. *Steps*: In this section, you define the actions to be executed by the *Scaffolder*.
+. *Output*: This section is optional and allows you to provide details about the tasks performed by the *Scaffolder*.
+* Let’s examine each in more detail.
+
+---
+
+=== Template Header
+
+* The header section is mandatory for every template.
+* The *Component* card on the *Create Component* page is displayed based on the details in the Header section.
+* For example, this is the header of the link:${gitlab_url}/rhdh/build-secured-dev-workflows-idp-configuration/-/blob/main/scaffolder-templates/quarkus-stssc-template/template.yaml[Software Template,,window=_blank] you will execute in the coming steps:
+
+[source, yaml]
+----
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: quarkus-stssc-template
+  title: Securing a Quarkus Service Software Supply Chain (Tekton)
+  description: Create a Quarkus Service built with Red Hat Trusted Application Pipeline on Tekton
+  tags:
+    - recommended
+    - java
+    - quarkus
+    - maven
+spec:
+  owner: tssc
+  type: service
+  # other fields removed for brevity
+----
+
+* The Software Template card is displayed in *RHDH* based on the header information, including the title, description, and tags.
+
+---
+
+===  Template Parameters
+
+* Within the template, the *spec.parameters* field is used to generate the form.
+* You can choose to break up the parameter prompting into *form steps* or collect all the parameters in a single step.
+* This allows RHDH to generate a wizard like step by step process
+* In other words the parameters property is an array, each entry in the array is a *form step*.
+* Each form step must specify a *title*, which *properties* it will ask from the user, and if any of them is *required*.
+* Following is snippet of te properties section of the Software template you'll execute in the following steps.
+* RHDH renders as three steps, each with a seperate form:
+. Provide Information for Application
+. Provide Image Registry Information
+. Application Repository Information
++
+[source, yaml]
+----
+parameters:
+    # Parameters can be spread across multiple forms/pages, each
+    # with their own titles and set of parameters
+    - title: Provide Information for Application
+      required:
+        - name
+        - javaPackageName
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the component
+          default: my-quarkus-tkn
+          ui:field: EntityNamePicker
+          maxLength: 23
+         # other fields removed for brevity
+    - title: Provide Image Registry Information
+      required:
+        - imageHost
+        - imageOrganization
+      properties:
+        imageHost:
+          title: Image Registry
+          type: string
+          default: Quay
+          enum:
+            - Quay
+        imageOrganization:
+          title: Organization
+          type: string
+          description: Name of the Quay Organization
+          default: tssc
+          ui:readonly: true
+    - title: Application Repository Information
+      required:
+        - repoHost
+        - repoOwner
+        - repoVerifyCommits
+      properties:
+        repoHost:
+          title: Source Repo
+          type: string
+          default: GitLab
+          enum:
+            - GitLab
+        # other fields removed for brevity
+----
+
+---
+
+=== Template Steps
+
+* Steps define the actions that are performed by the *Scaffolder*  during its execution.
+* They are executed sequentially as defined in the template.
+* Each step utilizes actions for tasks such as publishing to a Gitlab repository (publish:gitlab) or registering a component in the catalog (catalog:register).
+* RHDH offers various built-in actions, and you can define custom actions as well.
++
+[source, yaml]
+----
+  steps:
+    - id: fetch-provision-data
+      name: Fetch Provision Data
+      action: catalog:fetch
+      input:
+        entityRef: component:default/provisioning-data
+ 	# other steps removed for brevity
+    
+    - id: publish-gitlab-source
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: 'gitlab-gitlab.${{ steps["fetch-provision-data"].output.entity.metadata.labels["ocp-apps-domain"] }}?owner=${{
+          parameters.repoOwner }}&repo=${{parameters.name}}'
+        repoVisibility: public
+    # other steps removed for brevity
+   
+    - id: register-source
+      name: Register Source
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish-gitlab-source'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+    # other steps removed for brevity
+----
++ 
+* Notice how the parameters are referenced in the input of the steps? 
+* Another point of note is that subsequent steps can access output from prior steps.
+* To see the available actions in *RHDH* and understand their input and output parameters, go to the *Create Content* page by selecting *Create* from the left sidebar menu.
+* Next, open the *Kebab* menu at the top right of the *Create Content* page and choose *Installed Actions*.
+
+=== Template Output
+
+* The spec.output can be used to display useful information such as:
+. Links to newly created Components
+. Source Code Repository links
+. Links to Git Merge Requests that are needed etc
+
+[source, yaml]
+----
+output:
+    links:
+      - title: Source Repository
+        url: ${{ steps['publish-gitlab-source'].output.remoteUrl }}
+      - title: GitOps Repository
+        url: ${{ steps['publish-gitlab-gitops'].output.remoteUrl }}
+      - title: Open Component in catalog
+        icon: catalog
+        entityRef: ${{ steps['register-source'].output.entityRef }}
+      - title: Open GitOps Resource in catalog
+        icon: catalog
+        entityRef: ${{ steps['register-gitops'].output.entityRef }}
+----
+
+
+
+Markdown text blobs
+
+  output:
+    links:
+      - title: Source Code Repository
+        url: {{ '${{ steps.publish.output.remoteUrl }}' }}
+      - title: Open Component in catalog
+        icon: catalog
+        entityRef: {{ '${{ steps.register.output.entityRef }}' }}""
+
+
+
+
+
+
+
+
+
 
 *	Click Create or Self Service.
 * Select Securing a Quarkus Service Software Supply Chain.

@@ -1,4 +1,4 @@
-= Establish Software Composition Trust with SBOMs
+= Module 1: Establish Software Composition Trust with SBOMs
 
 == Introduction 
 

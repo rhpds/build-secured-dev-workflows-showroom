@@ -167,7 +167,7 @@ image::set_password_screen.png[set_password_screen,align="center"]
 
 * In Showroom, Switch to *RHDH* tab
 * You’ll notice that Guest access is currently enabled. This is not recommended for production environments and will be disabled in the following steps.
-* Click *Enter to log in as *Guest*
+* Click *Enter* to log in as *Guest*
 
 image::guest_access.png[guest_access,align="center"]
 
@@ -298,7 +298,7 @@ upstream:
 * In the following steps, you will begin enabling plugins through configuration — activating core RHDH functionality exactly as a platform engineering team would when shaping a developer experience.
 
 
-==== Enable RHDH plugins
+==== Enabling RHDH plugins
 
 * To enable plug-ins in this lab:
 . In Gitlab, open the repository `gitops / build-secured-dev-workflows-idp-gitops`.
@@ -476,7 +476,7 @@ image::uncomment_catalog.png[uncomment_catalog,align="center"]
 * Scroll down and enter a commit message: 
 [source, role="execute"]
 ----
-feat: Updare Red Hat Developer Hub Configuration 
+feat: Update Red Hat Developer Hub Configuration 
 ----
 * Click *Commit Changes* 
 
