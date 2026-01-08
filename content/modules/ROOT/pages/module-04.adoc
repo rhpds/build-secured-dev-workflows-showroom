@@ -4,17 +4,17 @@
 
 * By this point in the workshop, you have established strong foundations of trust across the software supply chain.
 * In Module 1, you made software composition visible by ingesting and analysing SBOMs, turning dependency risk from an assumption into evidence.
+* In Module 2, you anchored trust in cryptographic provenance, ensuring every build artifact is signed, traceable, and verifiably produced by your CI pipeline.
 * In Module 3, you reduced developer friction by centralising access to tools and security capabilities through *Red Hat Developer Hub*. Authentication, plugins, and catalog discovery were configured using GitOps to create a consistent, secure entry point for developers.
 * One critical challenge remains: “How do we prevent unverified or unsafe images from reaching staging and production?”
 * Security controls only scale when developers do not have to think about them. If teams must manually assemble pipelines, remember which checks to enable, or decide when policies apply, trust quickly erodes.
 * This is where Software Templates (Golden Paths) come in.
 * In this module, you will use software templates to define opinionated, secure workflows.
-* These templates embed the guardrails established in the earlier modules by design. SBOM generation and analysis, code and image signing, vulnerability scanning, and Enterprise Contract policy checks are all included by default.
+* These templates embed the guardrails established in earlier modules by design, including SBOM generation and analysis, code and image signing, vulnerability scanning, and Enterprise Contract policy checks.
 * Developers consume a single, self-service workflow. Security teams gain consistent enforcement. Platform teams retain control over how software is built, verified, and promoted.
-* By the end of this module, you will see how RHADS turns trusted building blocks into repeatable, production-ready Golden Paths. Every application starts secure. Every promotion is governed. And teams move fast without bypassing trust.
+* BBy the end of this module, you’ll see how RHADS turns trusted building blocks into repeatable, production-ready Golden Paths. Every application starts secure. Every promotion is governed. And teams move fast without bypassing trust.
 
 ---
-
 
 == Step 1: Set up image vulnerability scanning
 
@@ -38,7 +38,7 @@
 {rhacs_admin_password}
 ----
 +
-* In the ACS console, navigate to Platform Configuration → Integrations
+* In the *ACS console*, navigate to *Platform Configuration* → *Integrations*
 * Select Red Hat Quay.io
 
 image::acs_quay_integration.png[acs_quay_integration,align=center"]
@@ -93,9 +93,8 @@ image::acs_quay_inegration.png[acs_quay_inegration,align=center"]
 
 image::test_quay_connection.png[test_quay_connection,align=center"]
 
-* Once the test succeeds, click Sa*ve to create the integration.
-* At this point, ACS can securely access images stored in Quay and perform scans automatically.
-
+* Once the test succeeds, click *Save* to create the integration.
+* At this point, *ACS* can securely access images stored in *Quay* and perform scans automatically.
 
 ---
 
@@ -133,6 +132,7 @@ roxctl image check --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekt
 * First, create a new ConfigMap in the openshift-devspaces namespace:
 
 [source, role="execute", subs="attributes"]
+----
 cat <<EOF | oc apply -n openshift-devspaces -f -
 apiVersion: v1
 kind: ConfigMap
@@ -151,10 +151,12 @@ data:
 EOF
 ----
 
-* This ConfigMap defines the endpoints and identity configuration required by gitsign, the tool used to perform keyless Git commit signing via RHTAS.
+* This ConfigMap defines the endpoints and identity configuration required by gitsign, the tool used to perform keyless Git commit signing via *RHTAS*.
 
 
 TIP: The label app.kubernetes.io/component=workspaces-config instructs Dev Spaces to inject these values into every developer workspace as environment variables.
+
+---
 
 == Step 3: Execute the Software template
 

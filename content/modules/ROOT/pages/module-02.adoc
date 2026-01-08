@@ -3,7 +3,7 @@
 == Introduction 
 
 * In Module 1, you established trust in what is inside your software. The next challenge customers face is: “How do we know these artifacts were really built by us and haven’t been tampered with?” 
-* They need assurance that both code commits and build artifacts originate from trusted sources—not rogue machines or compromised pipelines.
+* They need assurance that both code commits and build artifacts originate from trusted sources, not rogue machines or compromised pipelines.
 
 === Enter Red Hat Trusted Artifact Signer (RHTAS) 
 
@@ -45,14 +45,14 @@ NOTE: A *Merkle tree* is a data structure where each entry is represented by a h
 . Cosign requests a signing certificate from Fulcio
 ** Cosign sends the OIDC identity token to Fulcio and asks for a certificate.
 ** Fulcio validates that:
-*** the token came from a trusted issuer
-*** an email claim (identity) is present and verified
-*** the signature on the token is valid and has not expired
+*** the token came from a trusted issuer.
+*** an email claim (identity) is present and verified.
+*** the signature on the token is valid and has not expired.
 ** If validation succeeds, Fulcio issues a short-lived X.509 certificate bound to that identity.
 . Cosign prepares to create a singing event for the Trust Authority (Rekor + Trillian)
-** Cosign generates signs the image digest
+** Cosign signs the image digest.
 ** Cosign creates a one-time signing key in memory only and pairs it with the Fulcio certificate.
-** Cosign signs the image digest (not the image file) and produces a cryptographic signature.
+** Cosign signs the image digest and produces a cryptographic signature.
 ** Cosign submits the signed artifact and certificate bundle to Rekor.
 ** Rekor records the event in its transparency log, backed by Trillian’s tamper-evident Merkle tree, and returns an inclusion proof.
 ** This makes the signing event tamper-evident — any attempt to alter or remove it becomes detectable.
@@ -61,16 +61,16 @@ NOTE: A *Merkle tree* is a data structure where each entry is represented by a h
 
 image::keyless_signing_flow.png[keyless_signing_flow,align="center"]
 
-NOTE: In an interactive keyless signing flow (for example, when signing code from your IDE), Cosign will prompt you to authenticate with the OIDC provider, such as RHBK in this workshop. It prints a login URL (and sometimes a short verification code), you complete the login in your browser, and provide the OIDC access token to Cosign, which behind the scenes requests a signing certificate from Fulcio.  
+NOTE: In an interactive keyless signing flow (for example, when signing code from your IDE), Cosign will prompt you to authenticate with the OIDC provider, such as RHBK. It prints a login URL (and sometimes a short verification code), you complete the login in your browser, and provide the OIDC access token to Cosign, which behind the scenes requests a signing certificate from Fulcio.  
 
 ---
 
-== 1: Configure the Machine Identity
+== Step 1: Configure the Machine Identity
 
 * Tekton Chains requires its own realm and client to sign images on behalf of the pipeline.
 * This isolates automated signing from human user identities and is considered best practice in customer deployments.
 
-=== Step 1: Create tas-chains realm and tas client
+=== 1.1 Create tas-chains realm and tas client
 
 * If you are not already logged in to RHBK, click the RHBK Console tab in the Showroom and log in using:
 
@@ -177,7 +177,7 @@ WARNING: This is the most common failure point in RHTAS deployments. Fulcio requ
 
 ---
 
-=== Step 2: Configure Developer Identity for Commit Signing
+== Step 2: Configure Developer Identity for Commit Signing
 
 * Developers need a trusted identity to sign *Git* commits using *RHTAS*.
 * This identity is separate from Tekton’s machine identity you configured in the last step and is configured in the existing sso realm.
@@ -194,17 +194,17 @@ image::tas_create_client.png[TAS Create Client,align="center"]
 
 * In the *General setting* page:
 . Set the *Client ID* to:
-
++
 [source, role="execute", subs="attributes"]
 ----
 trusted-artifact-signer
 ----
-
++
 . Click *Next*.
 
 image::tas_client_general_settings.png[New Client General Settings,align="center"]
 
-* Under Capability Config set:
+* Under *Capability Config* set:
 . *Standard flow*: Make sure this checkbox is ticked.
 . *Direct Access Grants*: Tick this checkbox.
 * Then click *Next*.
@@ -213,12 +213,12 @@ image::tas_commit_client_capability_config.png[New Client Capability Config,alig
 
 * In the *Login Settings* page, add the following *Valid Direct URIs*:
 . Add the first URI: 
-
++
 [source, role="execute", subs="attributes"]
 ----
 urn:ietf:wg:oauth:2.0:oob
 ----
-
++
 . Click *Add valid redirect URIs*, then input:
 
 [source, role="execute", subs="attributes"]
@@ -238,11 +238,11 @@ image::tas_commit_client_logout_settings.png[New Client Logout Settings,align="c
 
 ---
 
-=== Step 3: Deploy the RHTAS Instance
+== Step 3: Deploy the RHTAS Instance
 
 Now that both machine and developer identities are configured, you can deploy the RHTAS components (Fulcio, Rekor, Trillian and TUF) using the Custom Resource.
 
-* Run the following command to apply the *RHTAS* Instance CR:
+* In Showroom terminal, run the following command to apply the *RHTAS* Instance CR:
 
 [source, role="execute", subs="attributes"]
 ----
@@ -257,11 +257,11 @@ envsubst < ~/lab-assets/tas-instance.yml | oc apply -n tssc-tas -f -
 
 ---
 
-==== What did the RHTAS Instance CR configure?
+== What did the RHTAS Instance CR configure?
 
-* The Securesign custom resource you just applied tells the RHTAS Operator how to stand up Fulcio, Rekor, Trillian and TUF, and how to trust your Keycloak realms. Here are the key parts worth calling out.
+* The custom resource you just applied tells the *RHTAS Operator* how to stand up Fulcio, Rekor, Trillian and TUF, and how to trust your Keycloak realms. Here are the key parts worth calling out.
 
-===== Fulcio certificate identity
+=== Fulcio certificate identity
 
 [source, yaml]
 ----
@@ -277,7 +277,7 @@ spec:
 * They do not control the signer identity on images, that still comes from the OIDC token, but they appear in the CA certificate chain that verifiers will trust.
 * In a customer environment, these values would normally align with the organization's naming standards (e.g. security team email, business unit name).
 
-===== Binding Fulcio to our OIDC issuers
+=== Binding Fulcio to our OIDC issuers
 
 [source, yaml]
 ----
@@ -301,7 +301,7 @@ spec:
 * Type: email means *Fulcio* will derive the certificate identity from the verified email claim in the token. If the email is missing or not verified, certificate issuance fails.
 * This configuration is how *RHTAS* knows which identities are allowed to sign.
 
-===== Rekor and Trillian: durable, tamper-evident log
+=== Rekor and Trillian: durable, tamper-evident log
 
 [source, yaml]
 ----
@@ -333,7 +333,7 @@ spec:
 * The nested *trillian* block connects *Rekor* to the *trillian* (*Merkle-tree*) database that makes the log tamper-evident.
 * Together, *Rekor* and *Trillian* give you an audit trail of all signing events, not just signatures attached to images.
 
-===== TUF: root of trust for Fulcio and Rekor
+=== TUF: root of trust for Fulcio and Rekor
 
 [source, yaml]
 ----
@@ -361,7 +361,7 @@ spec:
 * As with Rekor/Trillian, a PVC is used so the TUF metadata is persisted.
 * From a customer perspective, TUF is what makes the signing infrastructure itself updatable and recoverable without re-installing everything from scratch.
 
-===== ctlog: Certificate-Transparency Log Service
+=== ctlog: Certificate-Transparency Log Service
 
 [source, yaml]
 ----
@@ -377,7 +377,7 @@ ctlog:
 
 ---
 
-==== Verify Deployment Readiness
+=== Verify Deployment Readiness
 
 * Switch to the *OpenShift console*
 * Navigate to *Workloads → Pods*
@@ -414,16 +414,17 @@ image::tas_verify_deploy.png[Verify RHTAS deploy,align="center"]
 
 ===  Deploy OIDC Refresher App
 
-* First, retrieve the Keycloak admin credentials from the keycloak-initial-admin secret in the tssc-keycloak namespace:
-
+* Run the follwoing commands in the Showroom terminal:
+. First, retrieve the Keycloak admin credentials from the keycloak-initial-admin secret in the tssc-keycloak namespace:
++
 [source, role="execute", subs="attributes"]
 ----
 export keycloak_admin_user=$(oc get secret keycloak-initial-admin -n tssc-keycloak -o jsonpath='{.data.username}' | base64 -d)
 export keycloak_admin_password=$(oc get secret keycloak-initial-admin -n tssc-keycloak -o jsonpath='{.data.password}' | base64 -d)
 ----
-
-* Next, use the credentials to request an access token:
-
++
+. Next, use the credentials to request an access token:
++
 [source, role="execute", subs="attributes"]
 ----
 KEYCLOAK_ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
@@ -433,25 +434,25 @@ KEYCLOAK_ACCESS_TOKEN=$(curl -s -X POST "${KEYCLOAK_URL}/realms/master/protocol/
 -d "password=$keycloak_admin_password" \
 -d "grant_type=password" | jq -r '.access_token')
 ----
-
-* Next, retrieve the client secret for the trusted-artifact-signer client from the tas-chains realm:
-
++
+. Next, retrieve the client secret for the trusted-artifact-signer client from the tas-chains realm:
++
 [source, role="execute", subs="attributes"]
 ----
 export TAS_CHAINS_CLIENT_SECRET=$(curl -s -X GET "${KEYCLOAK_URL}/admin/realms/$TAS_CHAINS_REALM/clients?clientId=$TAS_CHAINS_CLIENT_ID" \
   -H "Authorization: Bearer $KEYCLOAK_ACCESS_TOKEN" | jq -r '.[0].secret')
 ----
-
-* Finally, create the Kubernetes Secret containing the OIDC configuration, then deploy the refresher application:
-
++
+. Finally, create the Kubernetes Secret containing the OIDC configuration, then deploy the refresher application:
++
 [source, role="execute"]
 ----
 envsubst < ~/lab-assets/oidc-info-secret.yml | oc apply -n openshift-pipelines -f -
 oc apply -f ~/lab-assets/oidc-refresher-app.yml -n openshift-pipelines
 ----
-
-* Use the following command to continuously monitor the refresher pod until it reaches the Running state:
-
++
+. Use the following command to continuously monitor the refresher pod until it reaches the Running state:
++
 [source, role="execute"]
 ----
 watch -n 2 "oc get pods -n openshift-pipelines | awk '/^oidc-token-refresher/ { print; exit }'"
@@ -463,7 +464,7 @@ watch -n 2 "oc get pods -n openshift-pipelines | awk '/^oidc-token-refresher/ { 
 
 == Step 5: Configure Tekton Chains
 
-* Tekton Chains is the supply-chain security controller inside Tekton Pipelines.
+* *Tekton Chains* is the supply-chain security controller inside Tekton Pipelines.
 * It observes pipeline executions, captures build materials (provenance, SBOMs, image digests), and—when configured, it can automatically signs container images using Cosign.
 * By default, Tekton Chains expects static signing secrets.
 * In this step, you will reconfigure Chains to use the RHTAS infrastructure and the continuously refreshed OIDC token instead.
@@ -473,14 +474,14 @@ watch -n 2 "oc get pods -n openshift-pipelines | awk '/^oidc-token-refresher/ { 
 
 === Apply the Tekton Chains Configuration Patch
 
-* Patch the Tekton configuration to point Chains at the RHTAS services and token source:
+* Patch the Tekton configuration to point *Tekton Chains* at the *RHTAS* services and token source:
 
 [source, role="execute"]
 ----
 oc patch tektonconfig config -n openshift-pipelines --type=merge  --patch "$(cat ~/lab-assets/tekton-chains-patch.yml)"
 ----
 
-* The patch updates Tekton Chains to integrate with RHTAS and use keyless signing. Key parts from the patch (simplified):
+* The patch updates *Tekton Chains* to integrate with *RHTAS* and use keyless signing. Key parts from the patch (simplified):
 
 [source, yaml]
 ----
@@ -511,7 +512,7 @@ transparency:
 == Step 6: Verify Signing (Smoke Test)
 
 * In this step, you will run a simple end-to-end smoke test to confirm that artifact signing is working as expected.
-* You will manually trigger a Tekton Task that builds and pushes a container image. Because Tekton Chains was configured in Step 5, it should automatically:
+* You will manually trigger a *Tekton Task* that builds and pushes a container image. Because *Tekton Chains* was configured in Step 5, it should automatically:
 . Detect the successful task completion.
 . Sign the resulting image using *Cosign*.
 . Upload the signature to Quay.
@@ -531,7 +532,7 @@ oc secret link  chains-signing-image-tester tssc-image-registry-auth -n tssc-app
 
 === Run the Tekton Task
 
-* The *build-and-push* task you are about to create and run builds an OCI image, pushes it to the registry, and exposes the image URL and image digest, which triggers Tekton Chains to start the signing process.
+* The *build-and-push* task you are about to create and run builds an OCI image, pushes it to the registry, and exposes the image URL and image digest, which triggers *Tekton Chains* to start the signing process.
 
 [source, yaml]
 ----
@@ -559,14 +560,14 @@ steps:
       buildah push --tls-verify=false $(params.IMAGE) docker://$(params.IMAGE)
 ----
 
-* Run the Tekton Task that builds and pushes an image:
+* Run the *Tekton Task *that builds and pushes an image:
 
 [source, role="execute"]
 ----
 oc create -f ~/lab-assets/example-image-sign.yml -n tssc-app-ci
 ----
 
-* Tekton will execute the task, and upon successful completion, Tekton Chains will automatically call Cosign to sign the resulting image.
+* *Tekton* will execute the task, and upon successful completion, *Tekton Chains* will automatically call Cosign to sign the resulting image.
 * Wait for the PipelineTask to reach the Succeeded status.
 
 [source,role="execute"]
@@ -578,10 +579,10 @@ watch -n 2 "oc get taskrun -n tssc-app-ci"
 
 === Verify Certifiacte and Attestation in Rekor search UI
 
-* Click the *Rekor Search UI* tab in the Showroom.
-* After *Cosign* completes the signing operation, Rekor stores two complementary entries.
-* The first is a hashedrekord — Rekor’s standard record type for a signature over a hash — which contains the Cosign signature over the image digest. This acts as proof that a trusted identity signed this image and that its contents have not been changed since.
-* The second is an in-toto provenance attestation, generated by Tekton, which captures how the image was built — which pipeline ran, when it completed, and the exact digest produced.
+* Click the *Rekor Search UI* tab in the Showroom, you may need to refresh the tab.
+* After *Cosign* completes the signing operation, *Rekor* stores two complementary entries:
+. The first is a hashedrekord — *Rekor*’s standard record type for a signature over a hash — which contains the *Cosign* signature over the image digest. This acts as proof that a trusted identity signed this image and that its contents have not been changed since.
+. The second is an in-toto provenance attestation, generated by *Tekton*, which captures how the image was built — which pipeline ran, when it completed, and the exact digest produced.
 
 NOTE: An attestation is structured metadata that describes how an artifact was created, providing verifiable build context. in-toto is the open standard used to express these attestations — defining what was built, how, and by whom — so consumers can verify both integrity (nothing changed) and provenance (it came from the expected build process).
 
@@ -591,19 +592,19 @@ NOTE: An attestation is structured metadata that describes how an artifact was c
 
 image::rekor_log_index_1.png[rekor_log_index_1,align="center"]
 
-* This first Rekor record represents the signature event.
+* This first *Rekor* record represents the signature event.
 
 image::rekor_log_index_1_details.png[rekor_log_index_1_details,align="center"]
 
 * It contains four important parts:
 
 
-==== 1 The Signature
+=== 1 The Signature
 
 * You can see a long base64 signature under the Signature section.
 * The signature is Cosign’s cryptographic seal over the image digest, proving who signed the build and that the content hasn’t changed since.
 
-==== 2 The Public Key Certificate
+=== 2 The Public Key Certificate
 
 * There is a lot of important information here, including:
 . Who issued the certificate: Fulcio acting as a Certificate Authority.
@@ -633,9 +634,9 @@ email = trusted-artifact-signer@demo.redhat.com
 OIDC Issuer = https://sso.apps.../realms/tas-chains
 ----
 
-==== 3 Inclusion Proof
+=== 3 Inclusion Proof
 
-* Scroll to the bottom of the Rekor entry and expand the Verification section,  this reveals the proof of inclusion:
+* Scroll to the bottom of the *Rekor* entry and expand the Verification section, this reveals the proof of inclusion:
 +
 [source,yaml]
 ----
@@ -648,7 +649,7 @@ inclusionProof:
     - ...
 ----
 
-* That is Rekor + Trillian cryptographically proving that:
+* That is *Rekor* + *Trillian* cryptographically proving that:
 . the signature was truly written to the transparency log
 . it cannot be deleted without detection
 . future verifiers can audit that history

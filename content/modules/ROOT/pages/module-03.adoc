@@ -3,8 +3,8 @@
 == Introduction
 
 * Modern software delivery is shaped by two opposing forces.
-* On one side, security expectations have never been higher. Organisations are under pressure to prove where their software comes from, how it was built, and whether it can be trusted — across every stage of the supply chain.
-* On the other side, developers face increasing cognitive load. Tool sprawl, fragmented workflows, and manual security steps slow delivery and create frustration when security is bolted on after the fact.
+. On one side, security expectations have never been higher. Organisations are under pressure to prove where their software comes from, how it was built, and whether it can be trusted — across every stage of the supply chain.
+. On the other side, developers face increasing cognitive load. Tool sprawl, fragmented workflows, and manual security steps slow delivery and create frustration when security is bolted on after the fact.
 * Most organisations struggle to balance both. They invest heavily in security tooling or developer productivity, but rarely achieve both without friction.
 * This is where platform engineering comes in.
 
@@ -73,35 +73,35 @@ NOTE: In this lab, RHDH, OpenShift, and OpenShift Dev Spaces all share the *sso*
 
 image::switch_to_sso_realm.png[Switch to SSO Realm,align="center"]
 
-*	Navigate to Users and click Add user.
+*	Navigate to *Users* and click *Add user*.
 
 image::add_new_user.png[add_new_user,align="center"]
 
 
 * Set the following values:
-* Email Verified: Toggle on (required for TAS signing)
-*	Username:
+* *Email Verified*: Toggle on (required for TAS signing)
+*	*Username*:
 
 [source, role="execute"]
 ----
 user1
 ----
 
-* Email:
+* *Email*:
 
 [source, role="execute"]
 ----
 user1@demo.redhat.com
 ----
 
-*	First Name: 
+*	*First Name*: 
 	
 [source, role="execute"]
 ----
 User1
 ----
   
-*Last Name: 
+* *Last Name*: 
 	
 [source, role="execute"]
 ----
@@ -140,7 +140,7 @@ NOTE: The tssc group mapping in RHDH ensures this user has ownership and managem
 
 image::select_set_password.png[select_set_password,align="center"]
 
-* Enter the Password and Password confirmation to:
+* Enter the *Password* and *Password confirmation* to:
 
 [source, role="execute"]
 ----
@@ -160,8 +160,8 @@ image::set_password_screen.png[set_password_screen,align="center"]
 
 == Step 2: Hydrating the Developer Hub 
 
-* When Red Hat Developer Hub (RHDH) first starts in this lab, it runs in a vanilla state, guest access enabled and an empty catalog.
-* Rather than enabling features manually through the UI, you will configure Red Hat Developer Hub using GitOps and Infrastructure as Code practices, ensuring configuration is version-controlled, reviewable, and aligned with enterprise platform standards.
+* When *Red Hat Developer Hub (RHDH)* first starts in this lab, it runs in a vanilla state, guest access enabled and an empty catalog.
+* Rather than enabling features manually, you will configure *Red Hat Developer Hub* using GitOps and Infrastructure as Code practices, ensuring configuration is version-controlled, reviewable, and aligned with enterprise platform standards.
 
 === 2.1 Verify the “Before” State
 
@@ -200,17 +200,17 @@ image::empty_catalog.png[empty_catalog,align"center"]
 
 === Understanding RHDH Configuration and Plugins
 
-* Red Hat Developer Hub configuration is managed through a single declarative file, *app-config.yaml*, inherited from upstream Backstage.
+* *Red Hat Developer Hub* configuration is managed through a single declarative file, *app-config.yaml*, inherited from upstream Backstage.
 * This file defines the  platform capabilitie, authentication, integrations, plugins, catalog sources, and proxy behaviour are all configured here.
 * In the next steps, you will modify four key sections that shape the platform experience:
-. dynamic.plugins — controls which plugins are enabled.
+. *dynamic.plugins* : controls which plugins are enabled.
 ** These plugins surface platform capabilities to developers , CI/CD views, Argo CD visualisations, IDEs, Image Registeries, OpenShift topology view, documnetation and more.
-. authentication: defines authentication providers and login behaviour.
+. *authentication*: defines authentication providers and login behaviour.
 ** You will disable Guest access and enable OIDC login backed by Keycloak — enforcing secure authentication.
-. catalog — controls where RHDH discovers software components.
+. *catalog*: controls where *RHDH* discovers software components.
 ** Later in this module, you will point the catalog at a GitOps-backed location so that platform templates and developer components appear automatically.
-. integrations — configure API access to external tools.
-** This allows RHDH to securely call external systems like GitLab and Quay without exposing user credentials, and supports plugin functions that require backend access.
+. *integrations*: configure API access to external tools.
+** This allows *RHDH* to securely call external systems like GitLab and Quay without exposing user credentials, and supports plugin functions that require backend access.
 
 * Below is a trimmed example of the configuration you will work with.
 * The commented sections represent platform capabilities that you will enable as the module progresses:
@@ -288,14 +288,14 @@ upstream:
 
 ==== Dynamic plugins in Red Hat Developer Hub
 
-* Red Hat Developer Hub introduces dynamic plugins, shifting plugin management from build time to runtime configuration.
+* *Red Hat Developer Hub* introduces dynamic plugins, shifting plugin management from build time to runtime configuration.
 * Instead of rebuilding images, platform engineers enable and configure plugins declaratively using YAML and GitOps workflows. The container image remains unchanged, while plugins are mounted and activated at runtime.
 * This approach:
 . Reduces operational overhead
 . Aligns with infrastructure-as-code practices
 . Enables versioned configuration and environment promotion
 . Treats the developer portal as a managed platform product
-* In the following steps, you will begin enabling plugins through configuration — activating core RHDH functionality exactly as a platform engineering team would when shaping a developer experience.
+* In the following steps, you will begin enabling plugins through configuration, activating core *RHDH* functionality exactly as a platform engineering team would when shaping a developer experience.
 
 
 ==== Enabling RHDH plugins
@@ -308,6 +308,9 @@ image::select_gitops_repo.png[select_gitops_repo,align="center"]
 . Navigate to the `charts/Backstage` folder.
 +
 image::navigate_to_backstage.png[navigate_to_backstage,align="center"]
++
+* Click the file `backstage-values.yaml`.
+image::select_backstage_values.png[select_backstage_values,align="center"]
 +
 . Select *Edit* > *Edit single file*.
 +
@@ -418,7 +421,7 @@ auth:
 
 image::uncomment_catalog.png[uncomment_catalog,align="center"]
 
-* The yaml block you just uncommented configures catalog providers as follows:
+* The YAML block you just uncommented configures catalog providers as follows:
 +
 [source, yaml]
 ----
@@ -474,10 +477,12 @@ image::uncomment_catalog.png[uncomment_catalog,align="center"]
 * You will also enable the proxy configuration, allowing *Red Hat Developer Hub* to act as a secure intermediary between developers and external services such as Quay — routing requests server-side so developers never handle tokens directly or run into browser CORS issues.
 * In backstage-values.yaml, locate and uncomment the integrations and proxy blocks using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below.
 * Scroll down and enter a commit message: 
++
 [source, role="execute"]
 ----
 feat: Update Red Hat Developer Hub Configuration 
 ----
++
 * Click *Commit Changes* 
 
 image::enable_integration_proxy.png[enable_integration_proxy,align="center"]
@@ -519,7 +524,7 @@ image::argo_cd_rollout.png[argo_cd_rollout,align="center"]
 
 * In the next step, you’ll return to Red Hat Developer Hub to verify that these changes are now active in the portal.
 
-
+---
 
 == Step 3: Validate the changes in RHDH
 
@@ -551,6 +556,8 @@ WARNING: If you do not use Private/Incognito window you will be logged in using 
 * Change the Kind filter to User, the catalog will display users that have been synchronised from Red Hat Build of Keycloak.
 
 image::catalog_users.png[catalog_users,align="center"]
+
+---
 
 === Module 3 Summary
 

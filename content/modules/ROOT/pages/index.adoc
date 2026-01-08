@@ -4,9 +4,7 @@ image::rhads-logo.png[RHADS Logo,align="center",width=200]
 
 == Welcome to Build secure streamlined developer workflows with RHADS Workshop
 
-This hands-on comprehensive workshop provides deep technical understanding of Red Hat Advanced Developer Suite (RHADS) components and their implementation. Designed for platform engineers, technical leaders, and technical sellers, this hands-on learning experience will equip you with the expertise to deploy, configure, and optimize RHADS while demonstrating its ability to deliver measurable business outcomes.
-
-This training shifts the focus from merely showing product features to demonstrating how RHADS solves real customer pain points, such as inconsistent processes and rising supply chain risks, by providing streamlined, secure developer workflows.
+This hands-on workshop goes deep into the architecture and implementation of the *Red Hat Advanced Developer Suite (RHADS)*. Built for solutions architects, consultants, and technical sellers, you’ll deploy and configure core *RHADS* components, explore real-world integration patterns, and see how *RHADS* improves developer experience while strengthening software supply chain security, all mapped to clear technical and business value.
 
 == About Red Hat Advanced Developer Suite
 
@@ -80,7 +78,7 @@ This workshop consists of hands-on labs designed to demonstrate how Red Hat Adva
 
 * **Module 1: Establish Software Composition Trust with SBOMs** (20 minutes)
     - **Customer challenge**: “We cannot verify or attest to the components that make up our software.”
-    - **Participants Will**: : Deploy Red Hat Trusted Profile Analyzer (RHTPA) and integrate Red Hat build of Keycloak (RHBK) to enable verifiable SBOM ingestion and vulnerability risk analysis.
+    - **Participants Will**: Deploy Red Hat Trusted Profile Analyzer (RHTPA) and integrate Red Hat build of Keycloak (RHBK) to enable verifiable SBOM ingestion and vulnerability risk analysis.
     - **Customer Outcome**: Builds include verifiable and trusted SBOM data from the start.
     - **Consultant Takeaway**: A reference implementation for establishing early-stage software trust in customer environments.
     - **Technical Seller Takeaway**: A compelling demo showing how RHADS enables visibility and integrity in the software supply chain.
@@ -103,4 +101,4 @@ This workshop consists of hands-on labs designed to demonstrate how Red Hat Adva
     - **Consultant Takeaway**: Gain a reusable pattern for embedding policy enforcement and release governance into real-world pipelines — without slowing teams down.
     - **Technical Seller Takeaway**: This is the final demo story: “RHADS prevents unsafe releases and makes every deployment a controlled, compliant, and predictable outcome.”
 
-Ready to embrace the principle to "Move Fast, Stay Safe"? Let's begin implementing the policy-driven automation necessary to accelerate developer productivity and strengthen software supply chain security with RHADS.
+Ready to embrace the principle to "Move Fast, Stay Safe"? Let's begin implementing the policy-driven automation necessary to accelerate developer productivity and strengthen software supply chain security with *RHADS*.
