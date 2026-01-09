@@ -528,7 +528,7 @@ image::argo_cd_rollout.png[argo_cd_rollout,align="center"]
 
 == Step 3: Validate the changes in RHDH
 
-* Open RHDH in a Private/Incognito window using the link:{developer_hub_url}[*RHDH URL*,window=_blank] 
+* Click the *RHDH* tab in the Showroom, you may need to refresh the tab.
 * You should immediately notice that Guest access is no longer available, the only login option is now Sign in with OIDC, backed by Red Hat Build of Keycloak.
 * Click Sign in with OIDC.
 
@@ -549,8 +549,6 @@ user1
 ----
 r3dh4t1
 ----
-
-WARNING: If you do not use Private/Incognito window you will be logged in using the admin credentials and will not be able to impersonate a developer.
 
 * Once logged in, select Catalog from the left navigation menu, you should now see that the catalog is populated.
 * Change the Kind filter to User, the catalog will display users that have been synchronised from Red Hat Build of Keycloak.

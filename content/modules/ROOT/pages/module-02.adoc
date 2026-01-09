@@ -72,7 +72,7 @@ NOTE: In an interactive keyless signing flow (for example, when signing code fro
 
 === 1.1 Create tas-chains realm and tas client
 
-* If you are not already logged in to RHBK, click the RHBK Console tab in the Showroom and log in using:
+* If you are not already logged in to *RHBK*, click the *RHBK* Console tab in the Showroom and log in using:
 
 * *Username*:
 
@@ -560,7 +560,7 @@ steps:
       buildah push --tls-verify=false $(params.IMAGE) docker://$(params.IMAGE)
 ----
 
-* Run the *Tekton Task *that builds and pushes an image:
+* Run the *Tekton Task* that builds and pushes an image:
 
 [source, role="execute"]
 ----

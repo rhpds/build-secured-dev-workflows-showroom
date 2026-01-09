@@ -11,8 +11,11 @@
 * This is where Software Templates (Golden Paths) come in.
 * In this module, you will use software templates to define opinionated, secure workflows.
 * These templates embed the guardrails established in earlier modules by design, including SBOM generation and analysis, code and image signing, vulnerability scanning, and Enterprise Contract policy checks.
+
+NOTE: Enterprise Contract is the policy engine that governs whether an application can be promoted through the delivery pipeline. It is based on the upstream open-source project link:https://conforma.dev/[*Conforma*,window=_blank], which provides policy-driven verification of software supply chain evidence such as SBOMs, vulnerability scan results, image signatures, and build attestations.
+
 * Developers consume a single, self-service workflow. Security teams gain consistent enforcement. Platform teams retain control over how software is built, verified, and promoted.
-* BBy the end of this module, you’ll see how RHADS turns trusted building blocks into repeatable, production-ready Golden Paths. Every application starts secure. Every promotion is governed. And teams move fast without bypassing trust.
+* By the end of this module, you’ll see how RHADS turns trusted building blocks into repeatable, production-ready Golden Paths. Every application starts secure. Every promotion is governed. And teams move fast without bypassing trust.
 
 ---
 
@@ -160,13 +163,80 @@ TIP: The label app.kubernetes.io/component=workspaces-config instructs Dev Space
 
 == Step 3: Execute the Software template
 
-===  Step introduction
+===  3.1 Step introduction
 
-* Up to this point, you have been working as a platform engineer.
-* Now you switch personas, from Platform Engineer to Developer.
+* Up to this point, you’ve been working in the role of a platform engineer.
+* Now let’s switch personas and step into the role of a developer (User1), which you created earlier.
+* As a developer, your goal is simple, get a ready-to-use development environment so you can focus on building your new feature. 
+* This is exactly what Software Templates, or Golden Paths, are designed to provide.
+* Under the hood, they use the link:https://backstage.spotify.com/docs/portal/core-features-and-plugins/scaffolder[*Backstage scaffolder*,window=_blank] to automate the creation of repositories, configuration, and CI/CD resources based on platform-approved patterns, as you’ll see in the next section.
 
+---
 
-=== Introduction to Software Templates 
+===  3.2 Log in back to RHDH
+
+* If you are not already logged in to *RHDH*, click the *RHDH* Console tab in the Showroom and log in using:
+
+* *Username*:
+
+[source, role="execute"]
+----
+user1
+----
+
+* *Password*:
+
+[source, role="execute" ]
+----
+r3dh4t1
+----
+
+---
+
+===  3.3 Run the Software Template
+
+. Click on Home in the left navigation menu
+. From the RHDH home page, scroll down until you see the Explore Templates section.
+. At the moment, only one template is available, but in real environments, platform teams typically provide multiple Golden Paths for different application types and technology stacks.
+. Click on the link: “Securing a Quarkus Service Software Supply Chain (Tekton)”.
+
+image::select_software_template.png[select_software_template,align="center"]
+
+* You will be guided through a four-step, wizard-style form to collect the required inputs.
+* Instead of raising tickets and waiting for manual setup, this workflow applies platform standards automatically, as defined by the template.
+* In the first form, you are prompted to enter application-specific parameters.
+* Default values are already provided by the template, so keep the defaults and click *Next*.
+
+image::software_template_step1.png[software_template_step1,align="center"]
+
+* The second form provides container image registry details.
+* In this workshop, container images are pushed to *Quay.io*.
+* The required values are pre-filled, so click *Next* to continue.
+
+image::software_template_Step2.png[software_template_Step2,align="center"]
+
+* In the third form, you configure the source code repository, which is *GitLab* in this environment.
+. Set *Verify Commits* to *Enabled*. This enforces commit signature verification in the pipeline, ensuring that only signed and trusted commits are accepted during the build process.
+. Leave the remaining values as provided by the template.
+* Click *Review* to proceed.
+
+image::software_template_step3.png[software_template_step3,align="center"]
+
+* You will now see a summary of all the parameters that will be passed to the *scaffolder* when executing the template steps.
+* These  values are used to:
+. Create the Git repository and application skeleton
+. Configure CI pipelines
+. Register the component in the RHDH Software Catalog
+* Review the values, then click *Create* to start the scaffolding process.
+
+image::software_template_review.png[software_template_review,align="center"]
+
+* After a short time, the scaffolder workflow will complete and you will see a confirmation screen with green checkmarks indicating each step has succeeded.
+* Click *Open Component in Catalog* to view your newly created application in the Developer Hub.
+
+image::open_component_in_catalog.png[open_component_in_catalog,align="center"]
+
+=== Introduction to Software Templates
 
 * Software Templates are the primary mechanism used by *Red Hat Developer Hub* to expose Golden Paths to development teams.
 * Templates are defined using YAML and rendered as rich, validated forms in the Red Hat Developer Hub UI. Developers interact with a simple form. Behind the scenes, the platform does all the heavy lifting.
