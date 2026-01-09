@@ -317,6 +317,9 @@ username: service-account-cli
 ---
 
 * Refresh the *RHBK* console in *Showroom*
+
+image::refresh_rhbk.png[refresh_rhbk,align="center"]
+
 * Return to the *Manage Realm* view in the *RHBK* console and select the newly created *tpa* realm:
 
 image::tpa_realm.png[New TPA Realm,align="center"]

@@ -70,7 +70,7 @@ NOTE: In an interactive keyless signing flow (for example, when signing code fro
 * Tekton Chains requires its own realm and client to sign images on behalf of the pipeline.
 * This isolates automated signing from human user identities and is considered best practice in customer deployments.
 
-=== 1.1 Create tas-chains realm and tas client
+=== 1.1 Create tas-chains realm
 
 * If you are not already logged in to *RHBK*, click the *RHBK* Console tab in the Showroom and log in using:
 
@@ -106,7 +106,11 @@ tas-chains
 
 image::create_tas_chains_realm.png[Create TAS Chains realm,align="center"]
 
-* Next you you will create a new client, in the left navigation menu, click *Clients*, then click *Create client*.
+---
+
+=== 1.2 Create tas-chains realm
+
+* Next you will create a new client, in the left navigation menu, click *Clients*, then click *Create client*.
 
 image::create_client.png[Create Client,align="center"]
 
@@ -147,31 +151,31 @@ image::tas_client_logout_settings.png[New Client Logout Settings,align="center"]
 image::tas_client_service_account_roles.png[New Client Service Account Roles,align="center"]
 
 * Set the following attributes:
-* *Email Verified*: toggle on
-* *Email*: 
-
+. *Email Verified*: toggle on
+. *Email*: 
++
 [source, role="execute", subs="attributes"]
 ----
 trusted-artifact-signer@demo.redhat.com
 ----
-
-*.* *First name*:
-
++
+. *First name*:
++
 [source, role="execute", subs="attributes"]
 ----
 Trusted
 ----
-
-* *Last name*: 
-
++
+. *Last name*: 
++
 [source, role="execute", subs="attributes"]
 ----
 Content
 ----
++
+. Click *Save*
 
-* Click *Save*
-
-image::tas_client_service_account_details.png[New Client Service Account Roles,align="center"]
+image::tas_client_service_account_details.png[tas_client_service_account_details,align="center"]
 
 WARNING: This is the most common failure point in RHTAS deployments. Fulcio requires the OIDC token to contain a verified email claim. If this is missing, certificate issuance fails.
 
@@ -220,13 +224,13 @@ urn:ietf:wg:oauth:2.0:oob
 ----
 +
 . Click *Add valid redirect URIs*, then input:
-
++
 [source, role="execute", subs="attributes"]
 ----
 *
 ----
-
-* Click *Save*
++
+. Click *Save*
 * This allows tools like *RHTAS* to complete the OAuth authentication flow.
 
 image::tas_commit_client_client_login_settings.png[New Client Login Settings,align="center"]
@@ -240,8 +244,7 @@ image::tas_commit_client_logout_settings.png[New Client Logout Settings,align="c
 
 == Step 3: Deploy the RHTAS Instance
 
-Now that both machine and developer identities are configured, you can deploy the RHTAS components (Fulcio, Rekor, Trillian and TUF) using the Custom Resource.
-
+* Now that both machine and developer identities are configured, you can deploy the RHTAS components (Fulcio, Rekor, Trillian and TUF) using the Custom Resource.
 * In Showroom terminal, run the following command to apply the *RHTAS* Instance CR:
 
 [source, role="execute", subs="attributes"]
@@ -472,7 +475,7 @@ watch -n 2 "oc get pods -n openshift-pipelines | awk '/^oidc-token-refresher/ { 
 
 ---
 
-=== Apply the Tekton Chains Configuration Patch
+=== 5.1 Apply the Tekton Chains Configuration Patch
 
 * Patch the Tekton configuration to point *Tekton Chains* at the *RHTAS* services and token source:
 
@@ -518,7 +521,7 @@ transparency:
 . Upload the signature to Quay.
 * This validates that keyless signing is correctly integrated into the pipeline.
 
-=== Set Up Permissions for the Test Task
+=== 6.1 Set Up Permissions for the Test Task
 
 * Create a temporary service account with the permissions required to run buildah, which requires elevated SCCs.
 
@@ -530,7 +533,7 @@ oc adm policy add-scc-to-user privileged -z chains-signing-image-tester -n tssc-
 oc secret link  chains-signing-image-tester tssc-image-registry-auth -n tssc-app-ci --for=mount
 ----
 
-=== Run the Tekton Task
+=== 6.2 Run the Tekton Task
 
 * The *build-and-push* task you are about to create and run builds an OCI image, pushes it to the registry, and exposes the image URL and image digest, which triggers *Tekton Chains* to start the signing process.
 
@@ -577,7 +580,7 @@ watch -n 2 "oc get taskrun -n tssc-app-ci"
 
 ---
 
-=== Verify Certifiacte and Attestation in Rekor search UI
+=== 6.3 Verify Certifiacte and Attestation in Rekor search UI
 
 * Click the *Rekor Search UI* tab in the Showroom, you may need to refresh the tab.
 * After *Cosign* completes the signing operation, *Rekor* stores two complementary entries:
@@ -696,7 +699,7 @@ attestation:
 
 ---
 
-=== Verify the Signed image in Quay
+=== 6.4 Verify the Signed image in Quay
 
 * Log in to the Quay registry UI.
 * Click the *Quay Console* tab in the Showroom and log in using:
@@ -724,7 +727,9 @@ image::select_tekton_chains_image.png[select tekton_chains image,align="center"]
 
 image::Cosign_signature_shield.png[Cosign signature shield,align="center"]
 
-=== Clean Up Temporary Permissions
+---
+
+=== 6.5 Clean Up Temporary Permissions
 
 Once verification is complete, remove the elevated permissions and delete the service account:
 

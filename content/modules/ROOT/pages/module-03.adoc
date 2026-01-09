@@ -178,7 +178,7 @@ image::empty_catalog.png[empty_catalog,align"center"]
 
 ---
 
-=== 2.2 Enable Configuration via Code
+=== 2.2 Log in to Gitlab
 
 * In Showroom, Switch to the *GitLab* tab and login using the following credentials: 
 
@@ -198,7 +198,7 @@ image::empty_catalog.png[empty_catalog,align"center"]
 
 ---
 
-=== Understanding RHDH Configuration and Plugins
+=== 2.3 Understanding RHDH Configuration and Plugins
 
 * *Red Hat Developer Hub* configuration is managed through a single declarative file, *app-config.yaml*, inherited from upstream Backstage.
 * This file defines the  platform capabilitie, authentication, integrations, plugins, catalog sources, and proxy behaviour are all configured here.
@@ -270,12 +270,12 @@ upstream:
 
 ---
 
-=== Enable Plugins
+=== 2.4 Enable Plugins
 
 * *Backstage*, and by extension *Red Hat Developer Hub (RHDH)*, is designed to be modular.
 * Plugins are the primary mechanism used to integrate developer tools and extend the capabilities of the Internal Developer Portal.
 
-==== Plugin management in upstream Backstage
+==== 2.4.1 Plugin management in upstream Backstage
 
 * In upstream Backstage, plugins are added using a build-time model. Platform engineers must:
 . Clone the Backstage source code
@@ -286,7 +286,7 @@ upstream:
 * Each update — including plugin upgrades or security fixes — requires repeating this entire process.
 * While functional, this approach does not scale well across multiple environments or teams and introduces operational friction.
 
-==== Dynamic plugins in Red Hat Developer Hub
+==== 2.4.2 Dynamic plugins in Red Hat Developer Hub
 
 * *Red Hat Developer Hub* introduces dynamic plugins, shifting plugin management from build time to runtime configuration.
 * Instead of rebuilding images, platform engineers enable and configure plugins declaratively using YAML and GitOps workflows. The container image remains unchanged, while plugins are mounted and activated at runtime.
@@ -298,7 +298,7 @@ upstream:
 * In the following steps, you will begin enabling plugins through configuration, activating core *RHDH* functionality exactly as a platform engineering team would when shaping a developer experience.
 
 
-==== Enabling RHDH plugins
+==== 2.4.3 Enabling RHDH plugins
 
 * To enable plug-ins in this lab:
 . In Gitlab, open the repository `gitops / build-secured-dev-workflows-idp-gitops`.
@@ -310,6 +310,7 @@ image::select_gitops_repo.png[select_gitops_repo,align="center"]
 image::navigate_to_backstage.png[navigate_to_backstage,align="center"]
 +
 * Click the file `backstage-values.yaml`.
++
 image::select_backstage_values.png[select_backstage_values,align="center"]
 +
 . Select *Edit* > *Edit single file*.
@@ -321,7 +322,7 @@ image::edit_single_file.png[edit_single_file,align="center"]
 image::uncomment_plugins.png[uncomment_plugins,align="center"]
 
 
-==== Understanding the dynamic.plugins configuration
+==== 2.4.4 Understanding the dynamic.plugins configuration
 
 * Let's take a look at the *dynamic.plugins* YAML block that you've just uncommented:
 . Top-level structure
@@ -364,19 +365,19 @@ dynamic:
 
 ---
 
-=== Configure authentication
+=== 2.5 Configure authentication
 
 *	In this step, you will replace temporary Guest access with Single Sign-On (SSO) using *Red Hat Build of Keycloak (RHBK)* via OpenID Connect (OIDC).
 * This allows developers to log in to *Red Hat Developer Hub* using their existing organisational identity, rather than anonymous Guest access.
 
-==== Configuration steps
+==== 2.5.1 Configuration steps
 
 * Remove the existing guest provider block under auth.providers.
 * Uncomment the oidc provider configuration and the signInPage setting using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:
 
 image::enable_auth.png[enable_auth,align="center"]
 
-==== Understanding the authentication configuration
+==== 2.5.2 Understanding the authentication configuration
 
 * The yaml block you just uncommented configures authentication as follows:
 +
@@ -407,7 +408,7 @@ auth:
 
 ---
 
-=== Populating Software Catalog
+=== 2.6 Populating Software Catalog
 
 * The Software Catalog is your central inventory for everything that matters in your technology landscape.
 * It tracks Entities such as:
@@ -471,7 +472,7 @@ image::uncomment_catalog.png[uncomment_catalog,align="center"]
 
 ---
 
-=== Integration and Proxy Configuration
+=== 2.7 Integration and Proxy Configuration
 
 * In this step you enable integration between Red Hat Developer Hub and your *GitLab* instance.
 * You will also enable the proxy configuration, allowing *Red Hat Developer Hub* to act as a secure intermediary between developers and external services such as Quay — routing requests server-side so developers never handle tokens directly or run into browser CORS issues.
@@ -489,7 +490,7 @@ image::enable_integration_proxy.png[enable_integration_proxy,align="center"]
 
 ---
 
-=== Sync via Argo CD
+=== 2.8 Sync via Argo CD
 
 * In Showroom, switch to the *Argo CD* tab and log in using the following credentials: 
 
@@ -520,7 +521,7 @@ image::hard_refresh.png[hard_refresh,align="center"]
 
 image::argo_cd_rollout.png[argo_cd_rollout,align="center"]
 
-* You’ve just seen GitOps and configuration-as-code in action. Configuration changes committed to Git were automatically reconciled into Red Hat Developer Hub by Argo CD, without manual UI changes.
+* You’ve just seen GitOps and configuration-as-code in action. Configuration changes committed to Git were automatically reconciled into *Red Hat Developer Hub* by *Argo CD*, without manual UI changes.
 
 * In the next step, you’ll return to Red Hat Developer Hub to verify that these changes are now active in the portal.
 

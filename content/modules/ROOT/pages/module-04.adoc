@@ -23,7 +23,7 @@ NOTE: Enterprise Contract is the policy engine that governs whether an applicati
 
 * *Red Hat Advanced Cluster Security (ACS)* provides vulnerability analysis and policy evaluation for container images. It integrates directly with container registries to scan images before they are deployed or promoted.
 
-=== Configure ACS - Quay Integration
+=== 1.1 Configure ACS - Quay Integration
 
 * In this step, you will configure *ACS* to scan images stored in *Quay* and validate that vulnerability data can be evaluated as part of the trusted supply chain.
 * In Showroom, Switch to the *ACS* tab and login using the following credentials: 
@@ -101,7 +101,7 @@ image::test_quay_connection.png[test_quay_connection,align=center"]
 
 ---
 
-=== Scan and evaluate an image
+=== 1.2 Scan and evaluate an image
 
 * To confirm that scanning and policy evaluation are working end to end, you will now scan the signed image you produced in module 2.
 * This next command retrieves vulnerability data for the image and returns a detailed scan report.
@@ -136,7 +136,7 @@ roxctl image check --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekt
 
 [source, role="execute", subs="attributes"]
 ----
-cat <<EOF | oc apply -n openshift-devspaces -f -
+cat << 'EOF' | oc apply -n openshift-devspaces -f -
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -149,10 +149,12 @@ metadata:
 data:
   TAS_FULCIO_URL: "{tas_fulcio_url}"
   TAS_REKOR_URL: "{tas_rekor_url}"
-  TAS_ISSUER_URL: "https://sso.${openshift_cluster_ingress_domain}/realms/sso"
+  TAS_ISSUER_URL: "https://sso.{openshift_cluster_ingress_domain}/realms/sso"
   TAS_CLIENT_ID: "trusted-artifact-signer"
 EOF
 ----
+
+
 
 * This ConfigMap defines the endpoints and identity configuration required by gitsign, the tool used to perform keyless Git commit signing via *RHTAS*.
 
