@@ -90,7 +90,7 @@ NOTE: In an interactive keyless signing flow (for example, when signing code fro
 
 * After entering your credentials, click *Sign In*.
 
-* In the *RHBK Console*, click *Manage Realm*  in the left navigation menu.
+* In the *RHBK Console*, click *Manage Realm* in the left navigation menu.
 * Click the *Create realm* button.
 
 image::create_tas_realm.png[Create Realm,align="center"]
@@ -115,14 +115,14 @@ image::create_tas_chains_realm.png[Create TAS Chains realm,align="center"]
 image::create_client.png[Create Client,align="center"]
 
 * In the *General setting* page:
-* Set the *Client ID* to:
-
+. Set the *Client ID* to:
++
 [source, role="execute", subs="attributes"]
 ----
 trusted-artifact-signer
 ----
-
-* Click *Next*.
++
+. Click *Next*.
 
 image::tas_client_general_settings.png[New Client General Settings,align="center"]
 
@@ -130,7 +130,7 @@ image::tas_client_general_settings.png[New Client General Settings,align="center
 . *Client authentication*: toggle on
 . *Standard flow*: make sure this checkbox is ticked
 . *Service accounts* roles: Tick this checkbox
-* Then click *Next*.
+. Then click *Next*.
 
 image::tas_client_capability_config.png[New Client Capability Config,align="center"]
 
@@ -142,6 +142,7 @@ image::tas_client_login_settings.png[New Client Login Settings,align="center"]
 * Scroll down to *Logout Settings*:
 . Make sure *Front channel logout* is toggled on.
 . Click *Save*.
+* You’ll see a pop-up message saying “Client saved successfully".
 
 image::tas_client_logout_settings.png[New Client Logout Settings,align="center"]
 
@@ -174,6 +175,7 @@ Content
 ----
 +
 . Click *Save*
+* You’ll see a pop-up message saying “The user has been saved".
 
 image::tas_client_service_account_details.png[tas_client_service_account_details,align="center"]
 
@@ -211,7 +213,7 @@ image::tas_client_general_settings.png[New Client General Settings,align="center
 * Under *Capability Config* set:
 . *Standard flow*: Make sure this checkbox is ticked.
 . *Direct Access Grants*: Tick this checkbox.
-* Then click *Next*.
+. Then click *Next*.
 
 image::tas_commit_client_capability_config.png[New Client Capability Config,align="center"]
 
@@ -235,8 +237,10 @@ urn:ietf:wg:oauth:2.0:oob
 
 image::tas_commit_client_client_login_settings.png[New Client Login Settings,align="center"]
 
-* Now scroll down to the *Logout settings* section and set the *Front channel logout* toggle to *Off*. 
-* Then click *Save*
+* Now scroll down to the *Logout settings* section
+. Set the *Front channel logout* toggle to *Off*. 
+. Then click *Save*
+* You’ll see a pop-up message saying “Client saved successfully".
 
 image::tas_commit_client_logout_settings.png[New Client Logout Settings,align="center"]
 
@@ -245,6 +249,9 @@ image::tas_commit_client_logout_settings.png[New Client Logout Settings,align="c
 == Step 3: Deploy the RHTAS Instance
 
 * Now that both machine and developer identities are configured, you can deploy the RHTAS components (Fulcio, Rekor, Trillian and TUF) using the Custom Resource.
+
+=== 3.1 Apply the RHTAS Instance CR
+
 * In Showroom terminal, run the following command to apply the *RHTAS* Instance CR:
 
 [source, role="execute", subs="attributes"]
@@ -260,7 +267,7 @@ envsubst < ~/lab-assets/tas-instance.yml | oc apply -n tssc-tas -f -
 
 ---
 
-== What did the RHTAS Instance CR configure?
+=== *`Optional Deep Dive 🔍:`* What did the RHTAS Instance CR configure?
 
 * The custom resource you just applied tells the *RHTAS Operator* how to stand up Fulcio, Rekor, Trillian and TUF, and how to trust your Keycloak realms. Here are the key parts worth calling out.
 
@@ -380,7 +387,7 @@ ctlog:
 
 ---
 
-=== Verify Deployment Readiness
+=== 3.2 Verify Deployment Readiness
 
 * Switch to the *OpenShift console*
 * Navigate to *Workloads → Pods*
@@ -391,7 +398,7 @@ ctlog:
 tssc-tas
 ----
 
-* Wait until the tuf pod is in Running state.
+* Wait until the tuf pod is in Running state. This may take a few minutes.
 
 image::tas_verify_deploy.png[Verify RHTAS deploy,align="center"]
 

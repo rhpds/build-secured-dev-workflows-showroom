@@ -127,45 +127,9 @@ roxctl image check --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekt
 
 ---
 
-== Step 2: Configure Git Signing in OpenShift Dev Spaces
+== Step 2: Execute the Software template
 
-* link:https://developers.redhat.com/products/openshift-dev-spaces[*OpenShift Dev Spaces*,window=_blank] provides cloud-hosted development environments that run inside the cluster. These environments are defined declaratively using link:https://devfile.io/[*Devfiles*,window=_blank], which describe the tools, configuration, and lifecycle behaviour of a developer workspace.
-* In this step, you will configure *Dev Spaces* so that every developer workspace automatically inherits the information required for OIDC-based Git commit signing, without manual setup.
-
-* First, create a new ConfigMap in the openshift-devspaces namespace:
-
-[source, role="execute", subs="attributes"]
-----
-cat << 'EOF' | oc apply -n openshift-devspaces -f -
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tas-git-config
-  annotations:
-    controller.devfile.io/mount-as: env
-  labels:
-    app.kubernetes.io/part-of: che.eclipse.org
-    app.kubernetes.io/component: workspaces-config
-data:
-  TAS_FULCIO_URL: "{tas_fulcio_url}"
-  TAS_REKOR_URL: "{tas_rekor_url}"
-  TAS_ISSUER_URL: "https://sso.{openshift_cluster_ingress_domain}/realms/sso"
-  TAS_CLIENT_ID: "trusted-artifact-signer"
-EOF
-----
-
-
-
-* This ConfigMap defines the endpoints and identity configuration required by gitsign, the tool used to perform keyless Git commit signing via *RHTAS*.
-
-
-TIP: The label app.kubernetes.io/component=workspaces-config instructs Dev Spaces to inject these values into every developer workspace as environment variables.
-
----
-
-== Step 3: Execute the Software template
-
-===  3.1 Step introduction
+===  2.1 Step introduction
 
 * Up to this point, you’ve been working in the role of a platform engineer.
 * Now let’s switch personas and step into the role of a developer (User1), which you created earlier.
@@ -175,7 +139,7 @@ TIP: The label app.kubernetes.io/component=workspaces-config instructs Dev Space
 
 ---
 
-===  3.2 Log in back to RHDH
+===  2.2 Log in back to RHDH
 
 * If you are not already logged in to *RHDH*, click the *RHDH* Console tab in the Showroom and log in using:
 
@@ -195,7 +159,7 @@ r3dh4t1
 
 ---
 
-===  3.3 Run the Software Template
+===  2.3 Run the Software Template
 
 . Click on Home in the left navigation menu
 . From the RHDH home page, scroll down until you see the Explore Templates section.
@@ -238,7 +202,9 @@ image::software_template_review.png[software_template_review,align="center"]
 
 image::open_component_in_catalog.png[open_component_in_catalog,align="center"]
 
-=== Introduction to Software Templates
+---
+
+=== *`Optional Deep Dive 🔍:`* Understanding Software Templates
 
 * Software Templates are the primary mechanism used by *Red Hat Developer Hub* to expose Golden Paths to development teams.
 * Templates are defined using YAML and rendered as rich, validated forms in the Red Hat Developer Hub UI. Developers interact with a simple form. Behind the scenes, the platform does all the heavy lifting.
@@ -415,52 +381,199 @@ output:
         entityRef: ${{ steps['register-gitops'].output.entityRef }}
 ----
 
+---
+
+== Step 3: Configure Git Signing in OpenShift Dev Spaces
+
+* Before you start modifying code, you need to configure Git commit signing in OpenShift Dev Spaces.
+* link:https://developers.redhat.com/products/openshift-dev-spaces[*OpenShift Dev Spaces*,window=_blank] provides cloud-hosted development environments that run inside the cluster. These environments are defined declaratively using link:https://devfile.io/[*Devfiles*,window=_blank], which describe the tools, configuration, and lifecycle behaviour of a developer workspace.
+
+=== 3.1 Create the tas-git-config ConfigMap
+
+* In this step, you will configure *Dev Spaces* so that every developer workspace automatically inherits the information required for OIDC-based Git commit signing, without manual setup.
+
+* First, create a new ConfigMap in the openshift-devspaces namespace:
+
+[source, role="execute", subs="attributes"]
+----
+cat << 'EOF' | oc apply -n openshift-devspaces -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tas-git-config
+  annotations:
+    controller.devfile.io/mount-as: env
+  labels:
+    app.kubernetes.io/part-of: che.eclipse.org
+    app.kubernetes.io/component: workspaces-config
+data:
+  TAS_FULCIO_URL: "{tas_fulcio_url}"
+  TAS_REKOR_URL: "{tas_rekor_url}"
+  TAS_ISSUER_URL: "https://sso.{openshift_cluster_ingress_domain}/realms/sso"
+  TAS_CLIENT_ID: "trusted-artifact-signer"
+EOF
+----
+
+* This ConfigMap defines the endpoints and identity configuration required by gitsign, the tool used to perform keyless Git commit signing via *RHTAS*.
 
 
-Markdown text blobs
+NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spaces to inject these values into every developer workspace as environment variables.
 
-  output:
-    links:
-      - title: Source Code Repository
-        url: {{ '${{ steps.publish.output.remoteUrl }}' }}
-      - title: Open Component in catalog
-        icon: catalog
-        entityRef: {{ '${{ steps.register.output.entityRef }}' }}""
+---
+
+=== *`Optional Deep Dive 🔍:`* Development Environment as Code with Devfiles
+
+* The concept of *Development Environment as Code* represents a significant shift in the way we set up and manage development environments. 
+* By treating these configurations as code, developers can leverage automation, apply version control, and ensure consistency across various setups. 
+* This approach simplifies the complex process of configuring individual environments and aligns it with modern DevOps practices.
+* At the heart of this paradigm is the *Devfile*, a powerful YAML configuration file used by **OpenShift Dev Spaces**. 
+* *Devfiles* act as comprehensive blueprints for setting up development environments, defining everything from runtime environments to the necessary tools and commands needed for a project.
+
+=== Anatomy of a Devfile
+
+==== Projects (Optional)
+
+* The *Projects* section is used to specify source code repositories that are essential for the development environment. 
+* It includes details like the repository URL and the specific branch, tag, or commit to be used, ensuring that the *workspace* is pre-populated with the correct code version upon initialization.
+
+==== Components: 
+
+* *Components* are the building blocks of the development environment. The can be of type:
+. *Container*: Defines the container image containing the runtime environment, development tools, and dependencies.
+. *Kubernetes/OpenShift Resources*: Incorporates Kubernetes or OpenShift-specific resources such as Routes and BuildConfigs into the workspace.
+. *Volume*: Provides persistent storage necessary for certain data within the development environment.
+. *Plugin*: Extends the capabilities of the development environment by adding IDE features or integrating additional tools and services.
+
+==== Commands (Optional): 
+
+* The **Commands** section outlines specific actions that can be executed within the development environment, such as build, run, and test commands. 
+* These *commands* are defined to automate tasks and facilitate a consistent development workflow across different environments. 
+* Each *command* can specify a working directory, an associated container, and the actual command line to execute.
+
+==== Events (Optional): 
+
+* The *Events* section in a *devfile* handles the lifecycle events of the workspace, such as pre-start, post-start, pre-stop, and post-stop events.
+* These events trigger specific commands at different stages of the workspace lifecycle, enabling the setup or teardown of services and tools necessary for the development process.
+* This mechanism ensures that certain tasks are automatically handled at the appropriate times, enhancing both the efficiency and reliability of the development environment.
+
+image::devfile_anatomy.png[]
+
+* Now it’s time to try this out hands-on. In this module, you’ll experience firsthand how *OpenShift Dev Spaces* streamlines the process of joining a new project.
+
+---
 
 
+=== 3.2 Update the Devfile 
 
+* If you are not already logged in to *RHBK*, click the *Gitlab* tab in the Showroom and log in using:
 
+* *Username*:
 
+[source, role="execute", subs="attributes"]
+----
+{gitlab_root_user}
+----
 
+* *Password*:
 
+[source, role="execute", subs="attributes"]
+----
+{gitlab_root_password}
+----
 
+* At the top left click on Gitlab Home
 
+image::gitlab_home_page.png[gitlab_home_page,align="center"]
 
-*	Click Create or Self Service.
-* Select Securing a Quarkus Service Software Supply Chain.
-* Set the following attributes:
-* Name: 
+* Select the repository "development / my-quarkus-tkn"
+
+image::my-quarkus-tkn_repo.png[gitlab_home_page,align="center"]
+
+* Select the the file *devfile.yaml*
+
+image::select_devfile.png[select_devfile,align="center"]
+
+* Select *Edit* > *Edit single file*.
+
+image::devfile_single_edit.png[devfile_single_edit,align="center"]
+
+* Add the following atrributes under the development-tooling component to load the ConfigMap you created in the earlier step.
 
 [source, role="execute"]
 ----
-my-secure-app
+    attributes:
+      controller.devfile.io/mount-to-devworkspace: 'true'
+      controller.devfile.io/watch-configmap: 'true'
 ----
 
-*	Owner: group:
+image::dev_tools_atributes.png[dev_tools_atributes,align="center"]
+
+* Next, under commands add this entry to update the Git config for the current session to use the configured variables for commit  signing:
+
+
+[source, role="execute", subs="attributes"]
+----
+- id: init-git-config
+    exec:
+      label: "Configure Git for commit signing"
+      component: development-tooling
+      commandLine: |
+        USERNAME=user1-devspaces
+        git config --global user.email "user1@demo.redhat.com"
+        git config --global user.name "user1"
+        git config --global commit.gpgsign true
+        git config --global tag.gpgsign true
+        git config --global gpg.x509.program /projects/home/bin/gitsign
+        git config --global gpg.format x509
+        git config --global gitsign.fulcio "{tas_fulcio_url}"
+        git config --global gitsign.issuer "https://sso.{openshift_cluster_ingress_domain}/realms/sso"
+        git config --global gitsign.rekor  "{tas_rekor_url}"
+        git config --global gitsign.clientid "trusted-artifact-signer"
+----
+
+* Finally, update the devfile.yaml to use the variables injected from the ConfigMap and init the Git Config. by adding this post-start event that will command the command you just added in the devfile.
+
+[source, role="execute", subs="attributes"]
+----
+postStart:
+    - init-git-config
+----
+
+* Scroll down and enter a commit message: 
++
+[source, role="execute"]
+----
+feat: Update Devfile Configuration 
+----
++
+* Click *Commit Changes* 
+
+==== In OpenShift DevSpaces
+
+* Before you start committing your code, you confirm the Gitsign git config.
+* "As you see, our development environment has been configured for Gitsign", you explain.
+* Run the below command on the *VS Code* terminal to view the Gitsign global git config:
++
+[source, role="execute"]
+----
+git config --global --list
+----
+
+NOTE: You may need to allow paste functionality when prompted by the browser.
+
+image::94_Gitsign_Git_Global_Config.png[]
+
+*	Open src/main/resources/application.properties.
+* Make a trivial change (for example, add a comment).
+* Open the IDE terminal.
 
 [source, role="execute"]
 ----
-default/tssc
+git add .
+git commit -m "feat: updated configuration with secure signing"
 ----
 
-* Registry: leave default (Quay)
-* Review and click Create.
-* What’s happening:
-* RHDH orchestrates the creation of:
-. A GitLab repository
-. A Tekton pipeline with ACS scanning and TAS signing
-. Argo CD applications for Dev, Stage, and Prod
-. Webhooks connecting Git to CI/CD
+
 
 == Step 5: Secure Developer Workflow (Inner Loop)
 

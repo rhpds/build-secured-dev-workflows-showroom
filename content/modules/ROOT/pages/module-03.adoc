@@ -79,36 +79,36 @@ image::add_new_user.png[add_new_user,align="center"]
 
 
 * Set the following values:
-* *Email Verified*: Toggle on (required for TAS signing)
-*	*Username*:
-
+. *Email Verified*: Toggle on (required for TAS signing)
+.	*Username*:
++
 [source, role="execute"]
 ----
 user1
 ----
-
-* *Email*:
-
++
+. *Email*:
++
 [source, role="execute"]
 ----
 user1@demo.redhat.com
 ----
-
-*	*First Name*: 
-	
++
+.	*First Name*: 
++	
 [source, role="execute"]
 ----
 User1
 ----
-  
-* *Last Name*: 
-	
++ 
+. *Last Name*: 
++
 [source, role="execute"]
 ----
 Demo
 ----
- 
-* Click *Create*.
++
+. Click *Create*.
 
 image::create_user1.png[create_user1,align="center"]
 
@@ -196,12 +196,14 @@ image::empty_catalog.png[empty_catalog,align"center"]
 {gitlab_root_password}
 ----
 
+
+
 ---
 
 === 2.3 Understanding RHDH Configuration and Plugins
 
 * *Red Hat Developer Hub* configuration is managed through a single declarative file, *app-config.yaml*, inherited from upstream Backstage.
-* This file defines the  platform capabilitie, authentication, integrations, plugins, catalog sources, and proxy behaviour are all configured here.
+* This file defines the platform capabilitie, authentication, integrations, plugins, catalog sources, and proxy behaviour are all configured here.
 * In the next steps, you will modify four key sections that shape the platform experience:
 . *dynamic.plugins* : controls which plugins are enabled.
 ** These plugins surface platform capabilities to developers , CI/CD views, Argo CD visualisations, IDEs, Image Registeries, OpenShift topology view, documnetation and more.

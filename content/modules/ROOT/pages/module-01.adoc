@@ -1,6 +1,24 @@
 = Module 1: Establish Software Composition Trust with SBOMs
 
-== Introduction 
+== Before you start
+
+=== Showroom
+
+* This workshop uses *Showroom* to present the workshop guide and provide quick access to the tools used in the labs.
+* On the left-hand side, you’ll find the workshop guide, including all the modules and steps you’ll complete today. 
+* On the right-hand side, you’ll find the tools required to complete the labs, including a Terminal, the OpenShift Console, and a lot more.
+* Not all of these tools are available from the start. Some services will be deployed and configured as you progress through the workshop, and the corresponding tabs will become active in later modules.
+
+=== Optional Sections
+
+* This workshop is designed to be hands-on and outcome-focused, guiding you through how *Red Hat Advanced Developer Suite (RHADS)* is used to deliver secure, production-ready developer workflows.
+* Along the way, you will see sections marked with the following callout in the header:  *`Optional Deep Dive 🔍`*
+* These sections provide additional technical detail, including YAML and configuration walkthroughs.
+* They are completely optional. However, we encourage you to pause and explore these sections if you are interested in understanding how the components used in this workshop are set up.
+
+---
+
+== Module 1 - Introduction 
 
 * In this module you help customers answer a foundational supply-chain question: “Do we actually trust the software components inside our applications?”
 * Modern applications are assembled rather than written. Container images typically bundle hundreds of upstream packages, direct and transitive dependencies, and libraries, each carrying its own CVE and advisory exposure.
@@ -79,23 +97,21 @@ image::keycloak_manage_realms.png[Keycloak Realms,align="center"]
 
 * Before importing the *tpa* realm, switch to the *OpenShift Console* to monitor the realm import job.
 * Click the *OpenShift Console* tab in the Showroom
-
-Log in to the OpenShift console using the following details:
-
+* Log in to the *OpenShift console* using the following details:
 * *Username*: 
-
++
 [source, role="execute", subs="attributes"]
 ----
 {openshift_gitops_admin_user}
 ----
-
++
 * *Password*:
-
++
 [source, role="execute", subs="attributes"]
 ----
 {openshift_gitops_admin_password}
 ----
-
++
 * After entering your credentials, click the *Sign In* button.
 * Expand the *Ecosystem* list in the left Navigation menu and select *Installed Operators*
 * In the name filter input: 
@@ -105,8 +121,8 @@ Log in to the OpenShift console using the following details:
 keycloak
 ----
 
-* Select the Red Hat build of *Keycloak Operator* link.
-
+* After a few seconds, the *Red Hat build of Keycloak Operator* will appear in the list of installed operators. 
+* Click its link to view the details.
 * From the left navigation menu, expand *Ecosystem* and select *Installed Operators*.
 * Filter by “Keycloak” and select *Red Hat Build of Keycloak Operator*.
 
@@ -146,7 +162,7 @@ image::tpa_realm_import_start.png[TPA Realm Import Start,align="center"]
 
 ---
 
-=== What just happened?
+=== *`Optional Deep Dive 🔍:`* What just happened?
 
 * The YAML you applied creates the identity and authorization model that *Red Hat Trusted Profile Analyzer (RHTPA)* uses to control SBOM upload, search, and deletion.
 * It created:
@@ -316,6 +332,8 @@ username: service-account-cli
 
 ---
 
+1.3 Verify the new *tpa* realm in RHBK
+
 * Refresh the *RHBK* console in *Showroom*
 
 image::refresh_rhbk.png[refresh_rhbk,align="center"]
@@ -457,7 +475,7 @@ modules:
 
 === 2.3 Validate the RHTPA deployment
 
-* Switch to the OpenShift Console tab in your Showroom.
+* Switch to the *OpenShift Console* tab in your Showroom.
 * Select the project:
 
 [source,role="execute"]
