@@ -383,10 +383,11 @@ output:
 
 ---
 
-== Step 3: Configure Git Signing in OpenShift Dev Spaces
+== Step 3: Prepare Developer and Pipeline Trust Foundations
 
 * Before you start modifying code, you need to configure Git commit signing in OpenShift Dev Spaces.
 * link:https://developers.redhat.com/products/openshift-dev-spaces[*OpenShift Dev Spaces*,window=_blank] provides cloud-hosted development environments that run inside the cluster. These environments are defined declaratively using link:https://devfile.io/[*Devfiles*,window=_blank], which describe the tools, configuration, and lifecycle behaviour of a developer workspace.
+*  You also need to ensure the CI pipelines have the credentials required to authenticate with external systems during the build and verification stages.
 
 === 3.1 Create the tas-git-config ConfigMap
 
@@ -461,7 +462,6 @@ image::devfile_anatomy.png[]
 * Now it’s time to try this out hands-on. In this module, you’ll experience firsthand how *OpenShift Dev Spaces* streamlines the process of joining a new project.
 
 ---
-
 
 === 3.2 Update the Devfile 
 
@@ -548,7 +548,73 @@ feat: Update Devfile Configuration
 +
 * Click *Commit Changes* 
 
-==== In OpenShift DevSpaces
+---
+
+=== 3.3 Configure pipeline authentication secrets
+
+* Before executing the software template, the CI pipeline must be able to authenticate to the systems it interacts with.
+* All application pipelines in this workshop run in the tssc-app-ci namespace. Any credentials required by the pipeline must be available there as Kubernetes Secrets.
+* Some secrets are already present:
+. rox-api-token: Used by the pipeline to authenticate to ACS and execute roxctl image scan and policy check commands.
+. tssc-image-registry-auth: Used to authenticate to the local Quay registry so images can be pushed and pulled during the build and promotion stages.
+* In this step, you will create two additional secrets required by the pipeline:
+. Credentials for uploading SBOMs to Red Hat Trusted Profile Analyzer (RHTPA)
+. Credentials for authenticating to GitLab when creating repositories and interacting with source code
+* These secrets are consumed automatically by the pipeline provisioned through the software template.
+* Run the following command to set the TPA_SERVER_URL
++
+[source,role="execute"]
+----
+export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=server -n tssc-tpa -o json \
+  | jq -r '.items[0].spec.host')"
+----
++
+* Then run this command to create the tpa-secret secret:
++
+[source,role="execute"]
+----
+envsubst < ~/lab-assets/tpa-secret.yml | oc apply -n tssc-app-ci -f -
+----
++
+* This creates a Kubernetes Secret in the tssc-app-ci namespace containing:
+. RHTPA endpoint information
+. OIDC client credentials
+. Token configuration required by the SBOM upload task
+* Create the GitLab authentication secret
+* The pipeline also needs access to GitLab in order to:
+. Push generated source code
+. Interact with repositories created by the software template
+* First, retrieve the GitLab personal access token:
++
+[source,role="execute"]
+----
+export GITLAB_TOKEN=$(oc get secret root-user-personal-token -n gitlab -o jsonpath='{.data.token}' | base64 -d)
+----
++
+* Next, create the GitLab authentication secret:
++
+[source,role="execute"]
+----
+envsubst < ~/lab-assets/gitlab-auth-secret.yml | oc apply -n tssc-app-ci -f -
+----
++
+* This secret is used by pipeline tasks that interact with GitLab APIs and repositories.
+* Credentials are injected at runtime, not hard-coded into pipeline definitions.
+* From a platform engineering perspective, this step reinforces an important pattern:
+. Pipelines are generic and reusable
+. Environment-specific credentials are injected through Kubernetes Secrets
+. Developers never handle or manage service credentials directly
+* This separation allows the same software template and pipeline definition to be promoted across environments, while authentication details remain centrally managed and rotated by platform teams.
+* In the next step, you will make a small code change from within OpenShift Dev Spaces and commit it to Git. 
+* This commit will be automatically signed using your OIDC identity.
+
+---
+
+== Step 4: Sign Your Code and Enter the Trusted Supply Chain
+
+* In this step, you will make a small code change from within OpenShift Dev Spaces and commit it to Git. This signed commit will automatically trigger the CI pipeline, carrying your trusted identity into the build and verification stages.
+
+=== 4.1 In OpenShift DevSpaces
 
 * Before you start committing your code, you confirm the Gitsign git config.
 * "As you see, our development environment has been configured for Gitsign", you explain.
