@@ -145,11 +145,11 @@ image::tas_client_capability_config.png[New Client Capability Config,align="cent
 image::tas_client_login_settings.png[New Client Login Settings,align="center"]
 
 * Scroll down to *Logout Settings*:
-. Make sure *Front channel logout* is toggled on.
+. Set the *Front channel logout* toggle to *Off*. 
 . Click *Save*.
 * You’ll see a pop-up message saying “Client successfully updated".
 
-image::tas_client_logout_settings.png[New Client Logout Settings,align="center"]
+image::tas_commit_client_logout_settings.png[New Client Logout Settings,align="center"]
 
 * Scroll back up to top of the screen:
 . Click the *Service account roles* tab 

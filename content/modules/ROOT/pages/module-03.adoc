@@ -379,8 +379,9 @@ dynamic:
 
 ==== 2.5.1 Configuration steps
 
-* Remove the existing guest provider block under auth.providers.
-* Uncomment the oidc provider configuration and the signInPage setting using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:
+. Comment the developer environment block under authusing `CMD + /` (Mac) or `CTRL + /` (Windows/Linux).
+. Then, uncomment the production environment configuration using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux). 
+. Finally uncomment the signInPage setting using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:
 
 image::enable_auth.png[enable_auth,align="center"]
 
