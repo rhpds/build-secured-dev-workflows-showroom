@@ -50,7 +50,7 @@ image::RHDH_Core_Capablties.png[]
 
 NOTE: In this lab, RHDH, OpenShift, and OpenShift Dev Spaces all share the *sso* realm. This is intentionally different from the *tpa* realm used in Module 1. Using a shared realm enables seamless Single Sign-On (SSO) across the OpenShift Console, OpenShift Dev Spaces, and Red Hat Developer Hub.
 
-=== 1.1 Create the Developer User
+=== 1.1 Log in RHBK
 
 * If you are not already logged in to *RHBK*, click the RHBK Console tab in the Showroom and log in using:
 
@@ -69,7 +69,10 @@ NOTE: In this lab, RHDH, OpenShift, and OpenShift Dev Spaces all share the *sso*
 ----
 
 * After entering your credentials, click *Sign In*.
-* In the *RHBK Console*, click *Manage Realm*, switch to the sso realm.
+
+=== 1.2 Create the Developer User
+
+* In the *RHBK Console*, click *Manage Realm*, switch to the *sso* realm.
 
 image::switch_to_sso_realm.png[Switch to SSO Realm,align="center"]
 
@@ -114,18 +117,19 @@ image::create_user1.png[create_user1,align="center"]
 
 ---
 
-=== 1.2 Assign Group Membership
+=== 1.3 Assign Group Membership
 
-* In the user details view, click the *Groups* tab.
-* Click *Join Group*.
+* In the user details view:
+. Click the *Groups* tab.
+. Then, click *Join Group*.
 
 image::join_group.png[join_group,align="center"]
 
 
-* Select the following groups:
-	•	tssc
-	•	users
-* Click *Join*.
+. Select the following groups:
+** tssc
+** users
+. Click *Join*.
 
 image::join_groups.png[join_groups,align="center"]
 
@@ -133,10 +137,11 @@ NOTE: The tssc group mapping in RHDH ensures this user has ownership and managem
 
 ---
 
-=== 1.3 Set User Credentials
+=== 1.4 Set User Credentials
 
-* Click the *Credentials* tab.
-* Click *Set Password*.
+* To set the password for user1
+. Click the *Credentials* tab.
+. Then, click *Set Password*.
 
 image::select_set_password.png[select_set_password,align="center"]
 
@@ -311,7 +316,7 @@ image::select_gitops_repo.png[select_gitops_repo,align="center"]
 +
 image::navigate_to_backstage.png[navigate_to_backstage,align="center"]
 +
-* Click the file `backstage-values.yaml`.
+. Click the file `backstage-values.yaml`.
 +
 image::select_backstage_values.png[select_backstage_values,align="center"]
 +
@@ -548,9 +553,9 @@ user1
 
 * *Password*:
 
-[source, role="execute" ]
+[source, role="execute", subs="attributes"]
 ----
-r3dh4t1
+{password}
 ----
 
 * Once logged in, select Catalog from the left navigation menu, you should now see that the catalog is populated.

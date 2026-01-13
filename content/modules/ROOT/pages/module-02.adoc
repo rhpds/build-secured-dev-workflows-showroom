@@ -90,6 +90,8 @@ NOTE: In an interactive keyless signing flow (for example, when signing code fro
 
 * After entering your credentials, click *Sign In*.
 
+=== 1.2 Create tas-chains Realm
+
 * In the *RHBK Console*, click *Manage Realm* in the left navigation menu.
 * Click the *Create realm* button.
 
@@ -108,9 +110,11 @@ image::create_tas_chains_realm.png[Create TAS Chains realm,align="center"]
 
 ---
 
-=== 1.2 Create tas-chains realm
+=== 1.3 Create trusted-artifact-signer client in tas-chains Realm
 
-* Next you will create a new client, in the left navigation menu, click *Clients*, then click *Create client*.
+* Next you will create a new client:
+. In the left navigation menu, click *Clients*.
+. Then click *Create client*.
 
 image::create_client.png[Create Client,align="center"]
 
@@ -136,18 +140,20 @@ image::tas_client_capability_config.png[New Client Capability Config,align="cent
 
 * Under *Login Settings*, leave the default values as they are.
 * Click *Save*.
+* You’ll see a pop-up message saying “Client created successfully".
 
 image::tas_client_login_settings.png[New Client Login Settings,align="center"]
 
 * Scroll down to *Logout Settings*:
 . Make sure *Front channel logout* is toggled on.
 . Click *Save*.
-* You’ll see a pop-up message saying “Client saved successfully".
+* You’ll see a pop-up message saying “Client successfully updated".
 
 image::tas_client_logout_settings.png[New Client Logout Settings,align="center"]
 
-* Scroll back up to top of the screen, and click the *Service account roles* tab 
-* Click the *service-account-trusted-artifact-signer* link
+* Scroll back up to top of the screen:
+. Click the *Service account roles* tab 
+. Then, click the *service-account-trusted-artifact-signer* link
 
 image::tas_client_service_account_roles.png[New Client Service Account Roles,align="center"]
 
@@ -189,12 +195,17 @@ WARNING: This is the most common failure point in RHTAS deployments. Fulcio requ
 * This identity is separate from Tekton’s machine identity you configured in the last step and is configured in the existing sso realm.
 * The client you create here enables OAuth-based authentication for developers performing commit signing.
 
-* In the *RHBK Console*, click *Manage Realm* in the left navigation menu.
-* Select the *sso* realm.
+=== 2.1 Create trusted-artifact-signer client in sso Realm
+
+* In the *RHBK Console*:
+. Click *Manage Realm* in the left navigation menu.
+. Select the *sso* realm.
 
 image::tas_sso_realm.png[TAS SSO Realm,align="center"]
 
-* Navigate to *Clients* in the left menu and click *Create client*.
+* To create a new client:
+. Navigate to *Clients* in the left menu 
+. Then click *Create client*.
 
 image::tas_create_client.png[TAS Create Client,align="center"]
 
@@ -233,6 +244,7 @@ urn:ietf:wg:oauth:2.0:oob
 ----
 +
 . Click *Save*
+* You’ll see a pop-up message saying “Client created successfully".
 * This allows tools like *RHTAS* to complete the OAuth authentication flow.
 
 image::tas_commit_client_client_login_settings.png[New Client Login Settings,align="center"]
@@ -240,7 +252,7 @@ image::tas_commit_client_client_login_settings.png[New Client Login Settings,ali
 * Now scroll down to the *Logout settings* section
 . Set the *Front channel logout* toggle to *Off*. 
 . Then click *Save*
-* You’ll see a pop-up message saying “Client saved successfully".
+* You’ll see a pop-up message saying “Client successfully updated".
 
 image::tas_commit_client_logout_settings.png[New Client Logout Settings,align="center"]
 
