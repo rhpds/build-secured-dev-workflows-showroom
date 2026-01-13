@@ -139,9 +139,9 @@ roxctl image check --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekt
 
 ---
 
-===  2.2 Log in back to RHDH
+===  2.2 Open Red Hat Developer Hub in Incognito Mode
 
-* If you are not already logged in to *RHDH*, click the *RHDH* Console tab in the Showroom and log in using:
+* Open RHDH in a Private/Incognito window using the link:{developer_hub_url}[*RHDH URL*,window=_blank] 
 
 * *Username*:
 
@@ -154,8 +154,11 @@ user1
 
 [source, role="execute" ]
 ----
-r3dh4t1
+{password}
 ----
+
+WARNING: If you do not use Private/Incognito window you will be logged in using the admin credentials and will not be
+able to impersonate a developer.
 
 ---
 
@@ -383,13 +386,19 @@ output:
 
 ---
 
-== Step 3: Prepare Developer and Pipeline Trust Foundations
+== Step 3: Explore Your Quarkus Application
+
+* Evan to provide details here
+
+---
+
+== Step 4: Prepare Developer and Pipeline Trust Foundations
 
 * Before you start modifying code, you need to configure Git commit signing in OpenShift Dev Spaces.
 * link:https://developers.redhat.com/products/openshift-dev-spaces[*OpenShift Dev Spaces*,window=_blank] provides cloud-hosted development environments that run inside the cluster. These environments are defined declaratively using link:https://devfile.io/[*Devfiles*,window=_blank], which describe the tools, configuration, and lifecycle behaviour of a developer workspace.
 *  You also need to ensure the CI pipelines have the credentials required to authenticate with external systems during the build and verification stages.
 
-=== 3.1 Create the tas-git-config ConfigMap
+=== 4.1 Create the tas-git-config ConfigMap
 
 * In this step, you will configure *Dev Spaces* so that every developer workspace automatically inherits the information required for OIDC-based Git commit signing, without manual setup.
 
@@ -415,8 +424,7 @@ data:
 EOF
 ----
 
-* This ConfigMap defines the endpoints and identity configuration required by gitsign, the tool used to perform keyless Git commit signing via *RHTAS*.
-
+* This ConfigMap defines the endpoints and identity configuration required by *gitsign*, the tool used to perform keyless Git commit signing via *RHTAS*.
 
 NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spaces to inject these values into every developer workspace as environment variables.
 
@@ -463,7 +471,7 @@ image::devfile_anatomy.png[]
 
 ---
 
-=== 3.2 Update the Devfile 
+=== 3.2 Log Back in to GitLab Update the Devfile 
 
 * If you are not already logged in to *RHBK*, click the *Gitlab* tab in the Showroom and log in using:
 
@@ -481,72 +489,49 @@ image::devfile_anatomy.png[]
 {gitlab_root_password}
 ----
 
-* At the top left click on Gitlab Home
+---
 
+=== 3.3 Update the Devfile 
+
+. At the top left click on Gitlab Home
++
 image::gitlab_home_page.png[gitlab_home_page,align="center"]
-
-* Select the repository "development / my-quarkus-tkn"
-
++
+. Select the repository "development / my-quarkus-tkn"
++
 image::my-quarkus-tkn_repo.png[gitlab_home_page,align="center"]
-
-* Select the the file *devfile.yaml*
-
++
+. Select the the file *devfile.yaml*
++
 image::select_devfile.png[select_devfile,align="center"]
-
-* Select *Edit* > *Edit single file*.
-
++
+. Select *Edit* > *Edit single file*.
++
 image::devfile_single_edit.png[devfile_single_edit,align="center"]
-
-* Add the following atrributes under the development-tooling component to load the ConfigMap you created in the earlier step.
-
-[source, role="execute"]
-----
-    attributes:
-      controller.devfile.io/mount-to-devworkspace: 'true'
-      controller.devfile.io/watch-configmap: 'true'
-----
-
++
+. In devfile.yaml, locate and uncomment the *attribures* section using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below: 
+** These attributes allow configuration from the ConfigMap you created earlier to be injected into your workspace in OpenShift Dev Spaces.
++
 image::dev_tools_atributes.png[dev_tools_atributes,align="center"]
-
-* Next, under commands add this entry to update the Git config for the current session to use the configured variables for commit  signing:
-
-
-[source, role="execute", subs="attributes"]
-----
-- id: init-git-config
-    exec:
-      label: "Configure Git for commit signing"
-      component: development-tooling
-      commandLine: |
-        USERNAME=user1-devspaces
-        git config --global user.email "user1@demo.redhat.com"
-        git config --global user.name "user1"
-        git config --global commit.gpgsign true
-        git config --global tag.gpgsign true
-        git config --global gpg.x509.program /projects/home/bin/gitsign
-        git config --global gpg.format x509
-        git config --global gitsign.fulcio "{tas_fulcio_url}"
-        git config --global gitsign.issuer "https://sso.{openshift_cluster_ingress_domain}/realms/sso"
-        git config --global gitsign.rekor  "{tas_rekor_url}"
-        git config --global gitsign.clientid "trusted-artifact-signer"
-----
-
-* Finally, update the devfile.yaml to use the variables injected from the ConfigMap and init the Git Config. by adding this post-start event that will command the command you just added in the devfile.
-
-[source, role="execute", subs="attributes"]
-----
-postStart:
-    - init-git-config
-----
-
-* Scroll down and enter a commit message: 
++
+. Next, under the commands section, uncomment the *init-git-config* command using using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:  
+** This command updates the Git configuration for the current workspace session using the injected environment variables, enabling commit signing.
++
+image::init_git_config_command.png[init_git_config_command,align="center"]
++
+. Finally, under the events section, uncomment the postStart event using CMD + / (Mac) or CTRL + / (Windows/Linux). 
+** This *post-start* event automatically triggers the *init-git-config* command as soon as the workspace starts.
++
+image::poststart_Event.png[poststart_Event.png,align="center"]
++
+. Scroll down and enter a commit message: 
 +
 [source, role="execute"]
 ----
 feat: Update Devfile Configuration 
 ----
 +
-* Click *Commit Changes* 
+. Click *Commit Changes* 
 
 ---
 
