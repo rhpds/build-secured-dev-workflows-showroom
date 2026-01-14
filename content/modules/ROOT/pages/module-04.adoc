@@ -5,7 +5,7 @@
 * By this point in the workshop, you have established strong foundations of trust across the software supply chain. In Module 1, you made software composition visible by ingesting and analysing SBOMs, turning dependency risk from an assumption into evidence. In Module 2, you anchored trust in cryptographic provenance, ensuring every build artifact is signed, traceable, and verifiably produced by your CI pipeline. In Module 3, you reduced developer friction by centralising access to tools and security capabilities through *Red Hat Developer Hub*, using *GitOps* to configure authentication, plugins, and catalog discovery as a consistent, secure entry point for developers.
 * One critical challenge remains: “How do we prevent unverified or unsafe images from reaching staging and production?” Security controls only scale when developers do not have to think about them. If teams must manually assemble pipelines or decide when policies apply, trust quickly erodes. This is where *Software Templates*, also known as *Golden Paths*, come in. In this module, you will use *software templates* to define opinionated, secure workflows that embed the guardrails established in earlier modules by design, including SBOM generation and analysis, code and image signing, vulnerability scanning, and *Enterprise Contract* policy checks.
 
-NOTE: Enterprise Contract is the policy engine that governs whether an application can be promoted through the delivery pipeline. It is based on the upstream open-source project link:https://conforma.dev/[*Conforma*,window=_blank], which provides policy-driven verification of software supply chain evidence such as SBOMs, vulnerability scan results, image signatures, and build attestations.
+NOTE: Enterprise Contract is the policy engine that governs whether an application can be promoted through the delivery pipeline. It is based on the upstream open-source project link:https://conforma.dev/[*Conforma*^], which provides policy-driven verification of software supply chain evidence such as SBOMs, vulnerability scan results, image signatures, and build attestations.
 
 
 * By the end of this module, you’ll see how RHADS turns trusted building blocks into repeatable, production-ready Golden Paths. Every application starts secure. Every promotion is governed. And teams move fast without bypassing trust.
@@ -37,13 +37,14 @@ NOTE: Enterprise Contract is the policy engine that governs whether an applicati
 * In the *ACS console*, navigate to *Platform Configuration* → *Integrations*
 * Select Red Hat Quay.io
 
-image::acs_quay_integration.png[acs_quay_integration,align=center"]
+image::acs_quay_integration.png[acs_quay_integration,align="center",link=self,window=blank]
 
 * Click *New Integration*.
 
-image::acs_new_integration.png[acs_new_integration,align=center"]
+image::acs_new_integration.png[acs_new_integration,align="center",link=self,window=blank]
 
 * Provide the following details:
+
 . Integration name:
 +
 [source, role="execute"]
@@ -83,11 +84,11 @@ acs_quay
 . *Disable TLS certificate validation (insecure)*: Should be ticked
 . *Create integration without testing*: Should not be ticked
 
-image::acs_quay_inegration.png[acs_quay_inegration,align=center"]
+image::acs_quay_inegration.png[acs_quay_inegration,align="center",link=self,window=blank]
 
 * Click *Test* to validate the connection.
 
-image::test_quay_connection.png[test_quay_connection,align=center"]
+image::test_quay_connection.png[test_quay_connection,align="center",link=self,window=blank]
 
 * Once the test succeeds, click *Save* to create the integration.
 * At this point, *ACS* can securely access images stored in *Quay* and perform scans automatically.
@@ -113,6 +114,7 @@ roxctl image check --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekt
 ----
 
 * Together, these checks demonstrate that:
+
 . Container images can be scanned deterministically from the registry using ACS
 . Vulnerability findings are associated with a specific image digest, not a mutable tag
 . Policy evaluation can be performed programmatically as part of a CI/CD workflow
@@ -128,13 +130,13 @@ roxctl image check --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekt
 * Now let’s switch personas and step into the role of a developer (User1), which you created earlier.
 * As a developer, your goal is simple, get a ready-to-use development environment so you can focus on building your new feature. 
 * This is exactly what Software Templates, or Golden Paths, are designed to provide.
-* Under the hood, they use the link:https://backstage.spotify.com/docs/portal/core-features-and-plugins/scaffolder[*Backstage scaffolder*,window=_blank] to automate the creation of repositories, configuration, and CI/CD resources based on platform-approved patterns, as you’ll see in the next section.
+* Under the hood, they use the link:https://backstage.spotify.com/docs/portal/core-features-and-plugins/scaffolder[*Backstage scaffolder*^] to automate the creation of repositories, configuration, and CI/CD resources based on platform-approved patterns, as you'll see in the next section.
 
 ---
 
 ===  2.2 Open Red Hat Developer Hub in Incognito Mode
 
-* Open RHDH in a Private/Incognito window using the link:{developer_hub_url}[*RHDH URL*,window=_blank] 
+* Open RHDH in a Private/Incognito window using the link:{developer_hub_url}[*RHDH URL*^] 
 
 * *Username*:
 
@@ -162,45 +164,46 @@ able to impersonate a developer.
 . At the moment, only one template is available, but in real environments, platform teams typically provide multiple Golden Paths for different application types and technology stacks.
 . Click on the link: “Securing a Quarkus Service Software Supply Chain (Tekton)”.
 
-image::select_software_template.png[select_software_template,align="center"]
+image::select_software_template.png[select_software_template,align="center",link=self,window=blank]
 
 * You will be guided through a four-step, wizard-style form to collect the required inputs.
 * Instead of raising tickets and waiting for manual setup, this workflow applies platform standards automatically, as defined by the template.
 * In the first form, you are prompted to enter application-specific parameters.
 * Default values are already provided by the template, so keep the defaults and click *Next*.
 
-image::software_template_step1.png[software_template_step1,align="center"]
+image::software_template_step1.png[software_template_step1,align="center",link=self,window=blank]
 
 * The second form provides container image registry details.
 * In this workshop, container images are pushed to *Quay.io*.
 * The required values are pre-filled, so click *Next* to continue.
 
-image::software_template_Step2.png[software_template_Step2,align="center"]
+image::software_template_Step2.png[software_template_Step2,align="center",link=self,window=blank]
 
 * In the third form, you configure the source code repository, which is *GitLab* in this environment.
 . Set *Verify Commits* to *Enabled*. This enforces commit signature verification in the pipeline, ensuring that only signed and trusted commits are accepted during the build process.
 . Leave the remaining values as provided by the template.
 * Click *Review* to proceed.
 
-image::software_template_step3.png[software_template_step3,align="center"]
+image::software_template_step3.png[software_template_step3,align="center",link=self,window=blank]
 
 * You will now see a summary of all the parameters that will be passed to the *scaffolder* when executing the template steps.
 * These  values are used to:
+
 . Create the Git repository and application skeleton
 . Configure CI pipelines
 . Register the component in the RHDH Software Catalog
 * Review the values, then click *Create* to start the scaffolding process.
 
-image::software_template_review.png[software_template_review,align="center"]
+image::software_template_review.png[software_template_review,align="center",link=self,window=blank]
 
 * After a short time, the scaffolder workflow will complete and you will see a confirmation screen with green checkmarks indicating each step has succeeded.
 * Click *Open Component in Catalog* to view your newly created application in the Developer Hub.
 
-image::open_component_in_catalog.png[open_component_in_catalog,align="center"]
+image::open_component_in_catalog.png[open_component_in_catalog,align="center",link=self,window=blank]
 
 ---
 
-=== *`Optional Deep Dive 🔍:`* Understanding Software Templates
+=== *`Optional Deep Dive:`* Understanding Software Templates
 
 * Software Templates are the primary mechanism used by *Red Hat Developer Hub* to expose Golden Paths to development teams.
 * Templates are defined using YAML and rendered as rich, validated forms in the Red Hat Developer Hub UI. Developers interact with a simple form. Behind the scenes, the platform does all the heavy lifting.
@@ -224,7 +227,7 @@ image::open_component_in_catalog.png[open_component_in_catalog,align="center"]
 
 * The header section is mandatory for every template.
 * The *Component* card on the *Create Component* page is displayed based on the details in the Header section.
-* For example, this is the header of the link:${gitlab_url}/rhdh/build-secured-dev-workflows-idp-configuration/-/blob/main/scaffolder-templates/quarkus-stssc-template/template.yaml[Software Template,,window=_blank] you will execute in the coming steps:
+* For example, this is the header of the link:${gitlab_url}/rhdh/build-secured-dev-workflows-idp-configuration/-/blob/main/scaffolder-templates/quarkus-stssc-template/template.yaml[Software Template^] you will execute in the coming steps:
 
 [source, yaml]
 ----
@@ -258,6 +261,7 @@ spec:
 * Each form step must specify a *title*, which *properties* it will ask from the user, and if any of them is *required*.
 * Following is snippet of te properties section of the Software template you'll execute in the following steps.
 * RHDH renders as three steps, each with a seperate form:
+
 . Provide Information for Application
 . Provide Image Registry Information
 . Application Repository Information
@@ -357,6 +361,7 @@ parameters:
 === Template Output
 
 * The spec.output can be used to display useful information such as:
+
 . Links to newly created Components
 . Source Code Repository links
 . Links to Git Merge Requests that are needed etc
@@ -388,7 +393,7 @@ output:
 == Step 4: Prepare Developer and Pipeline Trust Foundations
 
 * Before you start modifying code, you need to configure Git commit signing in OpenShift Dev Spaces.
-* link:https://developers.redhat.com/products/openshift-dev-spaces[*OpenShift Dev Spaces*,window=_blank] provides cloud-hosted development environments that run inside the cluster. These environments are defined declaratively using link:https://devfile.io/[*Devfiles*,window=_blank], which describe the tools, configuration, and lifecycle behaviour of a developer workspace.
+* link:https://developers.redhat.com/products/openshift-dev-spaces[*OpenShift Dev Spaces*^] provides cloud-hosted development environments that run inside the cluster. These environments are defined declaratively using link:https://devfile.io/[*Devfiles*^], which describe the tools, configuration, and lifecycle behaviour of a developer workspace.
 *  You also need to ensure the CI pipelines have the credentials required to authenticate with external systems during the build and verification stages.
 
 === 4.1 Create the tas-git-config ConfigMap
@@ -423,13 +428,13 @@ NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spac
 
 ---
 
-=== 4.2 *`Optional Deep Dive 🔍:`* Development Environment as Code with Devfiles
+=== 4.2 *`Optional Deep Dive:`* Development Environment as Code with Devfiles
 
 * The concept of *Development Environment as Code* represents a significant shift in the way we set up and manage development environments. 
 * By treating these configurations as code, developers can leverage automation, apply version control, and ensure consistency across various setups. 
 * This approach simplifies the complex process of configuring individual environments and aligns it with modern DevOps practices.
-* At the heart of this paradigm is the *Devfile*, a powerful YAML configuration file used by **OpenShift Dev Spaces**. 
-* *Devfiles* act as comprehensive blueprints for setting up development environments, defining everything from runtime environments to the necessary tools and commands needed for a project.
+* At the heart of this paradigm is the *Devfile*, a YAML configuration file used by **OpenShift Dev Spaces**.
+* *Devfiles* act as blueprints for setting up development environments, defining everything from runtime environments to the necessary tools and commands needed for a project.
 
 === Anatomy of a Devfile
 
@@ -441,6 +446,7 @@ NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spac
 ==== Components: 
 
 * *Components* are the building blocks of the development environment. The can be of type:
+
 . *Container*: Defines the container image containing the runtime environment, development tools, and dependencies.
 . *Kubernetes/OpenShift Resources*: Incorporates Kubernetes or OpenShift-specific resources such as Routes and BuildConfigs into the workspace.
 . *Volume*: Provides persistent storage necessary for certain data within the development environment.
@@ -458,7 +464,7 @@ NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spac
 * These events trigger specific commands at different stages of the workspace lifecycle, enabling the setup or teardown of services and tools necessary for the development process.
 * This mechanism ensures that certain tasks are automatically handled at the appropriate times, enhancing both the efficiency and reliability of the development environment.
 
-image::devfile_anatomy.png[]
+image::devfile_anatomy.png[Devfile Anatomy Diagram,link=self,window=blank]
 
 * Now it’s time to try this out hands-on. In this module, you’ll experience firsthand how *OpenShift Dev Spaces* streamlines the process of joining a new project.
 
@@ -488,34 +494,34 @@ image::devfile_anatomy.png[]
 
 . At the top left click on Gitlab Home
 +
-image::gitlab_home_page.png[gitlab_home_page,align="center"]
+image::gitlab_home_page.png[gitlab_home_page,align="center",link=self,window=blank]
 +
 . Select the repository "development / my-quarkus-tkn"
 +
-image::my-quarkus-tkn_repo.png[gitlab_home_page,align="center"]
+image::my-quarkus-tkn_repo.png[gitlab_home_page,align="center",link=self,window=blank]
 +
 . Select the the file *devfile.yaml*
 +
-image::select_devfile.png[select_devfile,align="center"]
+image::select_devfile.png[select_devfile,align="center",link=self,window=blank]
 +
 . Select *Edit* > *Edit single file*.
 +
-image::devfile_single_edit.png[devfile_single_edit,align="center"]
+image::devfile_single_edit.png[devfile_single_edit,align="center",link=self,window=blank]
 +
 . In devfile.yaml, locate and uncomment the *attribures* section using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below: 
 ** These attributes allow configuration from the ConfigMap you created earlier to be injected into your workspace in OpenShift Dev Spaces.
 +
-image::dev_tools_atributes.png[dev_tools_atributes,align="center"]
+image::dev_tools_atributes.png[dev_tools_atributes,align="center",link=self,window=blank]
 +
 . Next, under the commands section, uncomment the *init-git-config* command using using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:  
 ** This command updates the Git configuration for the current workspace session using the injected environment variables, enabling commit signing.
 +
-image::init_git_config_command.png[init_git_config_command,align="center"]
+image::init_git_config_command.png[init_git_config_command,align="center",link=self,window=blank]
 +
 . Finally, under the events section, uncomment the postStart event using CMD + / (Mac) or CTRL + / (Windows/Linux). 
 ** This *post-start* event automatically triggers the *init-git-config* command as soon as the workspace starts.
 +
-image::poststart_Event.png[poststart_Event.png,align="center"]
+image::poststart_Event.png[poststart_Event.png,align="center",link=self,window=blank]
 +
 . Scroll down and enter a commit message: 
 +
@@ -533,6 +539,7 @@ feat: Update Devfile Configuration
 * Before executing the software template, the CI pipeline must be able to authenticate to the systems it interacts with.
 * All application pipelines in this workshop run in the tssc-app-ci namespace. Any credentials required by the pipeline must be available there as Kubernetes Secrets.
 * In this step, you will create two  secrets required by the pipeline:
+
 . *tpa-secret*: Credentials for uploading SBOMs to *Red Hat Trusted Profile Analyzer (RHTPA)*
 . *gitlab-auth-secret*: Credentials for authenticating to GitLab when creating repositories and interacting with source code
 * Run the following command to set the TPA_SERVER_URL
@@ -583,7 +590,7 @@ envsubst < ~/lab-assets/gitlab-auth-secret.yml | oc apply -n tssc-app-ci -f -
 * After waiting a few minutes for *OpenShift Dev Spaces* to finish setting up your workspace, you're presented with your IDE.
 * You click the button *Yes, I trust the authors*.
 +
-image::96_Trust_Authors.png[]
+image::96_Trust_Authors.png[Trust Authors Dialog,link=self,window=blank]
 +
 
 === 5.2 Verify Git Signing Configuration in OpenShift Dev Spaces
@@ -599,7 +606,7 @@ git config --global --list
 
 NOTE: You may be prompted by your browser to allow paste access into the terminal. If so, approve the prompt to proceed.
 
-image::94_Gitsign_Git_Global_Config.png[]
+image::94_Gitsign_Git_Global_Config.png[Git Global Configuration with Gitsign,link=self,window=blank]
 
 === 5.3 Apply a simple code change
 
@@ -612,11 +619,11 @@ image::94_Gitsign_Git_Global_Config.png[]
 # Test code siging
 ----
 +
-image::97_Index_Markdown_Updated.png[]
+image::97_Index_Markdown_Updated.png[Updated Index Markdown File,link=self,window=blank]
 +
 * Open the IDE terminal, click on the *Hamburger button* (three horizontal bars) on the top left of your screen and select *Terminal -> New Terminal*
 +
-image::98_Terminal_Menu.png[]
+image::98_Terminal_Menu.png[Terminal Menu in Dev Spaces,link=self,window=blank]
 +
 * To begin commiting your code to the repository, run the following command to add your changes to staging and commiting your changes:
 
@@ -630,15 +637,15 @@ git commit -m "feat: updated configuration with secure signing"
 * However, Gitsign allows you to provide your signing credentials by copying and pasting the url it outputs into a separate browser window.
 * Copy and paste the url into a new browser tab/window and hit enter.
 +
-image::90_Gitsign_Commit_Message.png[]
+image::90_Gitsign_Commit_Message.png[Git Commit Message with Gitsign,link=self,window=blank]
 +
  The browser will prompt you for your credentials.  Enter `{user}` for the username and `{password}` for the password.
 
-image::91_Gitsign_Credentials_Prompt.png[]
+image::91_Gitsign_Credentials_Prompt.png[Gitsign OIDC Credentials Prompt,link=self,window=blank]
 
 * You will then be redirected to another page that will present a verification code.  Copy this code into your clipboard.
 
-image::92_Gitsign_Verification_Code.png[]
+image::92_Gitsign_Verification_Code.png[Gitsign Verification Code Screen,link=self,window=blank]
 
 * Return to *Dev Spaces* and paste this code into the waiting prompt in the *VS Code* terminal.
 +
@@ -650,7 +657,7 @@ Enter verification code:
 NOTE: Once you've pasted the code, depending on your browser, you may be presented with a popup to allow paste functionality in Devspaces.  Click *Allow* and then hit *Enter*.  If no popup appears, just hit *Enter*.
 * If successful, you should receive a successful commit message:
 +
-image::93_Gitsign_Commit_Signed.png[]
+image::93_Gitsign_Commit_Signed.png[Successfully Signed Commit with Gitsign,link=self,window=blank]
 +
 * Push the code to the repository with the below command:
 +
@@ -662,11 +669,11 @@ git push origin main
 * This action sets the build pipeline into motion.
 * Switch back to the *Developer Hub* and select the *CI tab* from the top menu, note that the pipeline execution is in progress. This may take a few minutes to complete.
 
-image::112_secure_pipeline_in_progress.png[]
+image::112_secure_pipeline_in_progress.png[Secure Pipeline Execution in Progress,link=self,window=blank]
 
 * In the meantime let's explore the different tasks in this pipeline.
 
-image::113_Jenkins_Secure_Build_Pipeline.png[]
+image::113_Jenkins_Secure_Build_Pipeline.png[Secure Build Pipeline Overview,link=self,window=blank]
 
 === Task 1: Verify Commit
 
@@ -674,24 +681,24 @@ image::113_Jenkins_Secure_Build_Pipeline.png[]
 * "This task will only succeed if it can verify a trusted signature on the last commit that triggered the pipeline. This is the signature we provided using *GitSign* when we committed the code from *Dev Spaces*."
 * Click on the task *verify-commit* and expand the logs section.
 
-image::114_Jenkins_Click_On_Verify_Commit.png[]
+image::114_Jenkins_Click_On_Verify_Commit.png[Click on Verify Commit Task,link=self,window=blank]
 
 * "Here in the log, you can see that we successfully validated the signature for the user who made the last code change.”
-* "The *verify-commit* task executes the command link:https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work[*git verify-commit*,window=_blank] to verify that the signature is valid, before the pipeline moves to the next task." you point out.
+* "The *verify-commit* task executes the command link:https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work[*git verify-commit*^] to verify that the signature is valid, before the pipeline moves to the next task." you point out.
 
-image::115_Jenkins__Verify_Commit_Log.png[]
+image::115_Jenkins__Verify_Commit_Log.png[Verify Commit Task Log Output,link=self,window=blank]
 
 == Task 2: Scan Source
 
 * "After we package the code, running a static analysis to detect any potential bugs or code style violations is a good idea."
-* The task called *scan* task,  utilizes a tool called link:https://www.sonarsource.com/products/sonarqube[*SonarQube*,window=_blank] to analyze the source code and provide reports based on its quality.
+* The task called *scan* task,  utilizes a tool called link:https://www.sonarsource.com/products/sonarqube[*SonarQube*^] to analyze the source code and provide reports based on its quality.
 * "We can view the scan results from the pipeline logs as we did before, or we could log in to *SonarQube* to get an in-depth report."
 * "Let's look at the *SonarQube* report this time," you decide.
-* To access *SonarQube*, you use the following https://sonarqube-sonarqube.{OPENSHIFT_CLUSTER_INGRESS_DOMAIN}[*URL*,window=_blank]  and log in with your credentials, **username:** `{adminuser}` and **password**: `{password}`.
+* To access *SonarQube*, you use the following link:https://sonarqube-sonarqube.{OPENSHIFT_CLUSTER_INGRESS_DOMAIN}[*URL*^]  and log in with your credentials, **username:** `{adminuser}` and **password**: `{password}`.
 * You click on the project link in the *SonarQube* Dashboard.
 * "Good news! Our application has passed the validation test by *SonarQube*" .
 
-image::54_SonarQube_Dashboard.png[]
+image::54_SonarQube_Dashboard.png[SonarQube Analysis Dashboard,link=self,window=blank]
 
 == Task 3: Build and Sign Image
 
@@ -699,11 +706,11 @@ image::54_SonarQube_Dashboard.png[]
 * "This *SBOM* is then pushed to our *Red Hat Quay* registry upon successful completion of this task
 * The SBOM is then stored in the image registry, alongside your container image.”
 
-image::116_Jenkins_Build_Sign_Image.png[]
+image::116_Jenkins_Build_Sign_Image.png[Build and Sign Image Task,link=self,window=blank]
 
 * Switch to the image registry tab, note that the generated attestation, signature, and SBOM files are sitting side-by-side with the resulting container image produced by the pipeline in the registry.
 
-image::59_Generated_Artifacts_Registery.png[]
+image::59_Generated_Artifacts_Registery.png[Generated Artifacts in Quay Registry,link=self,window=blank]
 
 
 === Task 4: Upload SBOM to Repository
@@ -711,40 +718,40 @@ image::59_Generated_Artifacts_Registery.png[]
 * Once the *SBOM* has been generated, the next step is to upload it to your organization's CycloneDX repository. 
 * "The *SBOM* now sits in a single catalogue that every team can query, storing each SBOM with its build number and signature gives auditors a clear trail that proves provenance, verifies licensing obligations, and shows when components were updated or removed," you explain.
 
-image::119_Jenkins_Upload_SBOM_To_CycloneDX.png[]
+image::119_Jenkins_Upload_SBOM_To_CycloneDX.png[Upload SBOM to CycloneDX Task,link=self,window=blank]
 
 === Task 5: Upload SBOM to TPA
 
 * In parallel, the *SBOM* is uploaded to Trusted Profile Analyzer (TPA).  We do this to turn the raw SBOM into actionable information.  For example, TPA can identify dependencies in your image that are targets of known Common Vulnerabilities and Exploits (CVEs).  These CVE's can be viewed on the Trusted Profile Analyzer console for the specific *SBOM* uploaded.
 
-image::120_Jenkins_Upload_SBOM_To_TPA.png[]
+image::120_Jenkins_Upload_SBOM_To_TPA.png[Upload SBOM to TPA Task,link=self,window=blank]
 
-* To access *Trusted Profile Analyzer (TPA)*, you use the following https://console-trusted-profile-analyzer.{OPENSHIFT_CLUSTER_INGRESS_DOMAIN}[*URL*,window=_blank] and log in with your credentials, **username**: `{adminuser}` and **password**: `{password}`.
+* To access *Trusted Profile Analyzer (TPA)*, you use the following link:https://console-trusted-profile-analyzer.{OPENSHIFT_CLUSTER_INGRESS_DOMAIN}[*URL*^] and log in with your credentials, **username**: `{adminuser}` and **password**: `{password}`.
 
 * "You can view the vulnerabilities and recommended remediation inside the SBOM we just uploaded to **Trusted Profile Analyzer (TPA)**," you explain, clicking **Search** in the left navigation menu.
 
-image::121_Search_TPA.png[]
+image::121_Search_TPA.png[Search TPA for SBOM,link=self,window=blank]
 
 * In the results table, click the **secured-app** link at the top. "The first entry in the list is the SBOM for our **secured-app** application," you point out.
 
-image::122_Results_TPA.png[]
+image::122_Results_TPA.png[TPA Search Results,link=self,window=blank]
 
 * You switch to the **Dependency Analytics Report** tab as ypu explain, "This view lists every discovered security issue and the remediation that Trusted Profile Analyzer suggests."
 
-image::123_Dependency_Analytics_TPA.png[]
+image::123_Dependency_Analytics_TPA.png[TPA Dependency Analytics View,link=self,window=blank]
 
 === Task 6: ACS Image Check
 
 * You switch back to the pipeline view as you explain: "*ACS* doesn't stop at scanning; it can also assess whether the image adheres to predefined rules by performing an image check".
 * "The *image-scan-check* task evaluates the container image against policies and compliance standards. This includes not running as root, using approved base images, or avoiding prohibited software packages, for example."
 
-image::118_Jenkins_ACS_Image_Check_Task.png[]
+image::118_Jenkins_ACS_Image_Check_Task.png[ACS Image Check Task,link=self,window=blank]
 
 === Task 7: Image Scan
 
 * "The *acs-image-scan* task performs an image scan to identify known vulnerabilities within the container image. It compares the image components against known vulnerability databases, uncovering any CVEs (Common Vulnerabilities and Exposures) that might compromise the container."
 
-image::117_Jenkins_ACS_Image_Scan_Task.png[]
+image::117_Jenkins_ACS_Image_Scan_Task.png[ACS Image Scan Task Results,link=self,window=blank]
 
 
 
