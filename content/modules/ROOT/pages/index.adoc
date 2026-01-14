@@ -1,6 +1,6 @@
 = Build secure streamlined developer workflows with Red Hat Advanced Developer Suite
 
-image::rhads-logo.png[RHADS Logo,align="center",width=200]
+image::rhads-logo.png[RHADS Logo,align="center",width=200,link=self,window=blank]
 
 == Welcome to Build secure streamlined developer workflows with RHADS Workshop
 
@@ -19,7 +19,7 @@ Red Hat Advanced Developer Suite (RHADS) scales platform engineering teams to in
 
 === Key Components Covered
 
-image::rhads-architecture.png[rhads-architecture,align="center"]
+image::rhads-architecture.png[rhads-architecture,align="center",link=self,window=blank]
 
 [cols="1,3"]
 |===

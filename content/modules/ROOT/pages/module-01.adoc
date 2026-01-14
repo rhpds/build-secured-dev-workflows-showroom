@@ -27,7 +27,7 @@
 === Enter *Red Hat Trusted Profile Analyzer (RHTPA)*
 
 * This is where *RHTPA* comes into play.
-* *RHTPA* is Red Hat’s supported distribution of the upstream link:https://github.com/guacsec/trustify[*trustify  project*,window=_blank] project, which is part of the link:https://guac.sh/trustify/[*GUAC Community*,window=_blank] (Graph for Understanding Artifact Composition).
+* *RHTPA* is Red Hat's supported distribution of the upstream link:https://github.com/guacsec/trustify[*trustify  project*^] project, which is part of the link:https://guac.sh/trustify/[*GUAC Community*^] (Graph for Understanding Artifact Composition).
 * *RHTPA* ingests *SBOM* documents, indexes every component inside them, and continuously correlates that inventory against known CVEs and security advisories, producing an auditable view of software composition. 
 
 === By the end of this module you will be able to: 
@@ -88,7 +88,7 @@
 * After entering your credentials, click the *Sign In* button.
 * In the *RHBK Console* click on the *Manage Realm* link in the left navigation menu, you will notice that we have two realms already configured *master* and *sso* as you can see in this screenshot:
 
-image::keycloak_manage_realms.png[Keycloak Realms,align="center"]
+image::keycloak_manage_realms.png[Keycloak Realms,align="center",link=self,window=blank]
 
 ---
 
@@ -124,12 +124,12 @@ keycloak
 * After a few seconds, the *Red Hat build of Keycloak Operator* will appear in the list of installed operators. 
 * Click its link to view the details.
 
-image::keycloak_operator.png[Keycloak Operator ,align="center"]
+image::keycloak_operator.png[Keycloak Operator ,align="center",link=self,window=blank]
 
 * Then select the *KeycloakRealmImport* tab.
 * At this stage, no import jobs are running. You will trigger the import in the next step.
 
-image::keycloak_realmimport.png[Keycloak Realm Import,align="center"]
+image::keycloak_realmimport.png[Keycloak Realm Import,align="center",link=self,window=blank]
 
 * Execute the following command in the Showroom terminal to set the required variables for this module.
 
@@ -154,7 +154,7 @@ envsubst '${TPA_REALM} ${TPA_CLI_CLIENT_SECRET} ${TPA_ADMIN_USERNAME} ${TPA_ADMI
 
 * Switch back to the *KeyCloakRealmImport* tab in the *OpenShift console*. You will see that the import job has started:
 
-image::tpa_realm_import_start.png[TPA Realm Import Start,align="center"]
+image::tpa_realm_import_start.png[TPA Realm Import Start,align="center",link=self,window=blank]
 
 * After a short time, the status will change to *Done*.
 
@@ -334,27 +334,27 @@ username: service-account-cli
 
 * Refresh the *RHBK* console in *Showroom*
 
-image::refresh_rhbk.png[refresh_rhbk,align="center"]
+image::refresh_rhbk.png[refresh_rhbk,align="center",link=self,window=blank]
 
 * Return to the *Manage Realm* view in the *RHBK* console and select the newly created *tpa* realm:
 
-image::tpa_realm.png[New TPA Realm,align="center"]
+image::tpa_realm.png[New TPA Realm,align="center",link=self,window=blank]
 
 WARNING: When a new realm is imported, *RHBK* restarts to refresh its configuration. During this time, you may briefly see *Application is not available* error when you try to access the *RHBK* console.
 
 * Navigate to *Clients* in the left menu.
 * You will see the two clients created by the import job: *cli* and *frontend*.
 
-image::tpa_realm_clients.png[TPA Realm Clients,align="center"]
+image::tpa_realm_clients.png[TPA Realm Clients,align="center",link=self,window=blank]
 
 * Select the *cli* client then navigate to *Client scopes*.
 * You will see the three client scopes (create,delete,read) assigned to this client as per our configuration.
 
-image::cli_client_scopes.png[cli_client_scopes,align="center"]
+image::cli_client_scopes.png[cli_client_scopes,align="center",link=self,window=blank]
 
 * Select *service_account_roles*, here you will find that the *cli* client is assigned the *tpa-manager* role as expected.
 
-image::cli_account_roles.png[cli_account_roles,align="center"]
+image::cli_account_roles.png[cli_account_roles,align="center",link=self,window=blank]
 
 ---
 
@@ -481,11 +481,11 @@ modules:
 tssc-tpa
 ----
 
-image::select_tssc-tpa_project.png[Select tssc-tpa project,align="center"]
+image::select_tssc-tpa_project.png[Select tssc-tpa project,align="center",link=self,window=blank]
 
 * Navigate to: Workloads → Pods and confirm that the *RHTPA* server pod is in the Running state and Ready is 1/1, this may take 2-5 minutes. The pod name will follow the format *server-<hash>*.
 
-image::tpa_server_pod.png[TPA Server Pod,align="center"]
+image::tpa_server_pod.png[TPA Server Pod,align="center",link=self,window=blank]
 
 ---
 
@@ -563,15 +563,15 @@ ___
 * Once logged in, check the dashboard. You should see *test-sbom* listed in the inventory.
 * Click *test-sbom* link to view its details.
 
-image::view_test_sbom.png[View Test SBOM,align="center"]
+image::view_test_sbom.png[View Test SBOM,align="center",link=self,window=blank]
 
 * Switch to the *Packages* tab. *RHTPA* shows an inventory of all packages contained in the *SBOM* you uploaded.
 
-image::rhtpa_packages.png[rhtpa_packages,align="center"]
+image::rhtpa_packages.png[rhtpa_packages,align="center",link=self,window=blank]
 
 * Switch to the *Vulnerabilities* tab. You will notice that the view is currently empty.
 
-image::rhtpa_vulnerabilities.png[rhtpa_vulnerabilities,align="center"]
+image::rhtpa_vulnerabilities.png[rhtpa_vulnerabilities,align="center",link=self,window=blank]
 
 [NOTE]
 ====
@@ -585,12 +585,12 @@ The initial sync can take significant time, especially in new environments.
 * In the left navigation, select *Importers*.
 * You will see the advisory import jobs running for the sources configured in the *tssc-tpa* YAML you applied.
 
-image::rhtpa_importers.png[rhtpa_importers,align="center"]
+image::rhtpa_importers.png[rhtpa_importers,align="center",link=self,window=blank]
 
 * These import jobs can take quite a while to complete, so you may not see full results during today’s lab.
 * Once imports are finished, you would see identified vulnerabilities, similar to the example below:
 
-image::rhtpa_vulnerabilities_complete.png[rhtpa_vulnerabilities_complete,align="center"]
+image::rhtpa_vulnerabilities_complete.png[rhtpa_vulnerabilities_complete,align="center",link=self,window=blank]
 
 ---
 
