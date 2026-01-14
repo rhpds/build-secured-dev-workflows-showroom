@@ -648,18 +648,106 @@ Enter verification code:
 ----
 +
 NOTE: Once you've pasted the code, depending on your browser, you may be presented with a popup to allow paste functionality in Devspaces.  Click *Allow* and then hit *Enter*.  If no popup appears, just hit *Enter*.
+* If successful, you should receive a successful commit message:
++
+image::93_Gitsign_Commit_Signed.png[]
++
+* Push the code to the repository with the below command:
++
 [source, role="execute"]
 ----
 git push origin main
 ----
++
+* This action sets the build pipeline into motion.
+* Switch back to the *Developer Hub* and select the *CI tab* from the top menu, note that the pipeline execution is in progress. This may take a few minutes to complete.
 
-* Return to RHDH → CI tab.
-* A new pipeline run is triggered.
-* The pipeline automatically:
-. verifies the commit signature,
-. builds the image,
-. scans it with ACS,
-. signs the image with TAS.
+image::112_secure_pipeline_in_progress.png[]
+
+* In the meantime let's explore the different tasks in this pipeline.
+
+image::113_Jenkins_Secure_Build_Pipeline.png[]
+
+=== Task 1: Verify Commit
+
+* "The first task after cloning our git repo, is ensuring the source code modifications were made by a trusted source.
+* "This task will only succeed if it can verify a trusted signature on the last commit that triggered the pipeline. This is the signature we provided using *GitSign* when we committed the code from *Dev Spaces*."
+* Click on the task *verify-commit* and expand the logs section.
+
+image::114_Jenkins_Click_On_Verify_Commit.png[]
+
+* "Here in the log, you can see that we successfully validated the signature for the user who made the last code change.”
+* "The *verify-commit* task executes the command link:https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work[*git verify-commit*,window=_blank] to verify that the signature is valid, before the pipeline moves to the next task." you point out.
+
+image::115_Jenkins__Verify_Commit_Log.png[]
+
+== Task 2: Scan Source
+
+* "After we package the code, running a static analysis to detect any potential bugs or code style violations is a good idea."
+* The task called *scan* task,  utilizes a tool called link:https://www.sonarsource.com/products/sonarqube[*SonarQube*,window=_blank] to analyze the source code and provide reports based on its quality.
+* "We can view the scan results from the pipeline logs as we did before, or we could log in to *SonarQube* to get an in-depth report."
+* "Let's look at the *SonarQube* report this time," you decide.
+* To access *SonarQube*, you use the following https://sonarqube-sonarqube.{OPENSHIFT_CLUSTER_INGRESS_DOMAIN}[*URL*,window=_blank]  and log in with your credentials, **username:** `{adminuser}` and **password**: `{password}`.
+* You click on the project link in the *SonarQube* Dashboard.
+* "Good news! Our application has passed the validation test by *SonarQube*" .
+
+image::54_SonarQube_Dashboard.png[]
+
+== Task 3: Build and Sign Image
+
+* "The *build-sign-image* task is responsible for building a container image based on your verified source code. It then attests the image and generates the *Software Bill of Materials (SBOM)* we discussed earlier."
+* "This *SBOM* is then pushed to our *Red Hat Quay* registry upon successful completion of this task
+* The SBOM is then stored in the image registry, alongside your container image.”
+
+image::116_Jenkins_Build_Sign_Image.png[]
+
+* Switch to the image registry tab, note that the generated attestation, signature, and SBOM files are sitting side-by-side with the resulting container image produced by the pipeline in the registry.
+
+image::59_Generated_Artifacts_Registery.png[]
+
+
+=== Task 4: Upload SBOM to Repository
+
+* Once the *SBOM* has been generated, the next step is to upload it to your organization's CycloneDX repository. 
+* "The *SBOM* now sits in a single catalogue that every team can query, storing each SBOM with its build number and signature gives auditors a clear trail that proves provenance, verifies licensing obligations, and shows when components were updated or removed," you explain.
+
+image::119_Jenkins_Upload_SBOM_To_CycloneDX.png[]
+
+=== Task 5: Upload SBOM to TPA
+
+* In parallel, the *SBOM* is uploaded to Trusted Profile Analyzer (TPA).  We do this to turn the raw SBOM into actionable information.  For example, TPA can identify dependencies in your image that are targets of known Common Vulnerabilities and Exploits (CVEs).  These CVE's can be viewed on the Trusted Profile Analyzer console for the specific *SBOM* uploaded.
+
+image::120_Jenkins_Upload_SBOM_To_TPA.png[]
+
+* To access *Trusted Profile Analyzer (TPA)*, you use the following https://console-trusted-profile-analyzer.{OPENSHIFT_CLUSTER_INGRESS_DOMAIN}[*URL*,window=_blank] and log in with your credentials, **username**: `{adminuser}` and **password**: `{password}`.
+
+* "You can view the vulnerabilities and recommended remediation inside the SBOM we just uploaded to **Trusted Profile Analyzer (TPA)**," you explain, clicking **Search** in the left navigation menu.
+
+image::121_Search_TPA.png[]
+
+* In the results table, click the **secured-app** link at the top. "The first entry in the list is the SBOM for our **secured-app** application," you point out.
+
+image::122_Results_TPA.png[]
+
+* You switch to the **Dependency Analytics Report** tab as ypu explain, "This view lists every discovered security issue and the remediation that Trusted Profile Analyzer suggests."
+
+image::123_Dependency_Analytics_TPA.png[]
+
+=== Task 6: ACS Image Check
+
+* You switch back to the pipeline view as you explain: "*ACS* doesn't stop at scanning; it can also assess whether the image adheres to predefined rules by performing an image check".
+* "The *image-scan-check* task evaluates the container image against policies and compliance standards. This includes not running as root, using approved base images, or avoiding prohibited software packages, for example."
+
+image::118_Jenkins_ACS_Image_Check_Task.png[]
+
+=== Task 7: Image Scan
+
+* "The *acs-image-scan* task performs an image scan to identify known vulnerabilities within the container image. It compares the image components against known vulnerability databases, uncovering any CVEs (Common Vulnerabilities and Exposures) that might compromise the container."
+
+image::117_Jenkins_ACS_Image_Scan_Task.png[]
+
+
+
 
 == Step 1: Analyse the Dev Build (Security Audit)
 
@@ -671,6 +759,7 @@ This evidence is what the Enterprise Contract will later enforce.
 	2.	Select your component (for example, my-secure-app) from the Catalog.
 	3.	Click the CI tab and locate the pipeline run triggered in Module 3.
 The status should be Succeeded.
+
 
 ⸻
 

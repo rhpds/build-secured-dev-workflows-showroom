@@ -89,6 +89,8 @@ If you are not already logged in to *RHBK*, click the *RHBK* Console tab in the 
 
 After entering your credentials, click *Sign In*.
 
+---
+
 === 1.2 Create tas-chains Realm
 
 * In the *RHBK Console*, click *Manage Realm* in the left navigation menu.
