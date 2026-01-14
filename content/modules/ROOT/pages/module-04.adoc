@@ -2,19 +2,12 @@
 
 == Introduction
 
-* By this point in the workshop, you have established strong foundations of trust across the software supply chain.
-* In Module 1, you made software composition visible by ingesting and analysing SBOMs, turning dependency risk from an assumption into evidence.
-* In Module 2, you anchored trust in cryptographic provenance, ensuring every build artifact is signed, traceable, and verifiably produced by your CI pipeline.
-* In Module 3, you reduced developer friction by centralising access to tools and security capabilities through *Red Hat Developer Hub*. Authentication, plugins, and catalog discovery were configured using GitOps to create a consistent, secure entry point for developers.
-* One critical challenge remains: “How do we prevent unverified or unsafe images from reaching staging and production?”
-* Security controls only scale when developers do not have to think about them. If teams must manually assemble pipelines, remember which checks to enable, or decide when policies apply, trust quickly erodes.
-* This is where Software Templates (Golden Paths) come in.
-* In this module, you will use software templates to define opinionated, secure workflows.
-* These templates embed the guardrails established in earlier modules by design, including SBOM generation and analysis, code and image signing, vulnerability scanning, and Enterprise Contract policy checks.
+* By this point in the workshop, you have established strong foundations of trust across the software supply chain. In Module 1, you made software composition visible by ingesting and analysing SBOMs, turning dependency risk from an assumption into evidence. In Module 2, you anchored trust in cryptographic provenance, ensuring every build artifact is signed, traceable, and verifiably produced by your CI pipeline. In Module 3, you reduced developer friction by centralising access to tools and security capabilities through *Red Hat Developer Hub*, using *GitOps* to configure authentication, plugins, and catalog discovery as a consistent, secure entry point for developers.
+* One critical challenge remains: “How do we prevent unverified or unsafe images from reaching staging and production?” Security controls only scale when developers do not have to think about them. If teams must manually assemble pipelines or decide when policies apply, trust quickly erodes. This is where *Software Templates*, also known as *Golden Paths*, come in. In this module, you will use *software templates* to define opinionated, secure workflows that embed the guardrails established in earlier modules by design, including SBOM generation and analysis, code and image signing, vulnerability scanning, and *Enterprise Contract* policy checks.
 
 NOTE: Enterprise Contract is the policy engine that governs whether an application can be promoted through the delivery pipeline. It is based on the upstream open-source project link:https://conforma.dev/[*Conforma*,window=_blank], which provides policy-driven verification of software supply chain evidence such as SBOMs, vulnerability scan results, image signatures, and build attestations.
 
-* Developers consume a single, self-service workflow. Security teams gain consistent enforcement. Platform teams retain control over how software is built, verified, and promoted.
+
 * By the end of this module, you’ll see how RHADS turns trusted building blocks into repeatable, production-ready Golden Paths. Every application starts secure. Every promotion is governed. And teams move fast without bypassing trust.
 
 ---
@@ -430,7 +423,7 @@ NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spac
 
 ---
 
-=== *`Optional Deep Dive 🔍:`* Development Environment as Code with Devfiles
+=== 4.2 *`Optional Deep Dive 🔍:`* Development Environment as Code with Devfiles
 
 * The concept of *Development Environment as Code* represents a significant shift in the way we set up and manage development environments. 
 * By treating these configurations as code, developers can leverage automation, apply version control, and ensure consistency across various setups. 
@@ -471,7 +464,7 @@ image::devfile_anatomy.png[]
 
 ---
 
-=== 3.2 Log Back in to GitLab Update the Devfile 
+=== 4.3 Log Back in to GitLab Update the Devfile 
 
 * If you are not already logged in to *RHBK*, click the *Gitlab* tab in the Showroom and log in using:
 
@@ -491,7 +484,7 @@ image::devfile_anatomy.png[]
 
 ---
 
-=== 3.3 Update the Devfile 
+=== 4.4 Update the Devfile 
 
 . At the top left click on Gitlab Home
 +
@@ -535,17 +528,13 @@ feat: Update Devfile Configuration
 
 ---
 
-=== 3.3 Configure pipeline authentication secrets
+=== 4.5 Configure pipeline authentication secrets
 
 * Before executing the software template, the CI pipeline must be able to authenticate to the systems it interacts with.
 * All application pipelines in this workshop run in the tssc-app-ci namespace. Any credentials required by the pipeline must be available there as Kubernetes Secrets.
-* Some secrets are already present:
-. rox-api-token: Used by the pipeline to authenticate to ACS and execute roxctl image scan and policy check commands.
-. tssc-image-registry-auth: Used to authenticate to the local Quay registry so images can be pushed and pulled during the build and promotion stages.
-* In this step, you will create two additional secrets required by the pipeline:
-. Credentials for uploading SBOMs to Red Hat Trusted Profile Analyzer (RHTPA)
-. Credentials for authenticating to GitLab when creating repositories and interacting with source code
-* These secrets are consumed automatically by the pipeline provisioned through the software template.
+* In this step, you will create two  secrets required by the pipeline:
+. *tpa-secret*: Credentials for uploading SBOMs to *Red Hat Trusted Profile Analyzer (RHTPA)*
+. *gitlab-auth-secret*: Credentials for authenticating to GitLab when creating repositories and interacting with source code
 * Run the following command to set the TPA_SERVER_URL
 +
 [source,role="execute"]
@@ -554,106 +543,111 @@ export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=ser
   | jq -r '.items[0].spec.host')"
 ----
 +
-* Then run this command to create the tpa-secret secret:
+* Then run this command to create the secret *tpa-secret*:
 +
 [source,role="execute"]
 ----
 envsubst < ~/lab-assets/tpa-secret.yml | oc apply -n tssc-app-ci -f -
 ----
 +
-* This creates a Kubernetes Secret in the tssc-app-ci namespace containing:
-. RHTPA endpoint information
-. OIDC client credentials
-. Token configuration required by the SBOM upload task
-* Create the GitLab authentication secret
-* The pipeline also needs access to GitLab in order to:
-. Push generated source code
-. Interact with repositories created by the software template
-* First, retrieve the GitLab personal access token:
+* Next, create the GitLab authentication secret
+. First, retrieve the GitLab personal access token:
 +
 [source,role="execute"]
 ----
 export GITLAB_TOKEN=$(oc get secret root-user-personal-token -n gitlab -o jsonpath='{.data.token}' | base64 -d)
 ----
 +
-* Next, create the GitLab authentication secret:
+. Next, create the *gitlab-auth-secret* secret:
 +
 [source,role="execute"]
 ----
 envsubst < ~/lab-assets/gitlab-auth-secret.yml | oc apply -n tssc-app-ci -f -
 ----
 +
-* This secret is used by pipeline tasks that interact with GitLab APIs and repositories.
-* Credentials are injected at runtime, not hard-coded into pipeline definitions.
-* From a platform engineering perspective, this step reinforces an important pattern:
-. Pipelines are generic and reusable
-. Environment-specific credentials are injected through Kubernetes Secrets
-. Developers never handle or manage service credentials directly
-* This separation allows the same software template and pipeline definition to be promoted across environments, while authentication details remain centrally managed and rotated by platform teams.
 * In the next step, you will make a small code change from within OpenShift Dev Spaces and commit it to Git. 
 * This commit will be automatically signed using your OIDC identity.
 
 ---
 
-== Step 4: Sign Your Code and Enter the Trusted Supply Chain
+== Step 5: Sign Your Code and Enter the Trusted Supply Chain
 
-* In this step, you will make a small code change from within OpenShift Dev Spaces and commit it to Git. This signed commit will automatically trigger the CI pipeline, carrying your trusted identity into the build and verification stages.
+* In this step, you will make a small code change from within OpenShift Dev Spaces and commit it to Git. The commit will be signed automatically using your OIDC identity, and this signed commit will trigger the CI pipeline. 
+* Your trusted identity is now carried forward into the build, verification, and promotion stages of the software supply chain.
 
-=== 4.1 In OpenShift DevSpaces
+=== 5.1 From Red Hat Developer Hub (Incognito Mode)
 
-* Before you start committing your code, you confirm the Gitsign git config.
-* "As you see, our development environment has been configured for Gitsign", you explain.
-* Run the below command on the *VS Code* terminal to view the Gitsign global git config:
+. From your incognito browser session, navigate to Red Hat Developer Hub.
+. Click the link for *OpenShift Dev Spaces*. This will open your cloud-based development environment in a separate browser window, providing you with a fully configured workspace for you to implement your code change.
+. * *OpenShift Dev Spaces* then begins creating your workspace.
+* After waiting a few minutes for *OpenShift Dev Spaces* to finish setting up your workspace, you're presented with your IDE.
+* You click the button *Yes, I trust the authors*.
++
+image::96_Trust_Authors.png[]
++
+
+=== 5.2 Verify Git Signing Configuration in OpenShift Dev Spaces
+
+* Before committing any code, you will first verify that Git commit signing has been correctly configured in your OpenShift Dev Spaces workspace.
+* As you will see, the development environment has already been configured to use gitsign based on the configuration applied earlier in our Devfile.
+* To confirm this, open the VS Code terminal inside your workspace and run the following command:
 +
 [source, role="execute"]
 ----
 git config --global --list
 ----
 
-NOTE: You may need to allow paste functionality when prompted by the browser.
+NOTE: You may be prompted by your browser to allow paste access into the terminal. If so, approve the prompt to proceed.
 
 image::94_Gitsign_Git_Global_Config.png[]
 
-*	Open src/main/resources/application.properties.
-* Make a trivial change (for example, add a comment).
-* Open the IDE terminal.
+=== 5.3 Apply a simple code change
+
+* To see code sigiing in action we are goinf to apply a simple change, write a comment in the index document.
+.	Navigate to Docs folder and select the file index.md.
+. Add the following line at the bottom of the document
++
+[source, role="execute"]
+----
+# Test code siging
+----
++
+image::97_Index_Markdown_Updated.png[]
++
+* Open the IDE terminal, click on the *Hamburger button* (three horizontal bars) on the top left of your screen and select *Terminal -> New Terminal*
++
+image::98_Terminal_Menu.png[]
++
+* To begin commiting your code to the repository, run the following command to add your changes to staging and commiting your changes:
 
 [source, role="execute"]
 ----
 git add .
 git commit -m "feat: updated configuration with secure signing"
 ----
++
+* You will notice that you receive an error message that states *error opening browser: exec: "xdg-open": executable file not found in $PATH*.  This is because our *VS Code* terminal is trying to open a browser window to obtain your credentials for signing but is unable to as it is running as a container.
+* However, Gitsign allows you to provide your signing credentials by copying and pasting the url it outputs into a separate browser window.
+* Copy and paste the url into a new browser tab/window and hit enter.
++
+image::90_Gitsign_Commit_Message.png[]
++
+ The browser will prompt you for your credentials.  Enter `{user}` for the username and `{password}` for the password.
 
+image::91_Gitsign_Credentials_Prompt.png[]
 
+* You will then be redirected to another page that will present a verification code.  Copy this code into your clipboard.
 
-== Step 5: Secure Developer Workflow (Inner Loop)
+image::92_Gitsign_Verification_Code.png[]
 
-* This is the frictionless security moment.
-
-=== 5.1 Open the Cloud IDE
-
-* In RHDH, open the Catalog and select my-secure-app.
-* Click OpenShift Dev Spaces.
-* Log in as user1 if prompted.
-* Wait for the workspace to start.
-
-=== 5.2 Make a Change
-
-*	Open src/main/resources/application.properties.
-* Make a trivial change (for example, add a comment).
-* Open the IDE terminal.
-
+* Return to *Dev Spaces* and paste this code into the waiting prompt in the *VS Code* terminal.
++
 [source, role="execute"]
 ----
-git add .
-git commit -m "feat: updated configuration with secure signing"
+Enter verification code:
 ----
-
-Observation:
-. You are prompted to authenticate via an OIDC browser flow.
-. The login redirects to your Keycloak, not the public Sigstore service.
-. After authentication, the commit is signed automatically.
-
++
+NOTE: Once you've pasted the code, depending on your browser, you may be presented with a popup to allow paste functionality in Devspaces.  Click *Allow* and then hit *Enter*.  If no popup appears, just hit *Enter*.
 [source, role="execute"]
 ----
 git push origin main
