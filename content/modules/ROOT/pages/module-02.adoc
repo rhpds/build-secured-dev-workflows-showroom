@@ -2,15 +2,11 @@
 
 == Introduction 
 
-* In Module 1, you established trust in what is inside your software. The next challenge customers face is: “How do we know these artifacts were really built by us and haven’t been tampered with?” 
-* They need assurance that both code commits and build artifacts originate from trusted sources, not rogue machines or compromised pipelines.
+In Module 1, you established trust in what is inside your software. The next challenge customers face is this: “How do we know these artifacts were really built by us and haven’t been tampered with?” Organisations need assurance that both code commits and build artifacts originate from verified identities, not rogue machines or compromised pipelines.
 
-=== Enter Red Hat Trusted Artifact Signer (RHTAS) 
+=== Enter Red Hat Trusted Artifact Signer (RHTAS)
 
-* In this module, you will deploy *RHTAS* to establish the Root of Trust for the entire build system.
-* *RHTAS* is an enterprise deployment of the link:https://www.sigstore.dev[*Sigstore project*,window=_blank]. 
-* It provides cryptographic signing, verification, provenance attestation and transparency, ensuring software artifacts can be proven authentic at every stage of delivery. 
-* It supports keyless signing (associates identities, rather than keys, with an artifact signature) via OIDC, and also key-based workflows when required in tightly controlled environments.
+In this module, you will deploy *Red Hat Trusted Artifact Signer (RHTAS)* to establish a root of trust for the entire build system. RHTAS is an enterprise deployment of the link:https://www.sigstore.dev[*Sigstore project*,window=_blank] and provides cryptographic signing, verification, provenance attestation, and transparency. This ensures that software artifacts can be proven authentic at every stage of the delivery process. RHTAS supports keyless signing using OIDC identities, while also enabling traditional key-based workflows for tightly controlled or regulated environments where required.
 
 ---
 

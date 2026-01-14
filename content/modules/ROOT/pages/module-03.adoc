@@ -2,29 +2,17 @@
 
 == Introduction
 
-* Modern software delivery is shaped by two opposing forces.
-. On one side, security expectations have never been higher. Organisations are under pressure to prove where their software comes from, how it was built, and whether it can be trusted — across every stage of the supply chain.
-. On the other side, developers face increasing cognitive load. Tool sprawl, fragmented workflows, and manual security steps slow delivery and create frustration when security is bolted on after the fact.
-* Most organisations struggle to balance both. They invest heavily in security tooling or developer productivity, but rarely achieve both without friction.
-* This is where platform engineering comes in.
+Modern software delivery is shaped by two opposing forces. On one side, security expectations have never been higher. Organisations are under pressure to prove where their software comes from, how it was built, and whether it can be trusted across every stage of the supply chain. On the other side, developers face increasing cognitive load. Tool sprawl, fragmented workflows, and manual security steps slow delivery and create frustration when security is bolted on after the fact. Most organisations struggle to balance both. They invest heavily in security tooling or developer productivity, but rarely achieve both without friction. This is where platform engineering comes in.
 
 === Platform Engineering and Internal Developer Portals
 
-* *Platform engineering* is the discipline of designing and operating a curated internal platform that abstracts complexity and delivers secure capablties to development teams.
-* A platform engineering team builds and maintains Internal Developer Platforms (IDPs) that bring together the capablties and tools that developers need.
-* These capabilities are exposed through a consistent, opinionated, self-service *Golden Paths Templates*.
-* *Golden Paths Templates* are standardised, reusable, and secure workflows that guide developers through building, testing, and deploying software in the approved way. They reduce decision fatigue for developers while ensuring security and compliance are enforced by design.
-* The outcome is twofold:
-. developers focus on code, not infrastructure or security plumbing
-. security and compliance are enforced by design, not as after-the-fact checks
-* In this workshop, the *IDP* you will use is *Red Hat Developer Hub (RHDH)*.
+* *Platform engineering* is the discipline of designing and operating a curated internal platform that abstracts complexity and delivers secure capabilities to development teams. *Platform engineering* teams build and maintain *Internal Developer Platforms (IDPs)* that bring together the tools and capabilities developers need to deliver software effectively. These capabilities are exposed through consistent, opinionated, self-service *Golden Path templates*. 
+* *Golden Paths* are standardised, reusable, and secure workflows that guide developers through building, testing, and deploying software in the approved way. They reduce decision fatigue for developers while ensuring security and compliance are enforced by design. The outcome is twofold: developers focus on writing code rather than managing infrastructure or security plumbing, and security and compliance are applied consistently as part of the platform. In this workshop, the IDP you will use is *Red Hat Developer Hub (RHDH)*.
 
 === What is Red Hat Developer Hub (RHDH)?
 
-* Red Hat Developer Hub (RHDH) is Red Hat’s enterprise-grade, developer platform for building link:https://internaldeveloperplatform.org/what-is-an-internal-developer-platform/[Internal Developer Portals,window=_blank] (IDPs)
-* RHDH is based on the upstream link:https://www.backstage.io[Backstage,window=_blank] project created by Spotify.
-* IDPs play a pivotal role in modern development environments by offering developers a centralized interface for accessing the organization's technology stack, eliminating the need for developers to search for information or traverse a labyrinth of disconnected systems.
-* RHDH is equipped with an array of capabilities and tools meticulously curated based on Red Hat's vision and industry best practices to offer our customers a powerful, opinionated and fully supported IDP to meet the evolving needs of modern development environments.
+* *Red Hat Developer Hub (RHDH)* is Red Hat’s enterprise-grade developer platform for building link:https://internaldeveloperplatform.org/what-is-an-internal-developer-platform/[*Internal Developer Portals*,window=_blank] *(IDPs)*. *RHDH* is based on the upstream link:https://www.backstage.io[*Backstage*,window=_blank] project created by *Spotify*. In modern development environments, *IDPs* play a pivotal role by providing developers with a centralised interface to access the organisation’s technology stack, eliminating the need to search for information or navigate a maze of disconnected tools and systems.
+*Red Hat Developer Hub (RHDH)* is equipped with a curated set of capabilities and tools, based on Red Hat’s platform engineering vision and industry best practices. Together, these provide customers with a powerful, opinionated, and fully supported Internal Developer Portal designed to meet the evolving needs of modern development environments.
 . *The Software Catalog:* A centralized directory that lists all services, libraries, and documentation, simplifying the process for developers to find the components they need.
 . *TechDocs:*  Facilitates easy access to up-to-date documentation for all software components. It supports the documentation-as-code philosophy, allowing documentation to live alongside the code, making it very easy to maintain documentation.
 . *Search:* Enables developers to efficiently locate information across the entire RHDH ecosystem. This feature is essential for quickly finding services, documentation, and other resources.
