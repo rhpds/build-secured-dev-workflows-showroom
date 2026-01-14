@@ -550,6 +550,7 @@ r3dh4t1
 
 * Once logged in, select Catalog from the left navigation menu, you should now see that the catalog is populated.
 * Change the Kind filter to User, the catalog will display users that have been synchronised from Red Hat Build of Keycloak.
+* Additional users are listed. These are sample users imported from the catalog locations you provided in the Red Hat Developer Hub configuration in GitLab.
 
 image::catalog_users.png[catalog_users,align="center"]
 
