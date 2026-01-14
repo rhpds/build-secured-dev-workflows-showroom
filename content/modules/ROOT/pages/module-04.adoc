@@ -210,7 +210,7 @@ image::open_component_in_catalog.png[open_component_in_catalog,align="center"]
 
 === Software Template YAML Structure
 
-* At a basic level, the Template Entity resembles a Kubernetes Custom Resource.
+* At a basic level, the Template Entity resembles a Kubernetes Custom Resource. Note, Backstage resources are stored in the Backstage instance's database and are not managed via the Kubernetes API Server.
 * Where the Template Entity differs is that it contains additional fields: 
 . *Header*: Here, you provide essential information about the template.
 . *Parameters*: This section is for gathering inputs from the user.
