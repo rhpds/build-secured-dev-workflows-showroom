@@ -10,13 +10,14 @@
 * In this module, you will deploy *RHTAS* to establish the Root of Trust for the entire build system.
 * *RHTAS* is an enterprise deployment of the link:https://www.sigstore.dev[*Sigstore project*,window=_blank]. 
 * It provides cryptographic signing, verification, provenance attestation and transparency, ensuring software artifacts can be proven authentic at every stage of delivery. 
-* It supports keyless signing via OIDC, and also key-based workflows when required in tightly controlled environments.
+* It supports keyless signing (associates identities, rather than keys, with an artifact signature) via OIDC, and also key-based workflows when required in tightly controlled environments.
 
 ---
 
 === RHTAS component overview
 
-* Architecturally, *RHTAS* combines *Sigstore* components to deliver identity-based, auditable signing:
+Architecturally, *RHTAS* combines *Sigstore* components to deliver identity-based, auditable signing:
+
 . *Fulcio*: a certificate authority (CA) that issues short-lived X.509 signing certificates bound to an authenticated OpenID Connect (OIDC) identity, such as a Keycloak user or service account.
 . *Rekor*: a transparency log that records signatures, certificates and attestations in an append-only, tamper-evident log. It allows anyone to independently verify that a signing event occurred.
 . *Trillian*: the cryptographic storage engine behind *Rekor*. It organizes log entries in a *Merkle tree* so that every entry is provably recorded and cannot be removed or altered without detection.
@@ -25,18 +26,20 @@
 
 NOTE: A *Merkle tree* is a data structure where each entry is represented by a hash, and those hashes are combined up a tree — meaning a single “root hash” represents the entire log. If anyone tries to change or delete an entry, the hashes won’t match anymore, so the tampering is immediately visible.
 
-* Together, these components establish an auditable chain of trust across container images, code commits and other artifacts. Every signature is tied to a real identity, recorded in a transparency log and verifiable against a well-defined trust root.
+Together, these components establish an auditable chain of trust across container images, code commits and other artifacts. Every signature is tied to a real identity, recorded in a transparency log and verifiable against a well-defined trust root.
 
 ---
 
 === How does keyless signing work?
 
-*  Traditional signing models rely on long-lived private keys that developers or CI systems must generate, store, rotate and protect. In contrast, RHTAS uses keyless signing and short lived certificates. 
-* The flow below shows how image signing is carried out in this workshop:
+Traditional signing models rely on long-lived private keys that developers or CI systems must generate, store, rotate and protect. In contrast, RHTAS uses keyless signing and short lived certificates. 
+
+The flow below shows how image signing is carried out in this workshop:
+
 . Tekton finishes building and pushing a container image
 ** A pipeline task builds and pushes an image to a registry such as Quay.io.
 ** At this point, the image exists, but has no provenance or cryptographic signature.
-** Chains watches the cluster for completed TaskRuns.
+** Tekton Chains watches the cluster for completed TaskRuns.
 ** When it detects a success event, it issues a signing request to Cosign.
 . Cosign initiates an OIDC-based identity request
 ** To perform keyless signing, Cosign must obtain an OIDC identity token from the configured identity provider (RHBK in this workshop).
@@ -72,23 +75,23 @@ NOTE: In an interactive keyless signing flow (for example, when signing code fro
 
 === 1.1 Create tas-chains realm
 
-* If you are not already logged in to *RHBK*, click the *RHBK* Console tab in the Showroom and log in using:
+If you are not already logged in to *RHBK*, click the *RHBK* Console tab in the Showroom and log in using:
 
-* *Username*:
+*Username*:
 
 [source, role="execute", subs="attributes"]
 ----
 {keycloak_admin_user}
 ----
 
-* *Password*:
+*Password*:
 
 [source, role="execute", subs="attributes"]
 ----
 {keycloak_admin_password}
 ----
 
-* After entering your credentials, click *Sign In*.
+After entering your credentials, click *Sign In*.
 
 === 1.2 Create tas-chains Realm
 
@@ -198,7 +201,7 @@ WARNING: This is the most common failure point in RHTAS deployments. Fulcio requ
 === 2.1 Create trusted-artifact-signer client in sso Realm
 
 * In the *RHBK Console*:
-. Click *Manage Realm* in the left navigation menu.
+. Click *Manage Realms* in the left navigation menu.
 . Select the *sso* realm.
 
 image::tas_sso_realm.png[TAS SSO Realm,align="center"]
@@ -418,12 +421,12 @@ image::tas_verify_deploy.png[Verify RHTAS deploy,align="center"]
 
 == Step 4: Deploy The OIDC Refresher App 
 
-* In this step you will deploy a small helper application that continuously refreshes the OIDC token required for signing.
+* In this step you will deploy a small helper application that continuously refreshes the OIDC token required for signing in pipelines.
 
 ===  Why is the OIDC Refresher App needed?
 
 * Fulcio issues short-lived certificates based on OIDC tokens.
-* For security reasons, these tokens typically expire within 5 minute
+* For security reasons, these tokens typically expire within 5 minutes.
 * However, a CI/CD pipeline (such as a Tekton build) may run for 20 minutes or more before reaching the Sign Image step.
 * If Tekton Chains attempts to sign an image using the token obtained at pipeline start, that token will almost certainly have expired.
 * To solve this, you will deploy the OIDC Refresher App which does the following:
@@ -487,7 +490,7 @@ watch -n 2 "oc get pods -n openshift-pipelines | awk '/^oidc-token-refresher/ { 
 == Step 5: Configure Tekton Chains
 
 * *Tekton Chains* is the supply-chain security controller inside Tekton Pipelines.
-* It observes pipeline executions, captures build materials (provenance, SBOMs, image digests), and—when configured, it can automatically signs container images using Cosign.
+* It observes pipeline executions, captures build materials (provenance, SBOMs, image digests), and—when configured, it automatically signs container images using Cosign.
 * By default, Tekton Chains expects static signing secrets.
 * In this step, you will reconfigure Chains to use the RHTAS infrastructure and the continuously refreshed OIDC token instead.
 * This allows Chains to perform keyless signing using short-lived identities, rather than long-lived keys.

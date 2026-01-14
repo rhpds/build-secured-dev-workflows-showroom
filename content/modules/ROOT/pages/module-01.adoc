@@ -123,8 +123,6 @@ keycloak
 
 * After a few seconds, the *Red Hat build of Keycloak Operator* will appear in the list of installed operators. 
 * Click its link to view the details.
-* From the left navigation menu, expand *Ecosystem* and select *Installed Operators*.
-* Filter by “Keycloak” and select *Red Hat Build of Keycloak Operator*.
 
 image::keycloak_operator.png[Keycloak Operator ,align="center"]
 

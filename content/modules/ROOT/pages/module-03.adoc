@@ -47,6 +47,7 @@ image::RHDH_Core_Capablties.png[]
 
 * Before enabling *Red Hat Developer Hub (RHDH)* features, you need to create a developer identity.
 * In this step, you will create a developer user (user1) in the sso realm.
+* Typically a developer identity will already exist, e.g from LDAP or the organisation's existing SSO system.
 
 NOTE: In this lab, RHDH, OpenShift, and OpenShift Dev Spaces all share the *sso* realm. This is intentionally different from the *tpa* realm used in Module 1. Using a shared realm enables seamless Single Sign-On (SSO) across the OpenShift Console, OpenShift Dev Spaces, and Red Hat Developer Hub.
 
@@ -424,7 +425,7 @@ auth:
 . Resources: databases, message brokers, object storage
 . APIs: REST, gRPC, GraphQL interfaces
 . Users and Groups: people and teams in your organisation
-* In ur YAML, providers are configured under *catalog.providers* and are usually delivered by plugins.
+* In your YAML, providers are configured under *catalog.providers* and are usually delivered by plugins.
 * In this step, you will enable the Keycloak catalog provider to synchronise Users and Groups from Red Hat Build of Keycloak (RHBK) into the Software Catalog.
 * In backstage-values.yaml, locate and uncomment the catalog block  using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:
 
