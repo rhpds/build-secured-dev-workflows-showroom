@@ -114,12 +114,14 @@ image::create_tas_chains_realm.png[Create TAS Chains realm,align="center",link=s
 === 1.3 Create trusted-artifact-signer client in tas-chains Realm
 
 * Next you will create a new client:
+
 . In the left navigation menu, click *Clients*.
 . Then click *Create client*.
 
 image::create_client.png[Create Client,align="center",link=self,window=blank]
 
 * In the *General setting* page:
+
 . Set the *Client ID* to:
 +
 [source, role="execute", subs="attributes"]
@@ -132,6 +134,7 @@ trusted-artifact-signer
 image::tas_client_general_settings.png[New Client General Settings,align="center",link=self,window=blank]
 
 * Under *Capability Config*, set:
+
 . *Client authentication*: toggle on
 . *Standard flow*: make sure this checkbox is ticked
 . *Service accounts* roles: Tick this checkbox
@@ -146,6 +149,7 @@ image::tas_client_capability_config.png[New Client Capability Config,align="cent
 image::tas_client_login_settings.png[New Client Login Settings,align="center",link=self,window=blank]
 
 * Scroll down to *Logout Settings*:
+
 . Set the *Front channel logout* toggle to *Off*. 
 . Click *Save*.
 * You’ll see a pop-up message saying “Client successfully updated".
@@ -153,12 +157,14 @@ image::tas_client_login_settings.png[New Client Login Settings,align="center",li
 image::tas_commit_client_logout_settings.png[New Client Logout Settings,align="center",link=self,window=blank]
 
 * Scroll back up to top of the screen:
+
 . Click the *Service account roles* tab 
 . Then, click the *service-account-trusted-artifact-signer* link
 
 image::tas_client_service_account_roles.png[New Client Service Account Roles,align="center",link=self,window=blank]
 
 * Set the following attributes:
+
 . *Email Verified*: toggle on
 . *Email*: 
 +
@@ -199,18 +205,21 @@ WARNING: This is the most common failure point in RHTAS deployments. Fulcio requ
 === 2.1 Create trusted-artifact-signer client in sso Realm
 
 * In the *RHBK Console*:
+
 . Click *Manage Realms* in the left navigation menu.
 . Select the *sso* realm.
 
 image::tas_sso_realm.png[TAS SSO Realm,align="center",link=self,window=blank]
 
 * To create a new client:
+
 . Navigate to *Clients* in the left menu 
 . Then click *Create client*.
 
 image::tas_create_client.png[TAS Create Client,align="center",link=self,window=blank]
 
 * In the *General setting* page:
+
 . Set the *Client ID* to:
 +
 [source, role="execute", subs="attributes"]
@@ -223,6 +232,7 @@ trusted-artifact-signer
 image::tas_client_general_settings.png[New Client General Settings,align="center",link=self,window=blank]
 
 * Under *Capability Config* set:
+
 . *Standard flow*: Make sure this checkbox is ticked.
 . *Direct Access Grants*: Tick this checkbox.
 . Then click *Next*.
@@ -230,6 +240,7 @@ image::tas_client_general_settings.png[New Client General Settings,align="center
 image::tas_commit_client_capability_config.png[New Client Capability Config,align="center",link=self,window=blank]
 
 * In the *Login Settings* page, add the following *Valid Direct URIs*:
+
 . Add the first URI: 
 +
 [source, role="execute", subs="attributes"]
@@ -261,7 +272,7 @@ image::tas_commit_client_logout_settings.png[New Client Logout Settings,align="c
 
 == Step 3: Deploy the RHTAS Instance
 
-* Now that both machine and developer identities are configured, you can deploy the RHTAS components (Fulcio, Rekor, Trillian and TUF) using the Custom Resource.
+* Now that both machine and developer identities are configured, you can deploy the RHTAS components (Fulcio, Rekor, Trillian, and TUF) using the Custom Resource.
 
 === 3.1 Apply the RHTAS Instance CR
 
@@ -280,9 +291,9 @@ envsubst < ~/lab-assets/tas-instance.yml | oc apply -n tssc-tas -f -
 
 ---
 
-=== *`Optional Deep Dive 🔍:`* What did the RHTAS Instance CR configure?
+=== *`Optional Deep Dive:`* What did the RHTAS Instance CR configure?
 
-* The custom resource you just applied tells the *RHTAS Operator* how to stand up Fulcio, Rekor, Trillian and TUF, and how to trust your Keycloak realms. Here are the key parts worth calling out.
+* The custom resource you just applied tells the *RHTAS Operator* how to stand up Fulcio, Rekor, Trillian, and TUF, and how to trust your Keycloak realms. Here are the key parts worth calling out.
 
 === Fulcio certificate identity
 
@@ -309,11 +320,11 @@ spec:
     config:
       OIDCIssuers:
         - ClientID: ${TAS_CHAINS_CLIENT_ID}
-          Issuer: 'https://sso.apps.cluster-hswcg.dynamic.redhatworkshops.io/realms/${TAS_CHAINS_REALM}'
+          Issuer: 'https://sso.{openshift_cluster_ingress_domain}/realms/${TAS_CHAINS_REALM}'
           IssuerURL: '${KEYCLOAK_URL}/realms/${TAS_CHAINS_REALM}'
           Type: email
         - ClientID: ${TAS_CHAINS_CLIENT_ID}
-          Issuer: 'https://sso.apps.cluster-hswcg.dynamic.redhatworkshops.io/realms/${TAS_SSO_REALM}'
+          Issuer: 'https://sso.{openshift_cluster_ingress_domain}/realms/${TAS_SSO_REALM}'
           IssuerURL: '${KEYCLOAK_URL}/realms/${TAS_SSO_REALM}'
           Type: email
 ----
@@ -428,6 +439,7 @@ image::tas_verify_deploy.png[Verify RHTAS deploy,align="center",link=self,window
 * However, a CI/CD pipeline (such as a Tekton build) may run for 20 minutes or more before reaching the Sign Image step.
 * If Tekton Chains attempts to sign an image using the token obtained at pipeline start, that token will almost certainly have expired.
 * To solve this, you will deploy the OIDC Refresher App which does the following:
+
 . Authenticates with Keycloak using the trusted-artifact-signer client credentials you created in Step 1.
 . Fetches a fresh access token.
 . Writes the token into a Kubernetes Secret named oidc-token in the openshift-pipelines namespace.
@@ -438,6 +450,7 @@ image::tas_verify_deploy.png[Verify RHTAS deploy,align="center",link=self,window
 ===  Deploy OIDC Refresher App
 
 * Run the follwoing commands in the Showroom terminal:
+
 . First, retrieve the Keycloak admin credentials from the keycloak-initial-admin secret in the tssc-keycloak namespace:
 +
 [source, role="execute", subs="attributes"]
@@ -536,6 +549,7 @@ transparency:
 
 * In this step, you will run a simple end-to-end smoke test to confirm that artifact signing is working as expected.
 * You will manually trigger a *Tekton Task* that builds and pushes a container image. Because *Tekton Chains* was configured in Step 5, it should automatically:
+
 . Detect the successful task completion.
 . Sign the resulting image using *Cosign*.
 . Upload the signature to Quay.
@@ -603,8 +617,9 @@ watch -n 2 "oc get taskrun -n tssc-app-ci"
 === 6.3 Verify Certifiacte and Attestation in Rekor search UI
 
 * Click the *Rekor Search UI* tab in the Showroom, you may need to refresh the tab.
-* After *Cosign* completes the signing operation, *Rekor* stores two complementary entries:
-. The first is a hashedrekord — *Rekor*’s standard record type for a signature over a hash — which contains the *Cosign* signature over the image digest. This acts as proof that a trusted identity signed this image and that its contents have not been changed since.
+* After *Cosign* completes the signing operation, *Rekor* stores 2 complementary entries:
+
+. The first is a hashedrekord — *Rekor*'s standard record type for a signature over a hash — which contains the *Cosign* signature over the image digest. This acts as proof that a trusted identity signed this image and that its contents have not been changed since.
 . The second is an in-toto provenance attestation, generated by *Tekton*, which captures how the image was built — which pipeline ran, when it completed, and the exact digest produced.
 
 NOTE: An attestation is structured metadata that describes how an artifact was created, providing verifiable build context. in-toto is the open standard used to express these attestations — defining what was built, how, and by whom — so consumers can verify both integrity (nothing changed) and provenance (it came from the expected build process).
@@ -630,6 +645,7 @@ image::rekor_log_index_1_details.png[rekor_log_index_1_details,align="center",li
 === 2 The Public Key Certificate
 
 * There is a lot of important information here, including:
+
 . Who issued the certificate: Fulcio acting as a Certificate Authority.
 +
 [source]
@@ -673,6 +689,7 @@ inclusionProof:
 ----
 
 * That is *Rekor* + *Trillian* cryptographically proving that:
+
 . the signature was truly written to the transparency log
 . it cannot be deleted without detection
 . future verifiers can audit that history
@@ -681,6 +698,7 @@ inclusionProof:
 * Now switch to the 2nd Log Index, provide the value as 2
 * Click *Search*
 * An in-toto attestation captures:
+
 .	which pipeline ran
 .	which steps were executed
 .	what artifact digest was produced

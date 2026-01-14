@@ -1,4 +1,4 @@
-= Module 3: Developer Workflow Without Developer Friction 
+= Module 3: Developer workflow without developer friction 
 
 == Introduction
 
@@ -12,7 +12,7 @@ Modern software delivery is shaped by two opposing forces. On one side, security
 === What is Red Hat Developer Hub (RHDH)?
 
 * *Red Hat Developer Hub (RHDH)* is Red Hat's enterprise-grade developer platform for building link:https://internaldeveloperplatform.org/what-is-an-internal-developer-platform/[*Internal Developer Portals*^] *(IDPs)*. *RHDH* is based on the upstream link:https://www.backstage.io[*Backstage*^] project created by *Spotify*. In modern development environments, *IDPs* play a pivotal role by providing developers with a centralised interface to access the organisation’s technology stack, eliminating the need to search for information or navigate a maze of disconnected tools and systems.
-*Red Hat Developer Hub (RHDH)* is equipped with a curated set of capabilities and tools, based on Red Hat’s platform engineering vision and industry best practices. Together, these provide customers with a powerful, opinionated, and fully supported Internal Developer Portal designed to meet the evolving needs of modern development environments.
+*Red Hat Developer Hub (RHDH)* is equipped with a curated set of capabilities and tools, based on Red Hat's platform engineering vision and industry best practices. Together, these provide customers with an opinionated, fully supported Internal Developer Portal designed to meet the evolving needs of modern development environments.
 . *The Software Catalog:* A centralized directory that lists all services, libraries, and documentation, simplifying the process for developers to find the components they need.
 . *TechDocs:*  Facilitates easy access to up-to-date documentation for all software components. It supports the documentation-as-code philosophy, allowing documentation to live alongside the code, making it very easy to maintain documentation.
 . *Search:* Enables developers to efficiently locate information across the entire RHDH ecosystem. This feature is essential for quickly finding services, documentation, and other resources.
@@ -24,6 +24,7 @@ image::RHDH_Core_Capablties.png[Red Hat Developer Hub Core Capabilities,link=sel
 === What You Will Learn in This Module
 
 * In this module, you will see how platform engineering principles turn the supply-chain security foundations from Modules 1 and 2 into frictionless developer workflows, you will use Configuration as Code and GitOps practices to:
+
 . Enable SSO-based authentication
 . Configure developer-facing plugins
 . Setup catalog auto-discovery
@@ -71,6 +72,7 @@ image::add_new_user.png[add_new_user,align="center",link=self,window=blank]
 
 
 * Set the following values:
+
 . *Email Verified*: Toggle on (required for TAS signing)
 .	*Username*:
 +
@@ -109,6 +111,7 @@ image::create_user1.png[create_user1,align="center",link=self,window=blank]
 === 1.3 Assign Group Membership
 
 * In the user details view:
+
 . Click the *Groups* tab.
 . Then, click *Join Group*.
 
@@ -199,6 +202,7 @@ image::empty_catalog.png[empty_catalog,align="center",link=self,window=blank]
 * *Red Hat Developer Hub* configuration is managed through a single declarative file, *app-config.yaml*, inherited from upstream Backstage.
 * This file defines the platform capabilitie, authentication, integrations, plugins, catalog sources, and proxy behaviour are all configured here.
 * In the next steps, you will modify four key sections that shape the platform experience:
+
 . *dynamic.plugins* : controls which plugins are enabled.
 ** These plugins surface platform capabilities to developers , CI/CD views, Argo CD visualisations, IDEs, Image Registeries, OpenShift topology view, documnetation and more.
 . *authentication*: defines authentication providers and login behaviour.
@@ -274,6 +278,7 @@ upstream:
 ==== 2.4.1 Plugin management in upstream Backstage
 
 * In upstream Backstage, plugins are added using a build-time model. Platform engineers must:
+
 . Clone the Backstage source code
 . Install plugins via npm
 . Import and wire them into the React frontend and Node.js backend
@@ -287,6 +292,7 @@ upstream:
 * *Red Hat Developer Hub* introduces dynamic plugins, shifting plugin management from build time to runtime configuration.
 * Instead of rebuilding images, platform engineers enable and configure plugins declaratively using YAML and GitOps workflows. The container image remains unchanged, while plugins are mounted and activated at runtime.
 * This approach:
+
 . Reduces operational overhead
 . Aligns with infrastructure-as-code practices
 . Enables versioned configuration and environment promotion
@@ -297,6 +303,7 @@ upstream:
 ==== 2.4.3 Enabling RHDH plugins
 
 * To enable plug-ins in this lab:
+
 . In Gitlab, open the repository `gitops / build-secured-dev-workflows-idp-gitops`.
 +
 image::select_gitops_repo.png[select_gitops_repo,align="center",link=self,window=blank]
@@ -321,6 +328,7 @@ image::uncomment_plugins.png[uncomment_plugins,align="center",link=self,window=b
 ==== 2.4.4 Understanding the dynamic.plugins configuration
 
 * Let's take a look at the *dynamic.plugins* YAML block that you've just uncommented:
+
 . Top-level structure
 ** *includes*: allows you to reference a base set of plugin definitions that ship with *Red Hat Developer Hub*.
 ** *plugins* is the explicit list of dynamic plugins enabled for this environment. Each entry represents one plugin, its source, and any plugin-specific configuration.
@@ -409,6 +417,7 @@ auth:
 
 * The Software Catalog is your central inventory for everything that matters in your technology landscape.
 * It tracks Entities such as:
+
 . Components: services, websites, libraries
 . Resources: databases, message brokers, object storage
 . APIs: REST, gRPC, GraphQL interfaces
@@ -420,6 +429,7 @@ auth:
 image::uncomment_catalog.png[uncomment_catalog,align="center",link=self,window=blank]
 
 * The YAML block you just uncommented configures catalog providers as follows:
+
 +
 [source, yaml]
 ----

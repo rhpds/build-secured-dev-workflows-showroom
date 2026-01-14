@@ -38,7 +38,7 @@
 
 ---
 
-== Step 1: Configure Identity and Access Management
+== Step 1: Configure identity and access management
 
 * *RHTPA* requires an external *OpenID Connect (OIDC)* provider for authentication and authorization, as it does not maintain its own internal user store.
 * In this module, you will integrate *RHTPA* with *Red Hat Build of Keycloak (RHBK)*, which is responsible for issuing identity tokens and embedding the claims and permissions that *RHTPA* evaluates when processing API and UI requests.
@@ -60,7 +60,8 @@
 
 * Access control is enforced through *RBAC* configured in *Red Hat Build of Keycloak (RHBK)*.
 * *RHTPA* authorises requests based on client scopes embedded in the OIDC access token, roles in *RHBK* map to scopes, and those scopes inside the token are what *RHTPA* evaluates to allow or deny access.
-* In this step, you will import a pre-configured *realm* that defines the two clients:
+* In this step, you will import a pre-configured *realm* that defines the 2 clients:
+
 . *Frontend*: Used by human users accessing the *RHTPA* web interface.
 . *CLI*: Used by CI/CD systems, such as *Tekton* or *Jenkins*, to upload *SBOMs* programmatically. This client uses a service account for machine-to-machine authentication.
 
@@ -86,7 +87,7 @@
 ----
 
 * After entering your credentials, click the *Sign In* button.
-* In the *RHBK Console* click on the *Manage Realm* link in the left navigation menu, you will notice that we have two realms already configured *master* and *sso* as you can see in this screenshot:
+* In the *RHBK Console* click on the *Manage Realm* link in the left navigation menu, you will notice that we have 2 realms already configured *master* and *sso* as you can see in this screenshot:
 
 image::keycloak_manage_realms.png[Keycloak Realms,align="center",link=self,window=blank]
 
@@ -160,10 +161,11 @@ image::tpa_realm_import_start.png[TPA Realm Import Start,align="center",link=sel
 
 ---
 
-=== *`Optional Deep Dive 🔍:`* What just happened?
+=== *`Optional Deep Dive:`* What just happened?
 
 * The YAML you applied creates the identity and authorization model that *Red Hat Trusted Profile Analyzer (RHTPA)* uses to control SBOM upload, search, and deletion.
 * It created:
+
 . A dedicated realm for *RHTPA*
 . Client scopes that represent specific API access permissions
 . Two clients *frontend* and *cli*
@@ -211,6 +213,7 @@ clientScopes:
 ----
 
 * These scope names are not arbitrary, the *RHTPA* backend expects them and enforces API permissions based on their presence in the access token:
+
 . *read:document*: required to query and view SBOM inventory.
 . *create:document*: required to POST SBOMs into *RHTPA* via API.
 . *delete:document*: required to remove SBOMs.
@@ -218,7 +221,7 @@ clientScopes:
 
 ==== 3. Frontend and cli clients
 
-* The YAML defines two clients: *frontend* and *cli* 
+* The YAML defines 2 clients: *frontend* and *cli* 
 
 =====  *frontend* client
 
@@ -308,6 +311,7 @@ username: service-account-cli
 ----
 
 * So the *service-account-cli* user:
+
 . Authenticates as the *cli* client
 . Has the *tpa-manager* realm role
 * This service account is entitled to receive *create:document* and *delete:document* scopes in its token, when it requests a token for the *cli* client.
@@ -343,7 +347,7 @@ image::tpa_realm.png[New TPA Realm,align="center",link=self,window=blank]
 WARNING: When a new realm is imported, *RHBK* restarts to refresh its configuration. During this time, you may briefly see *Application is not available* error when you try to access the *RHBK* console.
 
 * Navigate to *Clients* in the left menu.
-* You will see the two clients created by the import job: *cli* and *frontend*.
+* You will see the 2 clients created by the import job: *cli* and *frontend*.
 
 image::tpa_realm_clients.png[TPA Realm Clients,align="center",link=self,window=blank]
 
@@ -358,10 +362,10 @@ image::cli_account_roles.png[cli_account_roles,align="center",link=self,window=b
 
 ---
 
-== Step 2: Create the RHTPA Instance
+== Step 2: Create the RHTPA instance
 
 * Now that identity is configured, you can deploy a *Red Hat Trusted Profile Analyzer (RHTPA)* instance.
-* *RHTPA* can be deployed using Helm or an Operator. In enterprise clusters, the Operator model is preferred because it manages CR lifecycle, upgrades and dependent components.
+* You can deploy *RHTPA* using Helm or an Operator. In enterprise clusters, the Operator model is preferred because it manages CR lifecycle, upgrades, and dependent components.
 * In this lab, you will apply a Custom Resource (CR) that instructs the Operator to deploy all *RHTAP* backend components. 
 
 === 2.1 Configure the Client Secret
@@ -388,6 +392,7 @@ envsubst < ~/lab-assets/tpa-instance.yml | oc apply -n tssc-tpa -f -
 ----
 
 * This CR is your application blueprint. It defines:
+
 . Authentication to PostgreSQL to store SBOM metadata
 . OIDC configuration to authenticate users and pipelines
 . Persistent storage to store importer data and indexed graphs
@@ -464,6 +469,7 @@ modules:
 ----
 
 * Meaning:
+
 . CVE list from CVEProject
 . GitHub Security Advisory feed
 . refreshed daily (period: 1d)
@@ -530,6 +536,7 @@ curl -X POST ${TPA_SERVER_URL}/api/v2/sbom?id=test-sbom  -H "Authorization: Bear
 
 * A successful upload returns a JSON payload containing a UUID, for example: {"id":"urn:uuid:..."}. 
 * This confirms three things:
+
 . Authentication via OIDC is functioning.
 . Scope-based authorization is correctly enforced.
 . The RHTPA ingestion service is accepting SBOM uploads..

@@ -44,6 +44,7 @@ image::acs_quay_integration.png[acs_quay_integration,align="center",link=self,wi
 image::acs_new_integration.png[acs_new_integration,align="center",link=self,window=blank]
 
 * Provide the following details:
+
 . Integration name:
 +
 [source, role="execute"]
@@ -113,6 +114,7 @@ roxctl image check --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekt
 ----
 
 * Together, these checks demonstrate that:
+
 . Container images can be scanned deterministically from the registry using ACS
 . Vulnerability findings are associated with a specific image digest, not a mutable tag
 . Policy evaluation can be performed programmatically as part of a CI/CD workflow
@@ -186,6 +188,7 @@ image::software_template_step3.png[software_template_step3,align="center",link=s
 
 * You will now see a summary of all the parameters that will be passed to the *scaffolder* when executing the template steps.
 * These  values are used to:
+
 . Create the Git repository and application skeleton
 . Configure CI pipelines
 . Register the component in the RHDH Software Catalog
@@ -200,7 +203,7 @@ image::open_component_in_catalog.png[open_component_in_catalog,align="center",li
 
 ---
 
-=== *`Optional Deep Dive 🔍:`* Understanding Software Templates
+=== *`Optional Deep Dive:`* Understanding Software Templates
 
 * Software Templates are the primary mechanism used by *Red Hat Developer Hub* to expose Golden Paths to development teams.
 * Templates are defined using YAML and rendered as rich, validated forms in the Red Hat Developer Hub UI. Developers interact with a simple form. Behind the scenes, the platform does all the heavy lifting.
@@ -258,6 +261,7 @@ spec:
 * Each form step must specify a *title*, which *properties* it will ask from the user, and if any of them is *required*.
 * Following is snippet of te properties section of the Software template you'll execute in the following steps.
 * RHDH renders as three steps, each with a seperate form:
+
 . Provide Information for Application
 . Provide Image Registry Information
 . Application Repository Information
@@ -357,6 +361,7 @@ parameters:
 === Template Output
 
 * The spec.output can be used to display useful information such as:
+
 . Links to newly created Components
 . Source Code Repository links
 . Links to Git Merge Requests that are needed etc
@@ -423,13 +428,13 @@ NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spac
 
 ---
 
-=== 4.2 *`Optional Deep Dive 🔍:`* Development Environment as Code with Devfiles
+=== 4.2 *`Optional Deep Dive:`* Development Environment as Code with Devfiles
 
 * The concept of *Development Environment as Code* represents a significant shift in the way we set up and manage development environments. 
 * By treating these configurations as code, developers can leverage automation, apply version control, and ensure consistency across various setups. 
 * This approach simplifies the complex process of configuring individual environments and aligns it with modern DevOps practices.
-* At the heart of this paradigm is the *Devfile*, a powerful YAML configuration file used by **OpenShift Dev Spaces**. 
-* *Devfiles* act as comprehensive blueprints for setting up development environments, defining everything from runtime environments to the necessary tools and commands needed for a project.
+* At the heart of this paradigm is the *Devfile*, a YAML configuration file used by **OpenShift Dev Spaces**.
+* *Devfiles* act as blueprints for setting up development environments, defining everything from runtime environments to the necessary tools and commands needed for a project.
 
 === Anatomy of a Devfile
 
@@ -441,6 +446,7 @@ NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spac
 ==== Components: 
 
 * *Components* are the building blocks of the development environment. The can be of type:
+
 . *Container*: Defines the container image containing the runtime environment, development tools, and dependencies.
 . *Kubernetes/OpenShift Resources*: Incorporates Kubernetes or OpenShift-specific resources such as Routes and BuildConfigs into the workspace.
 . *Volume*: Provides persistent storage necessary for certain data within the development environment.
@@ -533,6 +539,7 @@ feat: Update Devfile Configuration
 * Before executing the software template, the CI pipeline must be able to authenticate to the systems it interacts with.
 * All application pipelines in this workshop run in the tssc-app-ci namespace. Any credentials required by the pipeline must be available there as Kubernetes Secrets.
 * In this step, you will create two  secrets required by the pipeline:
+
 . *tpa-secret*: Credentials for uploading SBOMs to *Red Hat Trusted Profile Analyzer (RHTPA)*
 . *gitlab-auth-secret*: Credentials for authenticating to GitLab when creating repositories and interacting with source code
 * Run the following command to set the TPA_SERVER_URL
