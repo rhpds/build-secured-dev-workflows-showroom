@@ -581,15 +581,26 @@ envsubst < ~/lab-assets/gitlab-auth-secret.yml | oc apply -n tssc-app-ci -f -
 * In this step, you will make a small code change from within OpenShift Dev Spaces and commit it to Git. The commit will be signed automatically using your OIDC identity, and this signed commit will trigger the CI pipeline. 
 * Your trusted identity is now carried forward into the build, verification, and promotion stages of the software supply chain.
 
-=== 5.1 From Red Hat Developer Hub (Incognito Mode)
+=== 5.1 Sign in to OpenShift Dev Spaces
 
-. From your incognito browser session, navigate to Red Hat Developer Hub.
-. Click the link for *OpenShift Dev Spaces*. This will open your cloud-based development environment in a separate browser window, providing you with a fully configured workspace for you to implement your code change.
+. Return to Red Hat Developer Hub (RHDH) in the Incognito Browse
+. Click the link for *OpenShift Dev Spaces*. This will open your cloud-based development environment in a separate browser window.
++
+image::open_devspaces.png[open_devspaces,align="center"]
++
+.You will be prompted to authenticate using your OpenShift credentials. Click Log in with OpenShift to continue.
++
+image::login_with_openshift.png[login_with_openshift,align="center"]
++
+. You will be asked to authorise access for the OpenShift Dev Spaces client. Accept the requested permissions by clicking *Allow selected permissions* to proceed.
++
+image::allow_Selcted_permissions.png[allow_Selcted_permissions,align="center"]
++
 . * *OpenShift Dev Spaces* then begins creating your workspace.
 * After waiting a few minutes for *OpenShift Dev Spaces* to finish setting up your workspace, you're presented with your IDE.
 * You click the button *Yes, I trust the authors*.
 +
-image::96_Trust_Authors.png[Trust Authors Dialog,link=self,window=blank]
+image::96_Trust_Authors.png[Trust Authors Dialog,align="center"]
 +
 
 === 5.2 Verify Git Signing Configuration in OpenShift Dev Spaces
