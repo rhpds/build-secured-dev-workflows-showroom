@@ -60,6 +60,8 @@ NOTE: In this lab, RHDH, OpenShift, and OpenShift Dev Spaces all share the *sso*
 
 * After entering your credentials, click *Sign In*.
 
+---
+
 === 1.2 Create the Developer User
 
 * In the *RHBK Console*, click *Manage Realm*, switch to the *sso* realm.
@@ -139,9 +141,9 @@ image::select_set_password.png[select_set_password,align="center",link=self,wind
 
 * Enter the *Password* and *Password confirmation* to:
 
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
-r3dh4t1
+{password}
 ----
 
 * Ensure *Temporary* is toggled off.

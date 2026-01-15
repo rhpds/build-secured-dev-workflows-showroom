@@ -69,7 +69,7 @@ NOTE: In an interactive keyless signing flow (for example, when signing code fro
 * Tekton Chains requires its own realm and client to sign images on behalf of the pipeline.
 * This isolates automated signing from human user identities and is considered best practice in customer deployments.
 
-=== 1.1 Create tas-chains realm
+=== 1.1 Log in to RHBK
 
 If you are not already logged in to *RHBK*, click the *RHBK* Console tab in the Showroom and log in using:
 
