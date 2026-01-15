@@ -105,6 +105,7 @@ Demo
 ----
 +
 . Click *Create*.
+* You’ll see a pop-up message saying “The user has been created."
 
 image::create_user1.png[create_user1,align="center",link=self,window=blank]
 
@@ -124,6 +125,7 @@ image::join_group.png[join_group,align="center",link=self,window=blank]
 ** tssc
 ** users
 . Click *Join*.
+* You’ll see a pop-up message saying “Added group membership."
 
 image::join_groups.png[join_groups,align="center",link=self,window=blank]
 
@@ -136,6 +138,7 @@ NOTE: The tssc group mapping in RHDH ensures this user has ownership and managem
 * To set the password for user1
 . Click the *Credentials* tab.
 . Then, click *Set Password*.
+* You’ll see a pop-up message saying “The password has been set successfully."
 
 image::select_set_password.png[select_set_password,align="center",link=self,window=blank]
 

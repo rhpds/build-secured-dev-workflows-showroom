@@ -80,9 +80,6 @@ acs_quay
 ----
 {quay_admin_password}
 ----
-+
-. *Disable TLS certificate validation (insecure)*: Should be ticked
-. *Create integration without testing*: Should not be ticked
 
 image::acs_quay_inegration.png[acs_quay_inegration,align="center",link=self,window=blank]
 
@@ -103,14 +100,14 @@ image::test_quay_connection.png[test_quay_connection,align="center",link=self,wi
 
 [source, role="execute", subs="attributes"]
 ----
-roxctl image scan --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekton-chains-test:latest
+roxctl image scan --image={quay_host}/tssc/tekton-chains-test:latest
 ----
 
 * This command evaluates the image against ACS policies and reports whether it meets deployment requirements.
 
 [source, role="execute", subs="attributes"]
 ----
-roxctl image check --insecure-skip-tls-verify=true --image={quay_host}/tssc/tekton-chains-test:latest
+roxctl image check --image={quay_host}/tssc/tekton-chains-test:latest
 ----
 
 * Together, these checks demonstrate that:
