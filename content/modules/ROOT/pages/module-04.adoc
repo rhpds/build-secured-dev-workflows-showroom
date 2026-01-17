@@ -587,21 +587,40 @@ git add .
 git commit -m "feat: test secure signing."
 ----
 +
-* You will notice that you receive an error message that states *error opening browser: exec: "xdg-open": executable file not found in $PATH*.  This is because our *VS Code* terminal is trying to open a browser window to obtain your credentials for signing but is unable to as it is running as a container.
-* However, Gitsign allows you to provide your signing credentials by copying and pasting the url it outputs into a separate browser window.
-* Copy and paste the url into a new browser tab/window and hit enter.
+. You will notice that you receive an error message that states *error opening browser: exec: "xdg-open": executable file not found in $PATH*.  This is because our *VS Code* terminal is trying to open a browser window to obtain your credentials for signing but is unable to as it is running as a container. * However, Gitsign allows you to provide your signing credentials by copying and pasting the url it outputs into a separate browser window.
 +
-image::90_Gitsign_Commit_Message.png[Git Commit Message with Gitsign,link=self,window=blank]
+image::xdg_error.png[xdg_error,align="center",self,window=blank]
 +
- The browser will prompt you for your credentials.  Enter `{user}` for the username and `{password}` for the password.
-
-image::91_Gitsign_Credentials_Prompt.png[Gitsign OIDC Credentials Prompt,link=self,window=blank]
-
-* You will then be redirected to another page that will present a verification code.  Copy this code into your clipboard.
-
-image::92_Gitsign_Verification_Code.png[Gitsign Verification Code Screen,link=self,window=blank]
-
-* Return to *Dev Spaces* and paste this code into the waiting prompt in the *VS Code* terminal.
+. Hover over *the https://sso.apps<…>* URL and use  `CMD + Click` (Mac) or `CTRL + Click` (Windows/Linux) to open the Red Hat SSO login page in your local browser, where you will authenticate and obtain the verification code required to complete the signed commit. 
++
+. Click *Open* to allow VS Code to open the Red Hat SSO authentication page in your local browser.
++
+image::open_sso.png[open_sso,align="center",self,window=blank]
++
+. The browser will prompt you for your credentials.
++
+. Provide your credentialas follows:
+** *Username*:
++
+[source, role="execute"]
+----
+user1
+----
++
+** *Password*:
++
+[source, role="execute"]
+----
+{password}
+----
++
+image::Gitsign_Credentials_Prompt.png[Gitsign OIDC Credentials Prompt,align="center",self,window=blank]
++
+. You will then be redirected to another page that will present a verification code.  Copy this code into your clipboard.
++
+image::Gitsign_Verification_Code.png[Gitsign Verification Code Screen,align="center",self,window=blank]
++
+. Return to *Dev Spaces* and paste this code into the waiting prompt in the *VS Code* terminal.
 +
 [source, role="execute"]
 ----
@@ -611,7 +630,7 @@ Enter verification code:
 NOTE: Once you've pasted the code, depending on your browser, you may be presented with a popup to allow paste functionality in Devspaces.  Click *Allow* and then hit *Enter*.  If no popup appears, just hit *Enter*.
 * If successful, you should receive a successful commit message:
 +
-image::93_Gitsign_Commit_Signed.png[Successfully Signed Commit with Gitsign,link=self,window=blank]
+image::Gitsign_Commit_Signed.png[Successfully Signed Commit with Gitsign,link=self,window=blank]
 +
 * Push the code to the repository with the below command:
 +
@@ -620,19 +639,28 @@ image::93_Gitsign_Commit_Signed.png[Successfully Signed Commit with Gitsign,link
 git push origin main
 ----
 +
-* This action sets the build pipeline into motion.
-* Switch back to the *Developer Hub* and select the *CI tab* from the top menu, note that the pipeline execution is in progress. This may take a few minutes to complete.
+. This action sets the build pipeline into motion.
 
-image::112_secure_pipeline_in_progress.png[Secure Pipeline Execution in Progress,link=self,window=blank]
+
+---
+
+=== 5.4 Explore the Tekton Pipeline 
+
+In this step, you will observe the CI pipeline that was triggered by your signed commit and follow its execution through the different verification stages.
+
+. Switch back to *Red Hat Developer Hub* in *Showroom* and select the *CI* tab from the top menu. You should see the pipeline execution in progress. Note that the pipeline may take a few minutes to complete.
+
+image::secure_pipeline_in_progress.png[Secure Pipeline Execution in Progress,align="center",link=self,window=blank]
 
 * In the meantime let's explore the different tasks in this pipeline.
 
-image::113_Jenkins_Secure_Build_Pipeline.png[Secure Build Pipeline Overview,link=self,window=blank]
-
 === Task 1: Verify Commit
 
-* "The first task after cloning our git repo, is ensuring the source code modifications were made by a trusted source.
-* "This task will only succeed if it can verify a trusted signature on the last commit that triggered the pipeline. This is the signature we provided using *GitSign* when we committed the code from *Dev Spaces*."
+* The first task executed after the Git repository is cloned is to verify that the code change you just committed was made by a trusted identity.
+* This task succeeds only if the pipeline can validate the signature on the commit that triggered the run. This is the signature you created using *gitsign* when you committed the change from *OpenShift Dev Spaces*.
+
+image::verify_commit.png[verify_commit,align="center",link=self,window=blank]
+
 * Click on the task *verify-commit* and expand the logs section.
 
 image::114_Jenkins_Click_On_Verify_Commit.png[Click on Verify Commit Task,link=self,window=blank]
@@ -640,7 +668,14 @@ image::114_Jenkins_Click_On_Verify_Commit.png[Click on Verify Commit Task,link=s
 * "Here in the log, you can see that we successfully validated the signature for the user who made the last code change.”
 * "The *verify-commit* task executes the command link:https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work[*git verify-commit*^] to verify that the signature is valid, before the pipeline moves to the next task." you point out.
 
-image::115_Jenkins__Verify_Commit_Log.png[Verify Commit Task Log Output,link=self,window=blank]
+* Click on the *verify-commit* task to view the logs.
+
+
+
+* In the output, you can see that the commit signature you created earlier has been successfully validated. The log confirms a *good signature* from *user1*, along with successful verification of the Fulcio certificate, Rekor transparency entry, and certificate claims.
+* The *verify-commit* task runs a signature verification step equivalent to `git verify-commit`, ensuring the commit was signed by a trusted identity before the pipeline proceeds to the next stage.
+
+image::Verify_Commit_Log.png[Verify Commit Task Log Output,link=self,window=blank]
 
 == Task 2: Scan Source
 
