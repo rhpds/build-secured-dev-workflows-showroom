@@ -291,7 +291,9 @@ envsubst < ~/lab-assets/tas-instance.yml | oc apply -n tssc-tas -f -
 
 ---
 
-=== *`Optional Deep Dive:`* What did the RHTAS Instance CR configure?
+[collapsible]
+.  *Optional Deep Dive:* : What did the RHTAS Instance CR configure?
+====
 
 * The custom resource you just applied tells the *RHTAS Operator* how to stand up Fulcio, Rekor, Trillian, and TUF, and how to trust your Keycloak realms. Here are the key parts worth calling out.
 
@@ -409,6 +411,8 @@ ctlog:
 * ctlog then records the submission in Trillian, ensuring no certificate can be issued secretly.
 * That guarantee is what allows auditors or verification tools to prove that a certificate existed at a specific moment in time.
 
+====
+
 ---
 
 === 3.2 Verify Deployment Readiness
@@ -495,6 +499,7 @@ watch -n 2 "oc get pods -n openshift-pipelines | awk '/^oidc-token-refresher/ { 
 ----
 
 * Once the pod is running, the OIDC refresher is actively maintaining valid tokens for Tekton Chains.
+* Exit using `CTRL+ Z` . 
 
 ---
 
@@ -611,6 +616,8 @@ oc create -f ~/lab-assets/example-image-sign.yml -n tssc-app-ci
 ----
 watch -n 2 "oc get taskrun -n tssc-app-ci"
 ----
+
+* Exit using `CTRL+ Z` . 
 
 ---
 

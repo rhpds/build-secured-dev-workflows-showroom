@@ -525,7 +525,8 @@ image::enable_integration_proxy.png[enable_integration_proxy,align="center",link
 image::switch_to_backstage_app.png[switch_to_backstage_app,align="center",link=self,window=blank]
 
 
-* *Argo CD* is configured to automatically synchronise every two minutes. To avoid waiting for the next sync cycle, click *Hard Refresh* to trigger an immediate reconciliation.
+* *Argo CD* is configured to automatically synchronise every two minutes. To avoid waiting for the next sync cycle, trigger *Hard Refresh* to trigger an immediate reconciliation.
+* Locate the Refresh button in the UI, click the down arrow next to it, and select *Hard Refresh*.
 
 image::hard_refresh.png[hard_refresh,align="center",link=self,window=blank]
 
@@ -560,7 +561,7 @@ user1
 
 [source, role="execute", subs="attributes"]
 ----
-r3dh4t1
+{password}
 ----
 
 * Once logged in, select Catalog from the left navigation menu, you should now see that the catalog is populated.
@@ -568,6 +569,128 @@ r3dh4t1
 * Additional users are listed. These are sample users imported from the catalog locations you provided in the Red Hat Developer Hub configuration in GitLab.
 
 image::catalog_users.png[catalog_users,align="center",link=self,window=blank]
+
+---
+
+
+== Step 4: Development Environment as Code with Devfiles
+
+The concept of Development Environment as Code represents a significant shift in the way we set up and manage development environments. By treating these configurations as code, developers can leverage automation, apply version control, and ensure consistency across various setups. This approach simplifies the complex process of configuring individual environments and aligns it with modern DevOps practices. At the heart of this paradigm is the Devfile, a YAML configuration file used by OpenShift Dev Spaces, and in this step you will update a Devfile that our developer will use in his development workspace.
+
+[collapsible]
+.  *Optional Deep Dive:* : Development Environment as Code with Devfiles
+====
+
+===  Development Environment as Code with Devfiles
+
+
+* *Devfiles* act as blueprints for setting up development environments, defining everything from runtime environments to the necessary tools and commands needed for a project.
+
+=== Anatomy of a Devfile
+
+==== Projects (Optional)
+
+* The *Projects* section is used to specify source code repositories that are essential for the development environment. 
+* It includes details like the repository URL and the specific branch, tag, or commit to be used, ensuring that the *workspace* is pre-populated with the correct code version upon initialization.
+
+==== Components: 
+
+* *Components* are the building blocks of the development environment. The can be of type:
+
+. *Container*: Defines the container image containing the runtime environment, development tools, and dependencies.
+. *Kubernetes/OpenShift Resources*: Incorporates Kubernetes or OpenShift-specific resources such as Routes and BuildConfigs into the workspace.
+. *Volume*: Provides persistent storage necessary for certain data within the development environment.
+. *Plugin*: Extends the capabilities of the development environment by adding IDE features or integrating additional tools and services.
+
+==== Commands (Optional): 
+
+* The **Commands** section outlines specific actions that can be executed within the development environment, such as build, run, and test commands. 
+* These *commands* are defined to automate tasks and facilitate a consistent development workflow across different environments. 
+* Each *command* can specify a working directory, an associated container, and the actual command line to execute.
+
+==== Events (Optional): 
+
+* The *Events* section in a *devfile* handles the lifecycle events of the workspace, such as pre-start, post-start, pre-stop, and post-stop events.
+* These events trigger specific commands at different stages of the workspace lifecycle, enabling the setup or teardown of services and tools necessary for the development process.
+* This mechanism ensures that certain tasks are automatically handled at the appropriate times, enhancing both the efficiency and reliability of the development environment.
+
+image::devfile_anatomy.png[Devfile Anatomy Diagram,link=self,window=blank]
+
+* Now it’s time to try this out hands-on. In this module, you’ll experience firsthand how *OpenShift Dev Spaces* streamlines the process of joining a new project.
+
+====
+
+---
+
+=== 4.1 Log Back in to GitLab Update the Devfile 
+
+* If you are not already logged in to *Gitlab*, click the *Gitlab* tab in the Showroom and log in using:
+
+* *Username*:
+
+[source, role="execute", subs="attributes"]
+----
+{gitlab_root_user}
+----
+
+* *Password*:
+
+[source, role="execute", subs="attributes"]
+----
+{gitlab_root_password}
+----
+
+---
+
+=== 4.2 Update the Devfile 
+
+. At the top left click on Gitlab Home
++
+image::gitlab_home_page.png[gitlab_home_page,align="center",link=self,window=blank]
++
+. Select the repository "build-secured-dev-workflows-idp-configuration"
++
+image::my-quarkus-tkn_repo.png[gitlab_home_page,align="center",link=self,window=blank]
++
+. Navigate to the paths "scaffolder-templates/quarkus-stssc-template"
++
+image::navigate_to_quarkus_template.png[navigate_to_quarkus_template,align="center",link=self,window=blank]
++
+. Open the folder *skeleton*.
++
+image::open_skelton.png[open_skelton,align="center",link=self,window=blank]
++
+. Select the the file *devfile.yaml*
++
+image::select_devfile.png[select_devfile,align="center",link=self,window=blank]
++
+. Select *Edit* > *Edit single file*.
++
+image::devfile_single_edit.png[devfile_single_edit,align="center",link=self,window=blank]
++
+. In devfile.yaml, locate and uncomment the *attribures* section using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below: 
+** These attributes allow configuration from the ConfigMap you created earlier to be injected into your workspace in OpenShift Dev Spaces.
++
+image::dev_tools_atributes.png[dev_tools_atributes,align="center",link=self,window=blank]
++
+. Next, under the commands section, uncomment the *init-git-config* command using using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:  
+** This command updates the Git configuration for the current workspace session using the injected environment variables, enabling commit signing.
++
+image::init_git_config_command.png[init_git_config_command,align="center",link=self,window=blank]
++
+. Finally, under the events section, uncomment the postStart event using CMD + / (Mac) or CTRL + / (Windows/Linux). 
+** This *post-start* event automatically triggers the *init-git-config* command as soon as the workspace starts.
++
+image::poststart_Event.png[poststart_Event.png,align="center",link=self,window=blank]
++
+. Scroll down and enter a commit message: 
++
+[source, role="execute"]
+----
+feat: Update Devfile Configuration 
+----
++
+. Click *Commit Changes* 
 
 ---
 

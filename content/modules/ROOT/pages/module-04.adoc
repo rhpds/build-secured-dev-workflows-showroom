@@ -133,7 +133,7 @@ roxctl image check --image={quay_host}/tssc/tekton-chains-test:latest
 
 ===  2.2 Open Red Hat Developer Hub in Incognito Mode
 
-* Open RHDH in a Private/Incognito window using the link:{developer_hub_url}[*RHDH URL*^] 
+* In Showroom, open RHDH.
 
 * *Username*:
 
@@ -149,7 +149,6 @@ user1
 {password}
 ----
 
-WARNING: If you do not use Private/Incognito window you will be logged in using the admin credentials and will not be able to impersonate a developer.
 
 ---
 
@@ -199,7 +198,9 @@ image::open_component_in_catalog.png[open_component_in_catalog,align="center",li
 
 ---
 
-=== *`Optional Deep Dive:`* Understanding Software Templates
+[collapsible]
+.  *Optional Deep Dive:* : Understanding Software Templates
+====
 
 * Software Templates are the primary mechanism used by *Red Hat Developer Hub* to expose Golden Paths to development teams.
 * Templates are defined using YAML and rendered as rich, validated forms in the Red Hat Developer Hub UI. Developers interact with a simple form. Behind the scenes, the platform does all the heavy lifting.
@@ -378,6 +379,9 @@ output:
         entityRef: ${{ steps['register-gitops'].output.entityRef }}
 ----
 
+====
+
+
 ---
 
 == Step 3: Explore Your Quarkus Application
@@ -424,113 +428,8 @@ NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spac
 
 ---
 
-=== 4.2 *`Optional Deep Dive:`* Development Environment as Code with Devfiles
 
-* The concept of *Development Environment as Code* represents a significant shift in the way we set up and manage development environments. 
-* By treating these configurations as code, developers can leverage automation, apply version control, and ensure consistency across various setups. 
-* This approach simplifies the complex process of configuring individual environments and aligns it with modern DevOps practices.
-* At the heart of this paradigm is the *Devfile*, a YAML configuration file used by **OpenShift Dev Spaces**.
-* *Devfiles* act as blueprints for setting up development environments, defining everything from runtime environments to the necessary tools and commands needed for a project.
-
-=== Anatomy of a Devfile
-
-==== Projects (Optional)
-
-* The *Projects* section is used to specify source code repositories that are essential for the development environment. 
-* It includes details like the repository URL and the specific branch, tag, or commit to be used, ensuring that the *workspace* is pre-populated with the correct code version upon initialization.
-
-==== Components: 
-
-* *Components* are the building blocks of the development environment. The can be of type:
-
-. *Container*: Defines the container image containing the runtime environment, development tools, and dependencies.
-. *Kubernetes/OpenShift Resources*: Incorporates Kubernetes or OpenShift-specific resources such as Routes and BuildConfigs into the workspace.
-. *Volume*: Provides persistent storage necessary for certain data within the development environment.
-. *Plugin*: Extends the capabilities of the development environment by adding IDE features or integrating additional tools and services.
-
-==== Commands (Optional): 
-
-* The **Commands** section outlines specific actions that can be executed within the development environment, such as build, run, and test commands. 
-* These *commands* are defined to automate tasks and facilitate a consistent development workflow across different environments. 
-* Each *command* can specify a working directory, an associated container, and the actual command line to execute.
-
-==== Events (Optional): 
-
-* The *Events* section in a *devfile* handles the lifecycle events of the workspace, such as pre-start, post-start, pre-stop, and post-stop events.
-* These events trigger specific commands at different stages of the workspace lifecycle, enabling the setup or teardown of services and tools necessary for the development process.
-* This mechanism ensures that certain tasks are automatically handled at the appropriate times, enhancing both the efficiency and reliability of the development environment.
-
-image::devfile_anatomy.png[Devfile Anatomy Diagram,link=self,window=blank]
-
-* Now it’s time to try this out hands-on. In this module, you’ll experience firsthand how *OpenShift Dev Spaces* streamlines the process of joining a new project.
-
----
-
-=== 4.3 Log Back in to GitLab Update the Devfile 
-
-* If you are not already logged in to *RHBK*, click the *Gitlab* tab in the Showroom and log in using:
-
-* *Username*:
-
-[source, role="execute", subs="attributes"]
-----
-{gitlab_root_user}
-----
-
-* *Password*:
-
-[source, role="execute", subs="attributes"]
-----
-{gitlab_root_password}
-----
-
----
-
-=== 4.4 Update the Devfile 
-
-. At the top left click on Gitlab Home
-+
-image::gitlab_home_page.png[gitlab_home_page,align="center",link=self,window=blank]
-+
-. Select the repository "development / my-quarkus-tkn"
-+
-image::my-quarkus-tkn_repo.png[gitlab_home_page,align="center",link=self,window=blank]
-+
-. Select the the file *devfile.yaml*
-+
-image::select_devfile.png[select_devfile,align="center",link=self,window=blank]
-+
-. Select *Edit* > *Edit single file*.
-+
-image::devfile_single_edit.png[devfile_single_edit,align="center",link=self,window=blank]
-+
-. In devfile.yaml, locate and uncomment the *attribures* section using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below: 
-** These attributes allow configuration from the ConfigMap you created earlier to be injected into your workspace in OpenShift Dev Spaces.
-+
-image::dev_tools_atributes.png[dev_tools_atributes,align="center",link=self,window=blank]
-+
-. Next, under the commands section, uncomment the *init-git-config* command using using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:  
-** This command updates the Git configuration for the current workspace session using the injected environment variables, enabling commit signing.
-+
-image::init_git_config_command.png[init_git_config_command,align="center",link=self,window=blank]
-+
-. Finally, under the events section, uncomment the postStart event using CMD + / (Mac) or CTRL + / (Windows/Linux). 
-** This *post-start* event automatically triggers the *init-git-config* command as soon as the workspace starts.
-+
-image::poststart_Event.png[poststart_Event.png,align="center",link=self,window=blank]
-+
-. Scroll down and enter a commit message: 
-+
-[source, role="execute"]
-----
-feat: Update Devfile Configuration 
-----
-+
-. Click *Commit Changes* 
-
----
-
-=== 4.5 Configure pipeline authentication secrets
+=== 4.2 Configure pipeline authentication secrets
 
 * Before executing the software template, the CI pipeline must be able to authenticate to the systems it interacts with.
 * All application pipelines in this workshop run in the tssc-app-ci namespace. Any credentials required by the pipeline must be available there as Kubernetes Secrets.
@@ -580,64 +479,112 @@ envsubst < ~/lab-assets/gitlab-auth-secret.yml | oc apply -n tssc-app-ci -f -
 
 === 5.1 Sign in to OpenShift Dev Spaces
 
-. Return to Red Hat Developer Hub (RHDH) in the Incognito Browse
-. Click the link for *OpenShift Dev Spaces*. This will open your cloud-based development environment in a separate browser window.
+. Return to Red Hat Developer Hub (RHDH) in Showroom.
+. *Right Click* the link for *OpenShift Dev Spaces* and choose *Open in Inconito Window*. This will launch your cloud-based development environment in a separate browser window.
 +
 image::open_devspaces.png[open_devspaces,align="center"]
 +
-.You will be prompted to authenticate using your OpenShift credentials. Click Log in with OpenShift to continue.
+WARNING: If you do not use a Private/Incognito window, your session will open using the admin credentials instead of the intended user1 account. Since code signing is configured specifically for user1, it will not work correctly when logged in as the admin user, which can prevent your development workspace from functioning as expected.
++
+. You will be prompted to authenticate using your OpenShift credentials. Click Log in with OpenShift to continue.
 +
 image::login_with_openshift.png[login_with_openshift,align="center"]
 +
-. You will be asked to authorise access for the OpenShift Dev Spaces client. Accept the requested permissions by clicking *Allow selected permissions* to proceed.
+. Provide your credentialas follows:
+** *Username*:
++
+[source, role="execute"]
+----
+user1
+----
++
+** *Password*:
++
+[source, role="execute"]
+----
+{password}
+----
++
+. Next, you will be asked to authorize access for the OpenShift Dev Spaces client. Review the requested permissions and click *Allow selected permissions* to proceed.
 +
 image::allow_Selcted_permissions.png[allow_Selcted_permissions,align="center"]
 +
-. * *OpenShift Dev Spaces* then begins creating your workspace.
-* After waiting a few minutes for *OpenShift Dev Spaces* to finish setting up your workspace, you're presented with your IDE.
-* You click the button *Yes, I trust the authors*.
+. You will then be prompted to provide *GitLab* credentials.
++
+image::devspaces_gitlab_login.png[devspaces_gitlab_login,align="center"]
++
+. Provide your credentialas follows:
+** *Username*:
++
+[source, role="execute"]
+----
+{gitlab_root_user}
+----
++
+** *Password*:
++
+[source, role="execute"]
+----
+{gitlab_root_password}
+----
++
+. When prompted, authorize  *OpenShigt Dev Spaces* to access *GitLab* by clicking *Authorize devspaces*.
++
+image::authorise_devspaces_for_gitlab.png[authorise_devspaces_for_gitlab,align="center"]
++
+. *OpenShift Dev Spaces* then begins creating your workspace.
++
+image::devspaces_start_workspace.png[devspaces_start_workspace,,align="center"]
++
+. After waiting a few minutes for *OpenShift Dev Spaces* to finish setting up your workspace, you're presented with your IDE.
+. When asked click *Yes, I trust the authors*.
 +
 image::96_Trust_Authors.png[Trust Authors Dialog,align="center"]
 +
+. When prompted, confirm the installation of the required extensions by clicking *Trust Publishers & Install* to proceed.
++
+image::trust_publish_and_install.png[trust_publish_and_install,align="center"]
+
+---
 
 === 5.2 Verify Git Signing Configuration in OpenShift Dev Spaces
 
-* Before committing any code, you will first verify that Git commit signing has been correctly configured in your OpenShift Dev Spaces workspace.
-* As you will see, the development environment has already been configured to use gitsign based on the configuration applied earlier in our Devfile.
-* To confirm this, open the VS Code terminal inside your workspace and run the following command:
+* Before committing any code, verify that Git commit signing is correctly configured in your *OpenShift Dev Spaces* workspace.
+* The development environment has already been configured to use *gitsign* based on the configuration applied earlier in the Devfile.
+. To confirm this, open the VS Code terminal inside your workspace by clicking the menu (hamburger) icon in the top-left corner, selecting Terminal, and then choosing New Terminal.
++
+image::open_new_terminal.png[open_new_terminal,align="center"]
++
+Then run the following command, you may be prompted by your browser to allow paste access into the terminal. If so, approve the prompt to proceed.
 +
 [source, role="execute"]
 ----
 git config --global --list
 ----
++
+image::Gitsign_Git_Global_Config.png[Git Global Configuration with Gitsign,link=self,window=blank]
 
-NOTE: You may be prompted by your browser to allow paste access into the terminal. If so, approve the prompt to proceed.
-
-image::94_Gitsign_Git_Global_Config.png[Git Global Configuration with Gitsign,link=self,window=blank]
+---
 
 === 5.3 Apply a simple code change
 
-* To see code sigiing in action we are goinf to apply a simple change, write a comment in the index document.
-.	Navigate to Docs folder and select the file index.md.
-. Add the following line at the bottom of the document
+* To see code signing in action, you will apply a simple change by adding a comment to the documentation.
+. Navigate to the *docs* folder and open the *index.md* file.
+. Add the following line at the bottom of the document:
 +
 [source, role="execute"]
 ----
-# Test code siging
+# Test code signing.
 ----
 +
-image::97_Index_Markdown_Updated.png[Updated Index Markdown File,link=self,window=blank]
+image::Index_Markdown_Updated.png[Updated Index Markdown File,link=self,window=blank]
 +
-* Open the IDE terminal, click on the *Hamburger button* (three horizontal bars) on the top left of your screen and select *Terminal -> New Terminal*
+. To begin commiting your code to the repository, run the following command to add your changes to staging and commiting your changes:
 +
-image::98_Terminal_Menu.png[Terminal Menu in Dev Spaces,link=self,window=blank]
-+
-* To begin commiting your code to the repository, run the following command to add your changes to staging and commiting your changes:
-
 [source, role="execute"]
 ----
 git add .
-git commit -m "feat: updated configuration with secure signing"
+git commit -m "feat: test secure signing."
 ----
 +
 * You will notice that you receive an error message that states *error opening browser: exec: "xdg-open": executable file not found in $PATH*.  This is because our *VS Code* terminal is trying to open a browser window to obtain your credentials for signing but is unable to as it is running as a container.
