@@ -127,12 +127,6 @@ image::tpa_realm_import_start.png[TPA Realm Import Start,align="center",link=sel
 
 ---
 
-.Test collapsible
-[%collapsible]
-====
-This should collapse.
-====
-
 .Optional Deep Dive: What just happened?
 [%collapsible]
 ====

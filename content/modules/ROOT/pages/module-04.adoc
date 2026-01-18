@@ -198,7 +198,7 @@ image::open_component_in_catalog.png[open_component_in_catalog,align="center",li
 
 ---
 
-. *Optional Deep Dive:* : Understanding Software Templates
+.Optional Deep Dive: Understanding Software Templates
 [%collapsible]
 ====
 

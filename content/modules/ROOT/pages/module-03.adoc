@@ -577,7 +577,7 @@ image::catalog_users.png[catalog_users,align="center",link=self,window=blank]
 
 The concept of Development Environment as Code represents a significant shift in the way we set up and manage development environments. By treating these configurations as code, developers can leverage automation, apply version control, and ensure consistency across various setups. This approach simplifies the complex process of configuring individual environments and aligns it with modern DevOps practices. At the heart of this paradigm is the Devfile, a YAML configuration file used by OpenShift Dev Spaces, and in this step you will update a Devfile that our developer will use in his development workspace.
 
-.  *Optional Deep Dive:* : Development Environment as Code with Devfiles
+.Optional Deep Dive: Development Environment as Code with Devfiles
 [%collapsible]
 ====
 

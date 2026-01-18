@@ -291,7 +291,7 @@ envsubst < ~/lab-assets/tas-instance.yml | oc apply -n tssc-tas -f -
 
 ---
 
-. *Optional Deep Dive:* : What did the RHTAS Instance CR configure?
+.Optional Deep Dive: What did the RHTAS Instance CR configure?
 [%collapsible]
 ====
 
