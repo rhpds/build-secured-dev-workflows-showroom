@@ -1,6 +1,6 @@
 = Module 1: Establish Software Composition Trust with SBOMs
 
-== Before you start
+== Before you begin
 
 === Showroom
 
@@ -127,8 +127,8 @@ image::tpa_realm_import_start.png[TPA Realm Import Start,align="center",link=sel
 
 ---
 
-[collapsible]
-.  *Optional Deep Dive:* : What just happened?
+. *Optional Deep Dive:* : What just happened?
+[%collapsible]
 ====
 
 

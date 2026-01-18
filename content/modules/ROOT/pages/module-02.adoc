@@ -291,8 +291,8 @@ envsubst < ~/lab-assets/tas-instance.yml | oc apply -n tssc-tas -f -
 
 ---
 
-[collapsible]
-.  *Optional Deep Dive:* : What did the RHTAS Instance CR configure?
+. *Optional Deep Dive:* : What did the RHTAS Instance CR configure?
+[%collapsible]
 ====
 
 * The custom resource you just applied tells the *RHTAS Operator* how to stand up Fulcio, Rekor, Trillian, and TUF, and how to trust your Keycloak realms. Here are the key parts worth calling out.

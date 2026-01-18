@@ -198,8 +198,8 @@ image::open_component_in_catalog.png[open_component_in_catalog,align="center",li
 
 ---
 
-[collapsible]
-.  *Optional Deep Dive:* : Understanding Software Templates
+. *Optional Deep Dive:* : Understanding Software Templates
+[%collapsible]
 ====
 
 * Software Templates are the primary mechanism used by *Red Hat Developer Hub* to expose Golden Paths to development teams.
