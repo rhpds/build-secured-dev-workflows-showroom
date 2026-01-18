@@ -137,14 +137,14 @@ roxctl image check --image={quay_host}/tssc/tekton-chains-test:latest
 
 * *Username*:
 
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
-user1
+{user}
 ----
 
 * *Password*:
 
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 {password}
 ----
