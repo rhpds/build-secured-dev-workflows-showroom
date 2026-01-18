@@ -127,10 +127,9 @@ image::tpa_realm_import_start.png[TPA Realm Import Start,align="center",link=sel
 
 ---
 
-. *Optional Deep Dive:* : What just happened?
+.Optional Deep Dive: What just happened?
 [%collapsible]
 ====
-
 
 * The YAML you applied creates the identity and authorization model that *Red Hat Trusted Profile Analyzer (RHTPA)* uses to control SBOM upload, search, and deletion.
 * It created:
