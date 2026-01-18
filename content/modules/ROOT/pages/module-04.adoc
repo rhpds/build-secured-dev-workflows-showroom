@@ -652,212 +652,213 @@ In this step, you will observe the CI pipeline that was triggered by your signed
 
 image::secure_pipeline_in_progress.png[Secure Pipeline Execution in Progress,align="center",link=self,window=blank]
 
-* In the meantime let's explore the different tasks in this pipeline.
+* In the meantime, let’s explore the key tasks in this pipeline that demonstrate the security guardrails enforced throughout the workflow.
 
-=== Task 1: Verify Commit
+=== 1 Verify Commit
 
 * The first task executed after the Git repository is cloned is to verify that the code change you just committed was made by a trusted identity.
 * This task succeeds only if the pipeline can validate the signature on the commit that triggered the run. This is the signature you created using *gitsign* when you committed the change from *OpenShift Dev Spaces*.
 
-image::verify_commit.png[verify_commit,align="center",link=self,window=blank]
-
-* Click on the task *verify-commit* and expand the logs section.
-
-image::114_Jenkins_Click_On_Verify_Commit.png[Click on Verify Commit Task,link=self,window=blank]
-
-* "Here in the log, you can see that we successfully validated the signature for the user who made the last code change.”
-* "The *verify-commit* task executes the command link:https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work[*git verify-commit*^] to verify that the signature is valid, before the pipeline moves to the next task." you point out.
+image::verify_commit.png[verify_commit,align="center",align="center",link=self,window=blank]
 
 * Click on the *verify-commit* task to view the logs.
 
-
+image::Verify_Commit_Log.png[Verify Commit Task Log Output,align="center",link=self,window=blank]
 
 * In the output, you can see that the commit signature you created earlier has been successfully validated. The log confirms a *good signature* from *user1*, along with successful verification of the Fulcio certificate, Rekor transparency entry, and certificate claims.
-* The *verify-commit* task runs a signature verification step equivalent to `git verify-commit`, ensuring the commit was signed by a trusted identity before the pipeline proceeds to the next stage.
+* Close the log and return to the pipeline view to explore the next task.
 
-image::Verify_Commit_Log.png[Verify Commit Task Log Output,link=self,window=blank]
 
-== Task 2: Scan Source
+== 2 Build Container
 
-* "After we package the code, running a static analysis to detect any potential bugs or code style violations is a good idea."
-* The task called *scan* task,  utilizes a tool called link:https://www.sonarsource.com/products/sonarqube[*SonarQube*^] to analyze the source code and provide reports based on its quality.
-* "We can view the scan results from the pipeline logs as we did before, or we could log in to *SonarQube* to get an in-depth report."
-* "Let's look at the *SonarQube* report this time," you decide.
-* To access *SonarQube*, you use the following link:https://sonarqube-sonarqube.{OPENSHIFT_CLUSTER_INGRESS_DOMAIN}[*URL*^]  and log in with your credentials, **username:** `{adminuser}` and **password**: `{password}`.
-* You click on the project link in the *SonarQube* Dashboard.
-* "Good news! Our application has passed the validation test by *SonarQube*" .
+* After the source code is packaged, the *build-container* task builds a container image from the verified source. As part of this step, the image is attested and a *Software Bill of Materials (SBOM)* is generated.
++
+image::build_container_task.png[Build Container Task,align="center",window=blank]
++
+* On successful completion, the container image, along with its associated attestations, signatures, and SBOM, is pushed to *Red Hat Quay*.
+* The SBOM is stored in the image registry alongside the container image, ensuring that composition data travels with the artifact.
+* Switch to the *Image Registry* tab and observe that the generated signature, attestation, and SBOM files appear side-by-side with the container image produced by the pipeline.
++
+image::Generated_Artifacts_Registery.png[Generated Artifacts in Quay Registry,link=self,window=blank]
++
+* Switch back to the *CI* tab to explore the next task.
 
-image::54_SonarQube_Dashboard.png[SonarQube Analysis Dashboard,link=self,window=blank]
 
-== Task 3: Build and Sign Image
+=== 3 Upload SBOM to Repository
 
-* "The *build-sign-image* task is responsible for building a container image based on your verified source code. It then attests the image and generates the *Software Bill of Materials (SBOM)* we discussed earlier."
-* "This *SBOM* is then pushed to our *Red Hat Quay* registry upon successful completion of this task
-* The SBOM is then stored in the image registry, alongside your container image.”
+* Once the SBOM has been generated, the next step is to upload it to *Red Hat Trusted Profile Analyzer (RHTPA)*. 
 
-image::116_Jenkins_Build_Sign_Image.png[Build and Sign Image Task,link=self,window=blank]
+image::Upload_SBOM.png[Upload SBOM to CycloneDX Task,link=self,window=blank]
 
-* Switch to the image registry tab, note that the generated attestation, signature, and SBOM files are sitting side-by-side with the resulting container image produced by the pipeline in the registry.
+* Just like in Module 1, you can now inspect the packages included in the container image and assess identified vulnerabilities directly in Red Hat Trusted Profile Analyzer. This provides security teams and auditors with an end-to-end supply chain view, establishing verifiable software provenance, confirming open source licence compliance, and delivering a tamper-evident record of when components were introduced, updated, or removed across the build lifecycle.
 
-image::59_Generated_Artifacts_Registery.png[Generated Artifacts in Quay Registry,link=self,window=blank]
+image::SBOM_in_RHTPA.png[Upload SBOM to CycloneDX Task,link=self,window=blank]
 
 
-=== Task 4: Upload SBOM to Repository
+=== 4 ACS Image Check
 
-* Once the *SBOM* has been generated, the next step is to upload it to your organization's CycloneDX repository. 
-* "The *SBOM* now sits in a single catalogue that every team can query, storing each SBOM with its build number and signature gives auditors a clear trail that proves provenance, verifies licensing obligations, and shows when components were updated or removed," you explain.
+* Switch back to the pipeline view. The next task, *acs-image-check*, assesses whether the container image adheres to predefined security and compliance policies.
++
+image::ACS_Image_Check_Task.png[ACS Image Check Task,align="center",window=blank]
++
+* The *acs-image-check* task evaluates the image against policies such as running as a non-root user, using approved base images, and avoiding prohibited or high-risk packages.
 
-image::119_Jenkins_Upload_SBOM_To_CycloneDX.png[Upload SBOM to CycloneDX Task,link=self,window=blank]
 
-=== Task 5: Upload SBOM to TPA
+=== 5 ACS Image Scan
 
-* In parallel, the *SBOM* is uploaded to Trusted Profile Analyzer (TPA).  We do this to turn the raw SBOM into actionable information.  For example, TPA can identify dependencies in your image that are targets of known Common Vulnerabilities and Exploits (CVEs).  These CVE's can be viewed on the Trusted Profile Analyzer console for the specific *SBOM* uploaded.
+* Switch back to the pipeline view, the *acs-image-scan* task scans the container image for known vulnerabilities by comparing its components against vulnerability databases. This identifies any CVEs that could affect the security of the image.
++
+image::ACS_Image_Scan.png[ACS Image Scan Task Results,link=self,window=blank]
 
-image::120_Jenkins_Upload_SBOM_To_TPA.png[Upload SBOM to TPA Task,link=self,window=blank]
 
-* To access *Trusted Profile Analyzer (TPA)*, you use the following link:https://console-trusted-profile-analyzer.{OPENSHIFT_CLUSTER_INGRESS_DOMAIN}[*URL*^] and log in with your credentials, **username**: `{adminuser}` and **password**: `{password}`.
+== 6 ACS Deploy Check
 
-* "You can view the vulnerabilities and recommended remediation inside the SBOM we just uploaded to **Trusted Profile Analyzer (TPA)**," you explain, clicking **Search** in the left navigation menu.
+* The *acs-deploy-check* task evaluates whether the container image is allowed to be deployed into the target environment.
+* Unlike the image scan and image check tasks, which analyse the image itself, this task enforces deployment-time policies such as blocking images with critical vulnerabilities, failed policy checks, or missing attestations.
+* This ensures that only images that meet all security and compliance requirements are permitted to progress toward deployment.
 
-image::121_Search_TPA.png[Search TPA for SBOM,link=self,window=blank]
+image::ACS_Deploy_Check.png[ACS Deploy Check,link=self,window=blank]
 
-* In the results table, click the **secured-app** link at the top. "The first entry in the list is the SBOM for our **secured-app** application," you point out.
+== ACS Report Output
 
-image::122_Results_TPA.png[TPA Search Results,link=self,window=blank]
+* You can review the vulnerability scan results generated by *ACS* directly from the pipeline. Click the *Output* icon under *Actions* for the pipeline run.
++
+image::Click_Output.png[Click_Output,link=self,window=blank]
++
+* The report summarises detected vulnerabilities by severity and status, highlighting critical findings, whether fixes are available, and which components are affected. This allows teams to quickly assess risk and determine whether the image meets deployment requirements.
++
+image::Image_Scan_Result.png[Image_Scan_Result,link=self,window=blank]
++
+* You can also review the policy check results directly here, switch to the *Image Check* Output.
++
+image::image_check_result.png[Image_check_Result,link=self,window=blank]
++
+* This report highlights policy violations detected by *ACS*, including which violations break the build and which are informational. For each violation, you can see the affected component, the reason for the failure, and the recommended remediation, helping teams understand exactly why an image may be blocked and how to fix it.
++
+* Finally, review the deployment-time policy checks by switching to the *Deployment Check* output.
++
+image::deployment_check_output.png[deployment_check_output,link=self,window=blank]
++
+* This report shows whether the image is permitted to be deployed into the target environment. It highlights any policy violations, distinguishes between build-breaking and non-blocking findings, and provides remediation guidance for issues that would prevent deployment.
 
-* You switch to the **Dependency Analytics Report** tab as ypu explain, "This view lists every discovered security issue and the remediation that Trusted Profile Analyzer suggests."
 
-image::123_Dependency_Analytics_TPA.png[TPA Dependency Analytics View,link=self,window=blank]
+---
 
-=== Task 6: ACS Image Check
+== Step 6: Promote to stagoing 
 
-* You switch back to the pipeline view as you explain: "*ACS* doesn't stop at scanning; it can also assess whether the image adheres to predefined rules by performing an image check".
-* "The *image-scan-check* task evaluates the container image against policies and compliance standards. This includes not running as root, using approved base images, or avoiding prohibited software packages, for example."
+In this step ypu will promote the application to staging by creatingthis tag, a GitLab webhook triggers the staging pipeline — proving that automation delivers both speed and quality.
 
-image::118_Jenkins_ACS_Image_Check_Task.png[ACS Image Check Task,link=self,window=blank]
+=== 6.1 Log in to Gitlab
 
-=== Task 7: Image Scan
+* If you are not already logged in to *GitLab*, click the *GitLab* Console tab in the Showroom and log in using:
 
-* "The *acs-image-scan* task performs an image scan to identify known vulnerabilities within the container image. It compares the image components against known vulnerability databases, uncovering any CVEs (Common Vulnerabilities and Exposures) that might compromise the container."
+* *Username*:
 
-image::117_Jenkins_ACS_Image_Scan_Task.png[ACS Image Scan Task Results,link=self,window=blank]
+[source, role="execute", subs="attributes"]
+----
+{gitlab_root_user}
+----
 
+* *Password*:
 
+[source, role="execute", subs="attributes"]
+----
+{gitlab_root_password}
+----
 
-
-== Step 1: Analyse the Dev Build (Security Audit)
-
-Before promoting anything, review the evidence produced by the pipeline in Module 3.
-This evidence is what the Enterprise Contract will later enforce.
-
-1.1 Inspect the Pipeline Run
-	1.	Open Red Hat Developer Hub (RHDH).
-	2.	Select your component (for example, my-secure-app) from the Catalog.
-	3.	Click the CI tab and locate the pipeline run triggered in Module 3.
-The status should be Succeeded.
-
-
-⸻
-
-1.2 Review the Security Artifacts
-
-Expand the pipeline run and highlight the following steps:
-	•	acs-image-scan
-The image was scanned by Red Hat Advanced Cluster Security (RHACS) during the build.
-	•	sbom-json / upload-sbom
-An SBOM was generated and uploaded to RHTPA (Module 1).
-	•	sign-image
-The image was signed using an OIDC identity and recorded in Rekor (Module 2).
-
-Consultant deep dive – the invisible security officer:
-The developer did not run scans, manage keys, or make security decisions.
-The pipeline definition, owned by the platform team, enforced these controls automatically.
-If a critical policy violation had occurred, the pipeline would have failed before the image was ever published.
-
-⸻
-
-Step 2: Trigger the Release (Developer Action)
-
-Now simulate a developer indicating that the code is ready for release.
-
-2.1 Access the Source Repository
-	1.	In RHDH, stay on the component Overview tab.
-	2.	Click View Source to open the GitLab repository.
-	3.	Log in to GitLab if prompted.
-
-⸻
-
-2.2 Create a Release Tag
-	1.	In GitLab, navigate to Code → Tags (or use the + menu).
-	2.	Click New Tag.
-	3.	Set:
-	•	Tag name: v1.0 (or prod-rc-1)
-	•	Create from: main
-	4.	Click Create tag.
-
-What just happened:
-The Golden Path template configured a webhook that treats tags differently from commits.
-Creating a tag triggers a release pipeline, not the standard development pipeline.
-
-⸻
-
-Step 3: Enterprise Contract Gate (Operations View)
-
-Return to RHDH to observe automated policy enforcement.
-
-3.1 Observe the Release Pipeline
-	1.	Navigate back to the CI tab.
-	2.	A new PipelineRun should appear (for example, release-pipeline-…).
-	3.	Click into the pipeline to follow its progress.
-
-⸻
-
-3.2 Inspect the verify-enterprise-contract Task
-
-This is the critical control point.
-	1.	Wait for the verify-enterprise-contract task to reach Succeeded.
-	2.	Click the task and review the logs.
-
-What EC validates:
-	1.	Provenance: Was the image built by a trusted pipeline?
-	2.	Identity: Does the signature match the expected OIDC issuer and subject?
-	3.	Integrity: Is the SLSA attestation valid and untampered?
-
-
-
-⸻
-
-Step 4: GitOps Promotion (Platform View)
-
-Once policy passes, promotion happens automatically through GitOps.
-
-4.1 Verify Argo CD State
-	1.	In RHDH, open the CD tab.
-	2.	Observe the Argo CD applications (for example, my-app-dev, my-app-stage).
-	3.	Confirm that my-app-stage is syncing or has synced to the new image tag.
-
-⸻
-
-4.2 Verify the Application Topology
-	1.	Click the Topology tab in RHDH.
-	2.	Confirm the application is now running in the Staging namespace.
-
-⸻
-
-Troubleshooting: Enterprise Contract Failure
-
-If the verify-enterprise-contract task fails:
-	1.	Review the task logs.
-	2.	Common cause: OIDC issuer or subject mismatch.
-	3.	Resolution: Update the Enterprise Contract policy to match the signing identity configured in Module 2.
-
-⸻
-
-Module 4 Takeaway
-	•	In this module, you addressed the final customer challenge: enforcing policy consistently without slowing delivery.
-	•	As a consultant, you demonstrated automated governance using Enterprise Contract and GitOps-based promotion.
-	•	For customers, this means releases are approved by policy, not process. No spreadsheets, no manual gates, no trust assumptions.
-	•	For technical sellers, this completes the story: RHADS enforces trust from commit to production, automatically and at scale.
-
-Final customer message:
-“With RHADS, you move fast because the platform verifies trust for you, and you stay safe because policy guarantees only verified software reaches production.”
+=== 6.2 Create a Release Tag 
+
+. At the top left click on *Gitlab Home*.
++
+image::gitlab_home_page.png[gitlab_home_page,align="center",link=self,window=blank]
++
+. Select the repository *my-quarkus-tkn*.
++
+image::my-quarkus-tkn_repo.png[my-quarkus-tkn_repo,align="center",link=self,window=blank]
++
+. From the left-hand menu, navigate to *Code → Tags*.
++
+image::click_code_tag.png[click_code_tag,align="center",link=self,window=blank]
++
+. Click *New tag*.
++
+image::click_new_tag..png[click_new_tag,align="center",link=self,window=blank]
++
+. Enter a version tag, for example *v1.0*.
++
+. Select *master* as the target branch.
+.
+. Click *Create tag* to create the release tag.
++
+image::create_tag.png[create_tag,align="center",link=self,window=blank]
++
+
+* The software template configures a webhook that treats Git tags differently from regular commits. Creating a tag triggers a *promote to staging* pipeline, rather than the standard development pipeline.
+
+=== 6.3 Explore the Promote to Staging Pipeline
+
+. Switch back to the *CI* tab in *Red Hat Developer Hub*.
+. Locate and expand the job labeled *promote-to-stage* to follow the progress of the release pipeline.
+
+---
+
+=== Preparing the Release for Promotion
+
+* The release pipeline begins with the *extract-destination-image-tag* task, which resolves the destination image tag from the Git release. This ensures the release is explicitly tied to a specific version, rather than a moving branch or commit.
+* Next, the *gather-images-to-verify* task identifies the container image that was previously built and validated during staging. Using the Git tag, it locates the correct image and generates metadata that links the image back to its source repository and release, establishing clear traceability before promotion.
+
+---
+
+=== Verify Enterprise Contract
+
+* Wait for the *verify-enterprise-contract* task to reach *Succeeded*.
++
+image::verify-enterprise-contract.png[verify-enterprise-contract,align="center",link=self,window=blank]
++
+. Click the task and review the logs.
+. In this task, the container image is validated against the *Enterprise Contract* using the following command:
++
+[source]
+----
+ec validate image \
+  --image quay.tssc-quay/tssc/my-quarkus-tkn:v1.0 \
+  --policy git::github.com/org/ec-policies//default \
+  --public-key k8s://openshift/trusted-keys \
+  --output json
+----
++
+* As part of this validation, Enterprise Contract ensures that:
+. *Provenance:* the image was built by a trusted pipeline and includes valid build attestations
+. *Identity:* the image is signed with *Cosign* and the signature matches the expected OIDC issuer and subject
+. *Integrity:* the image and its SLSA attestations have not been tampered with
+. *Composition:* a valid *SBOM* (for example, SPDX or CycloneDX) is present and attached to the image
+. *Risk and Policy:* vulnerability data (CVEs) and organisational security policies are evaluated before promotion
+
+---
+
+=== Promoting and Deploying the Release
+
+* Once the image has passed all verification and policy checks, the *copy-image* task promotes it to production.
+* This task retags the previously validated image with a production label (for example, *prod-v1.0*), clearly identifying it as production-ready.
+* Only images that successfully pass *Enterprise Contract* validation reach this stage, ensuring that unverified or non-compliant artifacts cannot be promoted.
+* The final task, *update-deployment*, updates the deployment configuration to reference the newly promoted production image.
+* This integrates seamlessly with GitOps, allowing tools such as *Argo CD* to automatically deploy the validated image into the production environment.
+* At this point, security validation transitions into customer value, with promotion and deployment handled automatically and consistently.
+
+---
+
+=== Release Pipeline Outcome
+
+* By combining signed commits, SBOMs, provenance, vulnerability scanning, and Enterprise Contract validation, only verified container images are promoted to production. Release promotion becomes automated, auditable, and policy-driven, reducing risk while significantly accelerating delivery.
+* Security is enforced by design, and production readiness is proven, not assumed.
+
+---
+
+=== Module 4: Summary
+
+* In this module, you addressed a critical customer challenge: “Unverified or unsafe images are slipping through to staging and production.”
+* As a participant, you executed an end-to-end trusted software supply chain workflow, observing how *Red Hat Advanced Cluster Security (RHACS)*, *Enterprise Contract (EC)* policies, and release promotion work together to ensure only verified images are allowed to progress.
+* For customers, this means releases become safer, auditable, and fully governed. Every promotion decision is backed by cryptographic evidence, vulnerability data, and policy enforcement, ensuring confidence at every stage of the delivery process.
+* For consultants, this module provides a reusable pattern for embedding policy enforcement and release governance into real-world CI and CD pipelines, without introducing friction or slowing development teams down.
+* For technical sellers, this completes the workshop story: *Red Hat Advanced Developer Suite (RHADS)* prevents unsafe releases and turns every deployment into a controlled, compliant, and predictable outcome.
+* The key takeaway is this: with RHADS, developer velocity is preserved because trust is verified automatically, and enterprise risk is reduced because policy-driven guardrails ensure only trusted, compliant artifacts are promoted to production.

@@ -644,13 +644,13 @@ image::devfile_anatomy.png[Devfile Anatomy Diagram,link=self,window=blank]
 
 === 4.2 Update the Devfile 
 
-. At the top left click on Gitlab Home
+. At the top left click on *Gitlab Home*.
 +
 image::gitlab_home_page.png[gitlab_home_page,align="center",link=self,window=blank]
 +
-. Select the repository "build-secured-dev-workflows-idp-configuration"
+. Select the repository "build-secured-dev-workflows-idp-configuration".
 +
-image::my-quarkus-tkn_repo.png[gitlab_home_page,align="center",link=self,window=blank]
+image::build-secured_repo.png[build-secured_repo,align="center",link=self,window=blank]
 +
 . Navigate to the paths "scaffolder-templates/quarkus-stssc-template"
 +
@@ -660,7 +660,7 @@ image::navigate_to_quarkus_template.png[navigate_to_quarkus_template,align="cent
 +
 image::open_skelton.png[open_skelton,align="center",link=self,window=blank]
 +
-. Select the the file *devfile.yaml*
+. Select the the file *devfile.yaml*.
 +
 image::select_devfile.png[select_devfile,align="center",link=self,window=blank]
 +
@@ -687,7 +687,7 @@ image::poststart_Event.png[poststart_Event.png,align="center",link=self,window=b
 +
 [source, role="execute"]
 ----
-feat: Update Devfile Configuration 
+feat: Update Devfile Configuration.
 ----
 +
 . Click *Commit Changes* 
