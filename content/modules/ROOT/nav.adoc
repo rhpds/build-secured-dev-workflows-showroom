@@ -2,3 +2,4 @@
 * xref:module-02.adoc[Module 2: Sign and Verify All Artifacts With RHTAS]
 * xref:module-03.adoc[Module 3: Developer Workflow Without Developer Friction]
 * xref:module-04.adoc[Module 4: Enforce Policy and Promote Safely]
+* xref:module-05.adoc[Conclusion and Next Steps]
