@@ -622,17 +622,12 @@ image::Gitsign_Verification_Code.png[Gitsign Verification Code Screen,align="cen
 +
 . Return to *Dev Spaces* and paste this code into the waiting prompt in the *VS Code* terminal.
 +
-[source, role="execute"]
-----
-Enter verification code:
-----
-+
 NOTE: Once you've pasted the code, depending on your browser, you may be presented with a popup to allow paste functionality in Devspaces.  Click *Allow* and then hit *Enter*.  If no popup appears, just hit *Enter*.
-* If successful, you should receive a successful commit message:
+. If successful, you should receive a successful commit message:
 +
 image::Gitsign_Commit_Signed.png[Successfully Signed Commit with Gitsign,link=self,window=blank]
 +
-* Push the code to the repository with the below command:
+. Push the code to the repository with the below command:
 +
 [source, role="execute"]
 ----
@@ -782,7 +777,7 @@ image::click_code_tag.png[click_code_tag,align="center",link=self,window=blank]
 +
 . Click *New tag*.
 +
-image::click_new_tag..png[click_new_tag,align="center",link=self,window=blank]
+image::click_new_tag.png[click_new_tag,align="center",link=self,window=blank]
 +
 . Enter a version tag, for example *v1.0*.
 +
