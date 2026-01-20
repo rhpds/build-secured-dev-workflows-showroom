@@ -1,6 +1,6 @@
 ---
 site:
-  title: Showroom Template Demo
+  title: Build Secure, Streamlined Developer Workflows with Red Hat Advanced Developer Suite
   url: https://redhat-scholars.github.io/course-template
   start_page: modules::index.adoc
 
