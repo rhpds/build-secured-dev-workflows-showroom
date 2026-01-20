@@ -65,46 +65,54 @@ After entering your credentials, click *Sign In*.
 
 === 1.2 Create the Developer User
 
-. In the *RHBK Console*, click *Manage Realm*, switch to the *sso* realm.
+* Switch to the *sso* realm:
+. In the *RHBK Console* click *Manage Realm*.
+. Select the *sso* realm.
 +
 image::switch_to_sso_realm.png[Switch to SSO Realm,align="center",link=self,window=blank]
 
-.	Navigate to *Users* and click *Add user*.
+*	To create a new user:
+. Navigate to *Users*.  
+. Click *Add user*.
 +
 image::add_new_user.png[add_new_user,align="center",link=self,window=blank]
 
-. Set the following values:
+* Set the following values:
 +
-.. *Email Verified*: Toggle on (required for TAS signing)
-..	*Username*:
+. *Email Verified*: Toggle on (required for TAS signing)
+.	*Username*:
 +
 [source, role="execute"]
 ----
 user1
 ----
 +
-.. *Email*:
+. *Email*:
 +
 [source, role="execute"]
 ----
 user1@demo.redhat.com
 ----
 +
-..	*First Name*: 
+.	*First Name*: 
 +	
 [source, role="execute"]
 ----
 User1
 ----
 + 
-.. *Last Name*: 
+. *Last Name*: 
 +
 [source, role="execute"]
 ----
 Demo
 ----
-
-. Click *Create*. You'll see a pop-up message saying "The user has been created."
++
+. Click *Create*. 
++
+* You'll see a pop-up message saying "The user has been created."
++
+WARNING: Make sure *Email Verified* is toggled *on*. If it is disabled, authentication will fail when you attempt to sign your code in Module 4.
 +
 image::create_user1.png[create_user1,align="center",link=self,window=blank]
 
@@ -134,9 +142,8 @@ NOTE: The tssc group mapping in RHDH ensures this user has ownership and managem
 === 1.4 Set User Credentials
 
 . Click the *Credentials* tab.
+. Click *Set Password*. 
 
-. Click *Set Password*. You'll see a pop-up message saying "The password has been set successfully."
-+
 image::select_set_password.png[select_set_password,align="center",link=self,window=blank]
 
 . Enter the *Password* and *Password confirmation* to:
@@ -145,15 +152,15 @@ image::select_set_password.png[select_set_password,align="center",link=self,wind
 ----
 {password}
 ----
-
++
 . Ensure *Temporary* is toggled off.
-
++
 . Click *Save*.
 +
+* You'll see a pop-up message saying "The password has been set successfully."
+* When prompted to confirm the password for user1, click *Save password* to confirm.
++
 image::set_password_screen.png[set_password_screen,align="center",link=self,window=blank]
-
-. When prompted to confirm the password for user1, click *Save password* to confirm.
-
 
 At this point, the developer identity is fully configured and ready to authenticate across OpenShift, Dev Spaces, and Red Hat Developer Hub.
 
@@ -202,7 +209,9 @@ In Showroom, switch to the *GitLab* tab and login using the following credential
 
 ---
 
-=== 2.3 Understanding RHDH Configuration and Plugins
+.Understanding RHDH Configuration and Plugins
+[%collapsible]
+====
 
 *Red Hat Developer Hub* configuration is managed through a single declarative file, *app-config.yaml*, inherited from upstream Backstage. This file defines the platform capabilities where authentication, integrations, plugins, catalog sources, and proxy behaviour are all configured. In the next steps, you will modify four key sections that shape the platform experience:
 
@@ -270,13 +279,15 @@ upstream:
           #   target: ${QUAY_URL}
 ----
 
+====
+
 ---
 
-=== 2.4 Enable Plugins
+=== 2.43 Enable Plugins
 
 *Backstage*, and by extension *Red Hat Developer Hub (RHDH)*, is designed to be modular. Plugins are the primary mechanism used to integrate developer tools and extend the capabilities of the Internal Developer Portal.
 
-==== 2.4.1 Plugin management in upstream Backstage
+==== 2.3.1 Plugin management in upstream Backstage
 
 In upstream Backstage, plugins are added using a build-time model. Platform engineers must:
 
@@ -288,7 +299,7 @@ In upstream Backstage, plugins are added using a build-time model. Platform engi
 
 Each update — including plugin upgrades or security fixes — requires repeating this entire process. While functional, this approach does not scale well across multiple environments or teams and introduces operational friction.
 
-==== 2.4.2 Dynamic plugins in Red Hat Developer Hub
+==== 2.3.2 Dynamic plugins in Red Hat Developer Hub
 
 *Red Hat Developer Hub* introduces dynamic plugins, shifting plugin management from build time to runtime configuration. Instead of rebuilding images, platform engineers enable and configure plugins declaratively using YAML and GitOps workflows. The container image remains unchanged, while plugins are mounted and activated at runtime.
 
@@ -302,7 +313,7 @@ This approach:
 In the following steps, you will begin enabling plugins through configuration, activating core *RHDH* functionality exactly as a platform engineering team would when shaping a developer experience.
 
 
-==== 2.4.3 Enabling RHDH plugins
+==== 2.3.3 Enabling RHDH plugins
 
 To enable plug-ins in this lab:
 
@@ -327,7 +338,7 @@ image::edit_single_file.png[edit_single_file,align="center",link=self,window=bla
 image::uncomment_plugins.png[uncomment_plugins,align="center",link=self,window=blank]
 
 
-==== 2.4.4 Understanding the dynamic.plugins configuration
+==== 2.3.4 Understanding the dynamic.plugins configuration
 
 Let's take a look at the *dynamic.plugins* YAML block that you've just uncommented:
 
@@ -371,11 +382,11 @@ This plugin enables *Red Hat Developer Hub* to integrate with *Red Hat Build of 
 
 ---
 
-=== 2.5 Configure authentication
+=== 2.4 Configure authentication
 
 In this step, you will replace temporary Guest access with Single Sign-On (SSO) using *Red Hat Build of Keycloak (RHBK)* via OpenID Connect (OIDC). This allows developers to log in to *Red Hat Developer Hub* using their existing organisational identity, rather than anonymous Guest access.
 
-==== 2.5.1 Configuration steps
+==== 2.4.1 Configuration steps
 
 . Comment the developer environment block under authusing `CMD + /` (Mac) or `CTRL + /` (Windows/Linux).
 . Then, uncomment the production environment configuration using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux). 
@@ -383,7 +394,7 @@ In this step, you will replace temporary Guest access with Single Sign-On (SSO) 
 
 image::enable_auth.png[enable_auth,align="center",link=self,window=blank]
 
-==== 2.5.2 Understanding the authentication configuration
+==== 2.4.2 Understanding the authentication configuration
 
 The YAML you just uncommented configures authentication as follows:
 
@@ -414,7 +425,7 @@ signInPage: "oidc"
 
 ---
 
-=== 2.6 Populating Software Catalog
+=== 2.5 Populating Software Catalog
 
 The Software Catalog is your central inventory for everything that matters in your technology landscape. It tracks entities such as:
 
@@ -481,7 +492,7 @@ Once this configuration is applied and RHDH restarts, the Catalog will automatic
 
 ---
 
-=== 2.7 Integration and Proxy Configuration
+=== 2.6 Integration and Proxy Configuration
 
 In this step you enable integration between Red Hat Developer Hub and your *GitLab* instance. You will also enable the proxy configuration, allowing *Red Hat Developer Hub* to act as a secure intermediary between developers and external services such as Quay — routing requests server-side so developers never handle tokens directly or run into browser CORS issues.
 
@@ -500,7 +511,7 @@ image::enable_integration_proxy.png[enable_integration_proxy,align="center",link
 
 ---
 
-=== 2.8 Sync via Argo CD
+=== 2.7 Sync via Argo CD
 
 . In Showroom, switch to the *Argo CD* tab and log in using the following credentials: 
 +
