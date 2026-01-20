@@ -26,7 +26,9 @@ Together, these components establish an auditable chain of trust across containe
 
 ---
 
-=== How does keyless signing work?
+.Optional Deep Dive: How does keyless signing work?
+[%collapsible]
+====
 
 Traditional signing models rely on long-lived private keys that developers or CI systems must generate, store, rotate and protect. In contrast, RHTAS uses keyless signing and short lived certificates. 
 
@@ -62,6 +64,8 @@ image::keyless_signing_flow.png[keyless_signing_flow,align="center",link=self,wi
 
 NOTE: In an interactive keyless signing flow (for example, when signing code from your IDE), Cosign will prompt you to authenticate with the OIDC provider, such as RHBK. It prints a login URL (and sometimes a short verification code), you complete the login in your browser, and provide the OIDC access token to Cosign, which behind the scenes requests a signing certificate from Fulcio.  
 
+====
+
 ---
 
 == Step 1: Configure the Machine Identity
@@ -93,19 +97,19 @@ After entering your credentials, click *Sign In*.
 
 === 1.2 Create tas-chains Realm
 
-* In the *RHBK Console*, click *Manage Realm* in the left navigation menu.
-* Click the *Create realm* button.
+.In the *RHBK Console*, click *Manage realms* in the left navigation menu.
+. Click the *Create realm* button.
 
 image::create_tas_realm.png[Create Realm,align="center",link=self,window=blank]
 
-* In the *Create realm* pop up, enter the *Realm name*:
-
+. In the *Create realm* pop up, enter the *Realm name*:
++
 [source, role="execute", subs="attributes"]
 ----
 tas-chains 
 ----
-
-* Click *Create*.
++
+. Click *Create*.
 
 image::create_tas_chains_realm.png[Create TAS Chains realm,align="center",link=self,window=blank]
 
@@ -206,7 +210,7 @@ WARNING: This is the most common failure point in RHTAS deployments. Fulcio requ
 
 * In the *RHBK Console*:
 
-. Click *Manage Realms* in the left navigation menu.
+. Click *Manage realms* in the left navigation menu.
 . Select the *sso* realm.
 
 image::tas_sso_realm.png[TAS SSO Realm,align="center",link=self,window=blank]
@@ -234,12 +238,12 @@ image::tas_client_general_settings.png[New Client General Settings,align="center
 * Under *Capability Config* set:
 
 . *Standard flow*: Make sure this checkbox is ticked.
-. *Direct Access Grants*: Tick this checkbox.
+. *Direct access grants*: Tick this checkbox.
 . Then click *Next*.
 
 image::tas_commit_client_capability_config.png[New Client Capability Config,align="center",link=self,window=blank]
 
-* In the *Login Settings* page, add the following *Valid Direct URIs*:
+* In the *Login Settings* page, add the following *Valid redirect URIs*:
 
 . Add the first URI: 
 +
@@ -453,7 +457,7 @@ image::tas_verify_deploy.png[Verify RHTAS deploy,align="center",link=self,window
 
 ===  Deploy OIDC Refresher App
 
-* Run the follwoing commands in the Showroom terminal:
+* Run the following commands in the Showroom terminal:
 
 . First, retrieve the Keycloak admin credentials from the keycloak-initial-admin secret in the tssc-keycloak namespace:
 +
@@ -610,7 +614,7 @@ oc create -f ~/lab-assets/example-image-sign.yml -n tssc-app-ci
 ----
 
 * *Tekton* will execute the task, and upon successful completion, *Tekton Chains* will automatically call Cosign to sign the resulting image.
-* Wait for the PipelineTask to reach the Succeeded status.
+* Wait until the PipelineTask status shows Succeeded = true.
 
 [source,role="execute"]
 ----
@@ -621,7 +625,9 @@ watch -n 2 "oc get taskrun -n tssc-app-ci"
 
 ---
 
-=== 6.3 Verify Certifiacte and Attestation in Rekor search UI
+.Optional Deep Dive: Verify Certificate and Attestation in Rekor search UI
+[%collapsible]
+====
 
 * Click the *Rekor Search UI* tab in the Showroom, you may need to refresh the tab.
 * After *Cosign* completes the signing operation, *Rekor* stores 2 complementary entries:
@@ -710,7 +716,7 @@ inclusionProof:
 .	which steps were executed
 .	what artifact digest was produced
 . when the build started and finished
-* Expand the Attestation section to examine it's detais. This is a simplified version:
+* Expand the Attestation section to examine it's details. This is a simplified version:
 
 [source,yaml]
 ----
@@ -742,9 +748,11 @@ attestation:
       uri: oci://quay.io/containers/aio
 ----
 
+====
+
 ---
 
-=== 6.4 Verify the Signed image in Quay
+=== 6.3 Verify the Signed image in Quay
 
 * Log in to the Quay registry UI.
 * Click the *Quay Console* tab in the Showroom and log in using:

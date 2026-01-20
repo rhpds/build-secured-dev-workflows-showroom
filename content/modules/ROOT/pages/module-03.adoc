@@ -207,7 +207,7 @@ In Showroom, switch to the *GitLab* tab and login using the following credential
 *Red Hat Developer Hub* configuration is managed through a single declarative file, *app-config.yaml*, inherited from upstream Backstage. This file defines the platform capabilities where authentication, integrations, plugins, catalog sources, and proxy behaviour are all configured. In the next steps, you will modify four key sections that shape the platform experience:
 
 * *dynamic.plugins* : controls which plugins are enabled.
-** These plugins surface platform capabilities to developers , CI/CD views, Argo CD visualisations, IDEs, Image Registeries, OpenShift topology view, documnetation and more.
+** These plugins surface platform capabilities to developers, CI/CD views, Argo CD visualisations, IDEs, Image Registries, OpenShift topology view, documentation and more.
 * *authentication*: defines authentication providers and login behaviour.
 ** You will disable Guest access and enable OIDC login backed by Keycloak — enforcing secure authentication.
 * *catalog*: controls where *RHDH* discovers software components.
@@ -416,7 +416,7 @@ signInPage: "oidc"
 
 === 2.6 Populating Software Catalog
 
-The Software Catalog is your central inventory for everything that matters in your technology landscape. It tracks Entities such as:
+The Software Catalog is your central inventory for everything that matters in your technology landscape. It tracks entities such as:
 
 * Components: services, websites, libraries
 * Resources: databases, message brokers, object storage
@@ -666,7 +666,7 @@ image::select_devfile.png[select_devfile,align="center",link=self,window=blank]
 +
 image::devfile_single_edit.png[devfile_single_edit,align="center",link=self,window=blank]
 
-. In devfile.yaml, locate and uncomment the *attribures* section using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:
+. In devfile.yaml, locate and uncomment the *attributes* section using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:
 +
 ** These attributes allow configuration from the ConfigMap you created earlier to be injected into your workspace in OpenShift Dev Spaces.
 +

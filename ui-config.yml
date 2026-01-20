@@ -21,7 +21,7 @@ tabs:
     url: 'https://gitlab-gitlab.${DOMAIN}'
   - name: RHDH
     url: 'https://backstage-backstage.${DOMAIN}'
-  - name: ARGOCD
+  - name: Argo CD
     url: 'https://argocd-server-openshift-gitops.${DOMAIN}'
   - name: ACS
     url: 'https://central-stackrox.${DOMAIN}'
