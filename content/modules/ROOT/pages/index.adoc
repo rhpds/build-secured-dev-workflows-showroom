@@ -1,4 +1,4 @@
-= Build secure streamlined developer workflows with Red Hat Advanced Developer Suite
+= Build secure streamlined developer workflows with Red Hat Advanced Developer Suite (RHADS)
 
 image::rhads-logo.png[RHADS Logo,align="center",width=200,link=self,window=blank]
 
@@ -14,8 +14,8 @@ Red Hat Advanced Developer Suite (RHADS) scales platform engineering teams to in
 
 * **Improved Developer Productivity & Efficiency**: Speed development with onboarding through preconfigured workspaces, automated software templates, and self-service capabilities via a central source-of-truth.
 * **Enhanced Software Integrity and Provenance**:  Protect your software supply chain with automated signing, cryptographic verification, and end-to-end provenance tracking. This strengthens supply chain trust and reduces the risk of compromised artifacts.
-* **Automated Compliance and Governance**: Implement policy-driven, verifiable build pipelines to automatically enforce security standards (e.g., SLSA) and adhere to regulatory requirements, making the business impact tangible.
-* **Real-time Risk Visibility**: Gain critical insights into the risk profile of applications across the software development lifecycle (SDLC) through SBOM management and analysis.
+* **Automated Compliance and Governance**: Implement policy-driven, verifiable build pipelines to automatically enforce security standards (e.g., link:https://slsa.dev/[*SLSA*]) and adhere to regulatory requirements, making the business impact tangible.
+* **Real-time Risk Visibility**: Gain critical insights into the risk profile of applications across the software development lifecycle (SDLC) through link:https://www.cisa.gov/sbom[*SBOM*]  management and analysis.
 
 === Key Components Covered
 
@@ -45,10 +45,10 @@ image::rhads-architecture.png[rhads-architecture,align="center",link=self,window
 | Component | Description
 
 | **Red Hat Build of Keycloak (RHBK)**
-| RHBK serves as the OpenID Connect (OIDC) provider for secure identity and access management. RHBK Centralizes Secure Identity Management and is critical for enabling RHTAS keyless signing workflows and user authentication for the entire RHADS ecosystem, including synchronizing User and Group entities into RHDH.
+| RHBK serves as the OpenID Connect (OIDC) provider for secure identity and access management. RHBK `*centralizes secure identity management*` and is critical for enabling RHTAS keyless signing workflows and user authentication for the entire RHADS ecosystem, including synchronizing User and Group entities into RHDH.
 
 | **Red Hat Advanced Cluster Security (RHACS)**
-| RHACS is a Kubernetes-native security platform that enforces security policies for containerized applications and performs image scanning and security checks. RHACS Enforces Security at Scale by ensuring that only trusted, verified, and compliant artifacts reach the cluster. It is integrated into the CI/CD pipeline to provide image scanning and security checks.
+| RHACS is a Kubernetes-native security platform that enforces security policies for containerized applications and performs image scanning and security checks. RHACS `*enforces security at scale*` by ensuring that only trusted, verified, and compliant artifacts reach the cluster. It is integrated into the CI/CD pipeline to provide image scanning and security checks.
 
 | **Red Hat Quay**
 | Quay is a secure image management and global registry that stores and manages container images and other build artifacts. Quay secures Artifact Storage by providing a centralized repository for container images and offering real-time scans and granular access controls.
@@ -101,4 +101,4 @@ This workshop consists of hands-on labs designed to demonstrate how Red Hat Adva
     - **Consultant Takeaway**: Gain a reusable pattern for embedding policy enforcement and release governance into real-world pipelines — without slowing teams down.
     - **Technical Seller Takeaway**: This is the final demo story: “RHADS prevents unsafe releases and makes every deployment a controlled, compliant, and predictable outcome.”
 
-Ready to embrace the principle to "Move Fast, Stay Safe"? Let's begin implementing the policy-driven automation necessary to accelerate developer productivity and strengthen software supply chain security with *RHADS*.
+Ready to embrace the principle to "Move Fast, Stay Safe?" Let's begin implementing the policy-driven automation necessary to accelerate developer productivity and strengthen software supply chain security with *RHADS*.
