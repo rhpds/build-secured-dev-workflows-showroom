@@ -539,7 +539,7 @@ image::switch_to_backstage_app.png[switch_to_backstage_app,align="center",link=s
 +
 image::hard_refresh.png[hard_refresh,align="center",link=self,window=blank]
 +
-*Argo CD* immediately begins rolling out the updated configuration. This typically takes 2–3 minutes as the *Red Hat Developer Hub* deployment is reconciled.
+*Argo CD* immediately begins rolling out the updated configuration. This typically takes 2–3 minutes as the *Red Hat Developer Hub* deployment is reconciled and new plugins are installed for the first time.
 +
 image::argo_cd_rollout.png[argo_cd_rollout,align="center",link=self,window=blank]
 
@@ -584,7 +584,11 @@ image::catalog_users.png[catalog_users,align="center",link=self,window=blank]
 
 == Step 4: Development Environment as Code with Devfiles
 
-The concept of Development Environment as Code represents a significant shift in the way we set up and manage development environments. By treating these configurations as code, developers can leverage automation, apply version control, and ensure consistency across various setups. This approach simplifies the complex process of configuring individual environments and aligns it with modern DevOps practices. At the heart of this paradigm is the Devfile, a YAML configuration file used by OpenShift Dev Spaces, and in this step you will update a Devfile that our developer will use in his development workspace.
+The concept of Development Environment as Code represents a significant shift in the way we set up and manage development environments. By treating these configurations as code, developers can leverage automation, apply version control, and ensure consistency across various setups. 
+
+This approach simplifies the complex process of configuring individual environments and aligns it with modern DevOps practices. At the heart of this paradigm is the Devfile, a YAML configuration file used by OpenShift Dev Spaces, and in this step you will update a Devfile that our developer will use in his development workspace.
+
+In this section you'll act as a Platform Engineer and update the Devfile in a Template (Golden Path) that developers will use to create new applications. The update you make ensures that commit signing is enforced in new projects created using the template.
 
 .Optional Deep Dive: Development Environment as Code with Devfiles
 [%collapsible]
@@ -679,7 +683,7 @@ image::devfile_single_edit.png[devfile_single_edit,align="center",link=self,wind
 
 . In devfile.yaml, locate and uncomment the *attributes* section using `CMD + /` (Mac) or `CTRL + /` (Windows/Linux) as shown below:
 +
-** These attributes allow configuration from the ConfigMap you created earlier to be injected into your workspace in OpenShift Dev Spaces.
+** These attributes allow configuration from a ConfigMap you'll create in the next module to be injected into workspaces managed by OpenShift Dev Spaces.
 +
 image::dev_tools_atributes.png[dev_tools_atributes,align="center",link=self,window=blank]
 
@@ -703,6 +707,82 @@ feat: Update Devfile Configuration.
 ----
 
 . Click *Commit Changes*. 
+
+---
+
+=== 4.3 Create the tas-git-config ConfigMap for Dev Spaces
+
+In this step, you will create a ConfigMap for *Dev Spaces* so that every developer workspace automatically inherits the information required for OIDC-based Git commit signing, without manual setup.
+
+Create a new ConfigMap in the openshift-devspaces namespace using this command in the Terminal:
+
+[source, role="execute", subs="attributes"]
+----
+cat << 'EOF' | oc apply -n openshift-devspaces -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tas-git-config
+  annotations:
+    controller.devfile.io/mount-as: env
+  labels:
+    app.kubernetes.io/part-of: che.eclipse.org
+    app.kubernetes.io/component: workspaces-config
+data:
+  TAS_FULCIO_URL: "{tas_fulcio_url}"
+  TAS_REKOR_URL: "{tas_rekor_url}"
+  TAS_ISSUER_URL: "https://sso.{openshift_cluster_ingress_domain}/realms/sso"
+  TAS_CLIENT_ID: "trusted-artifact-signer"
+EOF
+----
+
+This ConfigMap defines the endpoints and identity configuration required by *gitsign*, the tool used to perform keyless Git commit signing via *RHTAS*.
+
+NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spaces to inject these values into every developer workspace as environment variables.
+
+---
+
+=== 4.4 Configure pipeline authentication secrets
+
+Before moving on to executing the software template as a developer, the CI pipeline must be able to authenticate to the systems it interacts with. All application pipelines in this workshop run in the tssc-app-ci namespace. Any credentials required by the pipeline must be available there as Kubernetes Secrets.
+
+In this step, you will create two secrets required by the pipeline:
+
+* *tpa-secret*: Credentials for uploading SBOMs to *Red Hat Trusted Profile Analyzer (RHTPA)*
+* *gitlab-auth-secret*: Credentials for authenticating to GitLab when creating repositories and interacting with source code
+
+Let's get started.
+
+. Run the following command to set the TPA_SERVER_URL
++
+[source,role="execute"]
+----
+export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=server -n tssc-tpa -o json \
+  | jq -r '.items[0].spec.host')"
+----
++
+. Then run this command to create the secret *tpa-secret*:
++
+[source,role="execute"]
+----
+envsubst < ~/lab-assets/tpa-secret.yml | oc apply -n tssc-app-ci -f -
+----
++
+. Next, create the GitLab authentication secret. First, retrieve the GitLab personal access token:
++
+[source,role="execute"]
+----
+export GITLAB_TOKEN=$(oc get secret root-user-personal-token -n gitlab -o jsonpath='{.data.token}' | base64 -d)
+----
++
+. Next, create the *gitlab-auth-secret* secret:
++
+[source,role="execute"]
+----
+envsubst < ~/lab-assets/gitlab-auth-secret.yml | oc apply -n tssc-app-ci -f -
+----
+
+In the next module, you will edit code using OpenShift Dev Spaces and commit it to Git. This commit will be automatically signed using your OIDC identity.
 
 ---
 

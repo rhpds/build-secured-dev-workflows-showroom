@@ -133,7 +133,7 @@ roxctl image check --image={quay_host}/tssc/tekton-chains-test:latest
 
 ===  2.2 Open Red Hat Developer Hub in Incognito Mode
 
-* In Showroom, open RHDH.
+* link:developer_hub_url[Right click this link], then open it in a new private browsing session.
 
 * *Username*:
 
@@ -384,102 +384,15 @@ output:
 
 ---
 
-== Step 3: Explore Your Quarkus Application
 
-* Evan to provide details here
-
----
-
-== Step 4: Prepare Developer and Pipeline Trust Foundations
-
-* Before you start modifying code, you need to configure Git commit signing in OpenShift Dev Spaces.
-* link:https://developers.redhat.com/products/openshift-dev-spaces[*OpenShift Dev Spaces*^] provides cloud-hosted development environments that run inside the cluster. These environments are defined declaratively using link:https://devfile.io/[*Devfiles*^], which describe the tools, configuration, and lifecycle behaviour of a developer workspace.
-*  You also need to ensure the CI pipelines have the credentials required to authenticate with external systems during the build and verification stages.
-
-=== 4.1 Create the tas-git-config ConfigMap
-
-* In this step, you will configure *Dev Spaces* so that every developer workspace automatically inherits the information required for OIDC-based Git commit signing, without manual setup.
-
-* First, create a new ConfigMap in the openshift-devspaces namespace:
-
-[source, role="execute", subs="attributes"]
-----
-cat << 'EOF' | oc apply -n openshift-devspaces -f -
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tas-git-config
-  annotations:
-    controller.devfile.io/mount-as: env
-  labels:
-    app.kubernetes.io/part-of: che.eclipse.org
-    app.kubernetes.io/component: workspaces-config
-data:
-  TAS_FULCIO_URL: "{tas_fulcio_url}"
-  TAS_REKOR_URL: "{tas_rekor_url}"
-  TAS_ISSUER_URL: "https://sso.{openshift_cluster_ingress_domain}/realms/sso"
-  TAS_CLIENT_ID: "trusted-artifact-signer"
-EOF
-----
-
-* This ConfigMap defines the endpoints and identity configuration required by *gitsign*, the tool used to perform keyless Git commit signing via *RHTAS*.
-
-NOTE: The label app.kubernetes.io/component=workspaces-config instructs Dev Spaces to inject these values into every developer workspace as environment variables.
-
----
-
-
-=== 4.2 Configure pipeline authentication secrets
-
-* Before executing the software template, the CI pipeline must be able to authenticate to the systems it interacts with.
-* All application pipelines in this workshop run in the tssc-app-ci namespace. Any credentials required by the pipeline must be available there as Kubernetes Secrets.
-* In this step, you will create two  secrets required by the pipeline:
-
-. *tpa-secret*: Credentials for uploading SBOMs to *Red Hat Trusted Profile Analyzer (RHTPA)*
-. *gitlab-auth-secret*: Credentials for authenticating to GitLab when creating repositories and interacting with source code
-* Run the following command to set the TPA_SERVER_URL
-+
-[source,role="execute"]
-----
-export TPA_SERVER_URL="https://$(oc get route -l app.kubernetes.io/component=server -n tssc-tpa -o json \
-  | jq -r '.items[0].spec.host')"
-----
-+
-* Then run this command to create the secret *tpa-secret*:
-+
-[source,role="execute"]
-----
-envsubst < ~/lab-assets/tpa-secret.yml | oc apply -n tssc-app-ci -f -
-----
-+
-* Next, create the GitLab authentication secret
-. First, retrieve the GitLab personal access token:
-+
-[source,role="execute"]
-----
-export GITLAB_TOKEN=$(oc get secret root-user-personal-token -n gitlab -o jsonpath='{.data.token}' | base64 -d)
-----
-+
-. Next, create the *gitlab-auth-secret* secret:
-+
-[source,role="execute"]
-----
-envsubst < ~/lab-assets/gitlab-auth-secret.yml | oc apply -n tssc-app-ci -f -
-----
-+
-* In the next step, you will make a small code change from within OpenShift Dev Spaces and commit it to Git. 
-* This commit will be automatically signed using your OIDC identity.
-
----
-
-== Step 5: Sign Your Code and Enter the Trusted Supply Chain
+== Step 3: Sign Your Code and Enter the Trusted Supply Chain
 
 * In this step, you will make a small code change from within OpenShift Dev Spaces and commit it to Git. The commit will be signed automatically using your OIDC identity, and this signed commit will trigger the CI pipeline. 
 * Your trusted identity is now carried forward into the build, verification, and promotion stages of the software supply chain.
 
-=== 5.1 Sign in to OpenShift Dev Spaces
+=== 3.1 Sign in to OpenShift Dev Spaces
 
-. Return to Red Hat Developer Hub (RHDH) in Showroom.
+. Return to Red Hat Developer Hub (RHDH) in Showroom and select the *my-quarkus-tkn* Component in the *Catalog*.
 . *Right Click* the link for *OpenShift Dev Spaces* and choose *Open in Inconito Window*. This will launch your cloud-based development environment in a separate browser window.
 +
 image::open_devspaces.png[open_devspaces,align="center"]
@@ -547,7 +460,7 @@ image::trust_publish_and_install.png[trust_publish_and_install,align="center"]
 
 ---
 
-=== 5.2 Verify Git Signing Configuration in OpenShift Dev Spaces
+=== 3.2 Verify Git Signing Configuration in OpenShift Dev Spaces
 
 * Before committing any code, verify that Git commit signing is correctly configured in your *OpenShift Dev Spaces* workspace.
 * The development environment has already been configured to use *gitsign* based on the configuration applied earlier in the Devfile.
@@ -566,7 +479,7 @@ image::Gitsign_Git_Global_Config.png[Git Global Configuration with Gitsign,link=
 
 ---
 
-=== 5.3 Apply a simple code change
+=== 3.3 Apply a simple code change
 
 * To see code signing in action, you will apply a simple change by adding a comment to the documentation.
 . Navigate to the *docs* folder and open the *index.md* file.
@@ -643,13 +556,13 @@ git push origin main
 
 In this step, you will observe the CI pipeline that was triggered by your signed commit and follow its execution through the different verification stages.
 
-. Switch back to *Red Hat Developer Hub* in *Showroom* and select the *CI* tab from the top menu. You should see the pipeline execution in progress. Note that the pipeline may take a few minutes to complete.
+Switch back to *Red Hat Developer Hub* in *Showroom* and select the *CI* tab from the top menu. You should see the pipeline execution in progress. Note that the pipeline may take a few minutes to complete.
 
 image::secure_pipeline_in_progress.png[Secure Pipeline Execution in Progress,align="center",link=self,window=blank]
 
-* In the meantime, let’s explore the key tasks in this pipeline that demonstrate the security guardrails enforced throughout the workflow.
+In the meantime, let’s explore the key tasks in this pipeline that demonstrate the security guardrails enforced throughout the workflow.
 
-=== 1 Verify Commit
+=== 5.5 Verify Commit
 
 * The first task executed after the Git repository is cloned is to verify that the code change you just committed was made by a trusted identity.
 * This task succeeds only if the pipeline can validate the signature on the commit that triggered the run. This is the signature you created using *gitsign* when you committed the change from *OpenShift Dev Spaces*.
@@ -664,7 +577,7 @@ image::Verify_Commit_Log.png[Verify Commit Task Log Output,align="center",link=s
 * Close the log and return to the pipeline view to explore the next task.
 
 
-== 2 Build Container
+=== 5.6 Build Container
 
 * After the source code is packaged, the *build-container* task builds a container image from the verified source. As part of this step, the image is attested and a *Software Bill of Materials (SBOM)* is generated.
 +
@@ -679,7 +592,7 @@ image::Generated_Artifacts_Registery.png[Generated Artifacts in Quay Registry,li
 * Switch back to the *CI* tab to explore the next task.
 
 
-=== 3 Upload SBOM to Repository
+=== 5.3 Upload SBOM to Repository
 
 * Once the SBOM has been generated, the next step is to upload it to *Red Hat Trusted Profile Analyzer (RHTPA)*. 
 
@@ -690,7 +603,7 @@ image::Upload_SBOM.png[Upload SBOM to CycloneDX Task,link=self,window=blank]
 image::SBOM_in_RHTPA.png[Upload SBOM to CycloneDX Task,link=self,window=blank]
 
 
-=== 4 ACS Image Check
+=== 5.4 ACS Image Check
 
 * Switch back to the pipeline view. The next task, *acs-image-check*, assesses whether the container image adheres to predefined security and compliance policies.
 +
@@ -699,14 +612,14 @@ image::ACS_Image_Check_Task.png[ACS Image Check Task,align="center",window=blank
 * The *acs-image-check* task evaluates the image against policies such as running as a non-root user, using approved base images, and avoiding prohibited or high-risk packages.
 
 
-=== 5 ACS Image Scan
+=== 5.5 ACS Image Scan
 
 * Switch back to the pipeline view, the *acs-image-scan* task scans the container image for known vulnerabilities by comparing its components against vulnerability databases. This identifies any CVEs that could affect the security of the image.
 +
 image::ACS_Image_Scan.png[ACS Image Scan Task Results,link=self,window=blank]
 
 
-== 6 ACS Deploy Check
+=== 5.6 ACS Deploy Check
 
 * The *acs-deploy-check* task evaluates whether the container image is allowed to be deployed into the target environment.
 * Unlike the image scan and image check tasks, which analyse the image itself, this task enforces deployment-time policies such as blocking images with critical vulnerabilities, failed policy checks, or missing attestations.
@@ -714,7 +627,7 @@ image::ACS_Image_Scan.png[ACS Image Scan Task Results,link=self,window=blank]
 
 image::ACS_Deploy_Check.png[ACS Deploy Check,link=self,window=blank]
 
-== ACS Report Output
+=== 5.7 ACS Report Output
 
 * You can review the vulnerability scan results generated by *ACS* directly from the pipeline. Click the *Output* icon under *Actions* for the pipeline run.
 +
@@ -739,7 +652,50 @@ image::deployment_check_output.png[deployment_check_output,link=self,window=blan
 
 ---
 
-== Step 6: Promote to stagoing 
+== Step 4: Explore the Application
+
+Now that the build is complete, let's examine the application features and how it works. 
+
+=== Step 4.1: Explore the Application's Source Code
+
+Examine the application's source code and deployment manifests:
+
+. Select the GitLab tab in Showroom.
+. Return to the GitLab homepage.
++
+image:gitlab-quarkus-app-repos.png[gitlab_home_page_quarkus_apps,align="center",link=self,window=blank]
+. Select the *my-quarkus-tkn-gitops* repository.
+. Notice that *application.yaml*? This is used to manage the application deployment using OpenShift GitOps.
+. The *app-of-apps* folder contains files to manage application environments and the Tekton CI.
+
+Return to Dev Spaces and explore the source code for the Quarkus application. You'll quickly notice references to Langchain4j and Chatbot features:
+
+. Open the *application.properties*. Note that various Langchain4j properties are set to connect the application to an LLM.
++
+image:quarkus-langhcain-props.png[quarkus-langhcain-props,align="center",link=self,window=blank]
+. link:https://quarkus.io/extensions/io.quarkiverse.langchain4j/quarkus-langchain4j-easy-rag/[Easy RAG] is used to enable the Chatbot to perform Retrieval-Augmented Generation on a terms of service included in the *resources* folder.
+. Additionally, the `QUARKUS_LANGCHAIN4J_OPENAI_API_KEY` and `QUARKUS_LANGCHAIN4J_OPENAI_BASE_URL` environment variables are referenced. You can see that these are securely injected from Vault using an ExternalSecret in the *components/my-quarkus-tkn/base/* folder of the *my-quarkus-tkn-gitops* repository.
+
+NOTE: The model serving and inference has been taken care of by the platform engineering and data science teams, all developers need to do is use a template to benefit from approved models and a preconfigured pipeline that enforces secure software supply chain principles.
+
+=== Step 4.2: View and Test the Application
+
+Next, return to Red Hat Developer Hub and learn how to access the deployed Quarkus application's dev environment:
+
+. Find open the *Topology* tab for the *my-quarkus-tkn* Component. Three Pods will be displayed, one for each of dev, staging, and production. 
+. Select the *dev* Pod. You can confirm it's the *dev* Pod by checking the namespace listed when you click each Pod.
++
+image::quarkus-tkn-dev-pod.png[quarkus-tkn-dev-pod,link=self,window=blank]
+. Click the popout arrow on the Pod to view the development version of your application.
+. You should see a Chatbot interface. Ask question such as "Can I cancel my reservation?".
++
+image:quarkus-rag-chat.png[quarkus-rag-chat,align="center",link=self,window=blank]
+. The Chatbot responds with policy information sourced using RAG.
+
+This template demonstrates the enhanced productivity that Red Hat Developer Hub can provide while enforcing security and compliance.
+---
+
+== Step 5: Promote to Staging
 
 In this step ypu will promote the application to staging by creatingthis tag, a GitLab webhook triggers the staging pipeline — proving that automation delivers both speed and quality.
 
