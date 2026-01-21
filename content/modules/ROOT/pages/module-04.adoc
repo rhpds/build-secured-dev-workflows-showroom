@@ -80,12 +80,10 @@ acs_quay
 ----
 {quay_admin_password}
 ----
-
++
+. Click *Test* to validate the connection.
++
 image::acs_quay_inegration.png[acs_quay_inegration,align="center",link=self,window=blank]
-
-* Click *Test* to validate the connection.
-
-image::test_quay_connection.png[test_quay_connection,align="center",link=self,window=blank]
 
 * Once the test succeeds, click *Save* to create the integration.
 * At this point, *ACS* can securely access images stored in *Quay* and perform scans automatically.
@@ -480,7 +478,7 @@ envsubst < ~/lab-assets/gitlab-auth-secret.yml | oc apply -n tssc-app-ci -f -
 === 5.1 Sign in to OpenShift Dev Spaces
 
 . Return to Red Hat Developer Hub (RHDH) in Showroom.
-. *Right Click* the link for *OpenShift Dev Spaces* and choose *Open in Inconito Window*. This will launch your cloud-based development environment in a separate browser window.
+. *Right Click* the link for *OpenShift Dev Spaces (VSCode)* and choose *Open in Incognitio Window*. This will launch your cloud-based development environment in a separate browser window.
 +
 image::open_devspaces.png[open_devspaces,align="center"]
 +
@@ -490,7 +488,7 @@ WARNING: If you do not use a Private/Incognito window, your session will open us
 +
 image::login_with_openshift.png[login_with_openshift,align="center"]
 +
-. Provide your credentialas follows:
+. Provide your credentials follows:
 ** *Username*:
 +
 [source, role="execute"]
@@ -500,7 +498,7 @@ user1
 +
 ** *Password*:
 +
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 {password}
 ----
@@ -516,19 +514,19 @@ image::devspaces_gitlab_login.png[devspaces_gitlab_login,align="center"]
 . Provide your credentialas follows:
 ** *Username*:
 +
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 {gitlab_root_user}
 ----
 +
 ** *Password*:
 +
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 {gitlab_root_password}
 ----
 +
-. When prompted, authorize  *OpenShigt Dev Spaces* to access *GitLab* by clicking *Authorize devspaces*.
+. When prompted, authorize  *OpenShift Dev Spaces* to access *GitLab* by clicking *Authorize devspaces*.
 +
 image::authorise_devspaces_for_gitlab.png[authorise_devspaces_for_gitlab,align="center"]
 +
@@ -631,7 +629,7 @@ image::Gitsign_Commit_Signed.png[Successfully Signed Commit with Gitsign,link=se
 +
 [source, role="execute"]
 ----
-git push origin main
+git push origin master
 ----
 +
 . This action sets the build pipeline into motion.
@@ -739,7 +737,7 @@ image::deployment_check_output.png[deployment_check_output,link=self,window=blan
 
 ---
 
-== Step 6: Promote to stagoing 
+== Step 6: Promote to staging 
 
 In this step ypu will promote the application to staging by creatingthis tag, a GitLab webhook triggers the staging pipeline — proving that automation delivers both speed and quality.
 
