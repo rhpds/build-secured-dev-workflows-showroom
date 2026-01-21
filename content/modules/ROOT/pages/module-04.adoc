@@ -80,12 +80,10 @@ acs_quay
 ----
 {quay_admin_password}
 ----
-
++
+. Click *Test* to validate the connection.
++
 image::acs_quay_inegration.png[acs_quay_inegration,align="center",link=self,window=blank]
-
-* Click *Test* to validate the connection.
-
-image::test_quay_connection.png[test_quay_connection,align="center",link=self,window=blank]
 
 * Once the test succeeds, click *Save* to create the integration.
 * At this point, *ACS* can securely access images stored in *Quay* and perform scans automatically.
@@ -403,7 +401,7 @@ WARNING: If you do not use a Private/Incognito window, your session will open us
 +
 image::login_with_openshift.png[login_with_openshift,align="center"]
 +
-. Provide your credentialas follows:
+. Provide your credentials follows:
 ** *Username*:
 +
 [source, role="execute"]
@@ -413,7 +411,7 @@ user1
 +
 ** *Password*:
 +
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 {password}
 ----
@@ -429,19 +427,19 @@ image::devspaces_gitlab_login.png[devspaces_gitlab_login,align="center"]
 . Provide your credentialas follows:
 ** *Username*:
 +
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 {gitlab_root_user}
 ----
 +
 ** *Password*:
 +
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 {gitlab_root_password}
 ----
 +
-. When prompted, authorize  *OpenShigt Dev Spaces* to access *GitLab* by clicking *Authorize devspaces*.
+. When prompted, authorize  *OpenShift Dev Spaces* to access *GitLab* by clicking *Authorize devspaces*.
 +
 image::authorise_devspaces_for_gitlab.png[authorise_devspaces_for_gitlab,align="center"]
 +
@@ -544,7 +542,7 @@ image::Gitsign_Commit_Signed.png[Successfully Signed Commit with Gitsign,link=se
 +
 [source, role="execute"]
 ----
-git push origin main
+git push origin master
 ----
 +
 . This action sets the build pipeline into motion.
@@ -693,13 +691,14 @@ image:quarkus-rag-chat.png[quarkus-rag-chat,align="center",link=self,window=blan
 . The Chatbot responds with policy information sourced using RAG.
 
 This template demonstrates the enhanced productivity that Red Hat Developer Hub can provide while enforcing security and compliance.
+
 ---
 
 == Step 5: Promote to Staging
 
 In this step ypu will promote the application to staging by creatingthis tag, a GitLab webhook triggers the staging pipeline — proving that automation delivers both speed and quality.
 
-=== 6.1 Log in to Gitlab
+=== 5.1 Log in to Gitlab
 
 * If you are not already logged in to *GitLab*, click the *GitLab* Console tab in the Showroom and log in using:
 
@@ -717,7 +716,7 @@ In this step ypu will promote the application to staging by creatingthis tag, a 
 {gitlab_root_password}
 ----
 
-=== 6.2 Create a Release Tag 
+=== 5.2 Create a Release Tag 
 
 . At the top left click on *Gitlab Home*.
 +
@@ -746,7 +745,7 @@ image::create_tag.png[create_tag,align="center",link=self,window=blank]
 
 * The software template configures a webhook that treats Git tags differently from regular commits. Creating a tag triggers a *promote to staging* pipeline, rather than the standard development pipeline.
 
-=== 6.3 Explore the Promote to Staging Pipeline
+=== 5.3 Explore the Promote to Staging Pipeline
 
 . Switch back to the *CI* tab in *Red Hat Developer Hub*.
 . Locate and expand the job labeled *promote-to-stage* to follow the progress of the release pipeline.
