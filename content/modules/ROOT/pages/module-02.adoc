@@ -196,7 +196,7 @@ Content
 
 image::tas_client_service_account_details.png[tas_client_service_account_details,align="center",link=self,window=blank]
 
-WARNING: This is the most common failure point in RHTAS deployments. Fulcio requires the OIDC token to contain a verified email claim. If this is missing, certificate issuance fails.
+WARNING: Make sure Email Verfied is set to On. This is the most common failure point in RHTAS deployments. Fulcio requires the OIDC token to contain a verified email claim. If this is missing, certificate issuance fails.
 
 ---
 

@@ -307,7 +307,10 @@ username: service-account-cli
 
 === 1.2 Log in to Red Hat Build of Keycloak (RHBK)
 
-* Click the *RHBK Console* tab in the Showroom.
+* Click the *RHBK Console* tab in the Showroom, you may need to refresh the tab (Do not refresh the browser page itself).
++
+image::rhbk_refresh.png[rhbk_refresh,align="center",link=self,window=blank]
++
 * Log in to the *RHBK console* using the following details:
 
 * *Username*:

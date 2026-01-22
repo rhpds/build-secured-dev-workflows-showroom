@@ -129,29 +129,9 @@ roxctl image check --image={quay_host}/tssc/tekton-chains-test:latest
 
 ---
 
-===  2.2 Open Red Hat Developer Hub in Incognito Mode
+===  2.2 Run the Software Template
 
-* link:developer_hub_url[Right click this link], then open it in a new private browsing session.
-
-* *Username*:
-
-[source, role="execute", subs="attributes"]
-----
-{user}
-----
-
-* *Password*:
-
-[source, role="execute", subs="attributes"]
-----
-{password}
-----
-
-
----
-
-===  2.3 Run the Software Template
-
+. Switch to the *RHDH* tab in the Showroom.
 . Click on Home in the left navigation menu
 . From the RHDH home page, scroll down until you see the Explore Templates section.
 . At the moment, only one template is available, but in real environments, platform teams typically provide multiple Golden Paths for different application types and technology stacks.
@@ -385,12 +365,11 @@ output:
 
 == Step 3: Sign Your Code and Enter the Trusted Supply Chain
 
-* In this step, you will make a small code change from within OpenShift Dev Spaces and commit it to Git. The commit will be signed automatically using your OIDC identity, and this signed commit will trigger the CI pipeline. 
+* In this step, you will make a small code change from within *OpenShift Dev Spaces (VS Code)* and commit it to Git. The commit will be signed automatically using your OIDC identity, and this signed commit will trigger the CI pipeline. 
 * Your trusted identity is now carried forward into the build, verification, and promotion stages of the software supply chain.
 
 === 3.1 Sign in to OpenShift Dev Spaces
 
-. Return to Red Hat Developer Hub (RHDH) in Showroom and select the *my-quarkus-tkn* Component in the *Catalog*.
 . *Right Click* the link for *OpenShift Dev Spaces* and choose *Open in Inconito Window*. This will launch your cloud-based development environment in a separate browser window.
 +
 image::open_devspaces.png[open_devspaces,align="center"]
@@ -419,6 +398,10 @@ user1
 . Next, you will be asked to authorize access for the OpenShift Dev Spaces client. Review the requested permissions and click *Allow selected permissions* to proceed.
 +
 image::allow_Selcted_permissions.png[allow_Selcted_permissions,align="center"]
++
+. Confirm that you trust the repository by clicking Continue to proceed with creating the workspace.
++
+image::confirm_trust.png[confirm_trust.png,align="center"]
 +
 . You will then be prompted to provide *GitLab* credentials.
 +
@@ -668,6 +651,7 @@ image:gitlab-quarkus-app-repos.png[gitlab_home_page_quarkus_apps,align="center",
 
 Return to Dev Spaces and explore the source code for the Quarkus application. You'll quickly notice references to Langchain4j and Chatbot features:
 
+. Expand the my-quarkus-tkn project, navigate to src → main → resources. 
 . Open the *application.properties*. Note that various Langchain4j properties are set to connect the application to an LLM.
 +
 image:quarkus-langhcain-props.png[quarkus-langhcain-props,align="center",link=self,window=blank]

@@ -283,7 +283,7 @@ upstream:
 
 ---
 
-=== 2.43 Enable Plugins
+=== 2.3 Enable Plugins
 
 *Backstage*, and by extension *Red Hat Developer Hub (RHDH)*, is designed to be modular. Plugins are the primary mechanism used to integrate developer tools and extend the capabilities of the Internal Developer Portal.
 
@@ -299,6 +299,8 @@ In upstream Backstage, plugins are added using a build-time model. Platform engi
 
 Each update — including plugin upgrades or security fixes — requires repeating this entire process. While functional, this approach does not scale well across multiple environments or teams and introduces operational friction.
 
+---
+
 ==== 2.3.2 Dynamic plugins in Red Hat Developer Hub
 
 *Red Hat Developer Hub* introduces dynamic plugins, shifting plugin management from build time to runtime configuration. Instead of rebuilding images, platform engineers enable and configure plugins declaratively using YAML and GitOps workflows. The container image remains unchanged, while plugins are mounted and activated at runtime.
@@ -312,6 +314,7 @@ This approach:
 
 In the following steps, you will begin enabling plugins through configuration, activating core *RHDH* functionality exactly as a platform engineering team would when shaping a developer experience.
 
+---
 
 ==== 2.3.3 Enabling RHDH plugins
 
@@ -337,6 +340,7 @@ image::edit_single_file.png[edit_single_file,align="center",link=self,window=bla
 +
 image::uncomment_plugins.png[uncomment_plugins,align="center",link=self,window=blank]
 
+---
 
 ==== 2.3.4 Understanding the dynamic.plugins configuration
 
@@ -394,7 +398,7 @@ In this step, you will replace temporary Guest access with Single Sign-On (SSO) 
 
 image::enable_auth.png[enable_auth,align="center",link=self,window=blank]
 
-==== 2.4.2 Understanding the authentication configuration
+==== 2.4.1 Understanding the authentication configuration
 
 The YAML you just uncommented configures authentication as follows:
 
@@ -542,6 +546,8 @@ image::hard_refresh.png[hard_refresh,align="center",link=self,window=blank]
 *Argo CD* immediately begins rolling out the updated configuration. This typically takes 2–3 minutes as the *Red Hat Developer Hub* deployment is reconciled and new plugins are installed for the first time.
 +
 image::argo_cd_rollout.png[argo_cd_rollout,align="center",link=self,window=blank]
++
+* Wait for Argo CD to complete synchronisation of the Backstage application. Confirm that APP HEALTH shows Healthy and SYNC STATUS shows Synced.
 
 You've just seen GitOps and configuration-as-code in action. Configuration changes committed to Git were automatically reconciled into *Red Hat Developer Hub* by *Argo CD*, without manual UI changes.
 
@@ -551,7 +557,12 @@ In the next step, you'll return to Red Hat Developer Hub to verify that these ch
 
 == Step 3: Validate the changes in RHDH
 
-. Click the *RHDH* tab in the Showroom. You may need to refresh the tab. You should immediately notice that Guest access is no longer available and the only login option is now Sign in with OIDC, backed by Red Hat Build of Keycloak.
+* Click the *RHDH* tab in the Showroom. You may need to refresh the tab. 
+* If you are logged in as Guest, click the user icon in the top-right corner, select the drop-down arrow, then choose Sign out from the menu.
++
+image::guest_sign_out.png[guest_sign_out.png,align="center",link=self,window=blank]
++
+* You should immediately notice that Guest access is no longer available and the only login option is Sign in with OIDC, backed by Red Hat Build of Keycloak.
 
 . Click Sign in with OIDC.
 +
