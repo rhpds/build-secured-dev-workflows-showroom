@@ -7,7 +7,7 @@
 For example:
 **Opening (5 minutes):**
 
-* Discuss background and introduct use case
+* Discuss background and introduce the use case
 * "Start at the end" describing the solution to the problem
 
 **Technical Demo (10-15 minutes):**
@@ -20,7 +20,7 @@ For example:
 
 * Repeat the problem and emphasize how the solution solved that problem
 * Move from the imaginary problem to the customer's real problem
-* Save time for questions and interationss!
+* Save time for questions and interactions!
 
 == Products and Versions
 Add a table with the products and versions used in the demo.

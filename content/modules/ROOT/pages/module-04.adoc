@@ -183,7 +183,7 @@ image::open_component_in_catalog.png[open_component_in_catalog,align="center",li
 * Software Templates are the primary mechanism used by *Red Hat Developer Hub* to expose Golden Paths to development teams.
 * Templates are defined using YAML and rendered as rich, validated forms in the Red Hat Developer Hub UI. Developers interact with a simple form. Behind the scenes, the platform does all the heavy lifting.
 * This YAML is processed by the *Scaffolder*, *RHDH*'s templating engine, which executes the steps outlined in the template.
-* This ensures that every new service is created in a standerdize, automated , self service way.
+* This ensures that every new service is created in a standardized, automated, self-service way.
 * Let’s examine the structure of a template using 
 
 === Software Template YAML Structure
@@ -407,7 +407,7 @@ image::confirm_trust.png[confirm_trust.png,align="center"]
 +
 image::devspaces_gitlab_login.png[devspaces_gitlab_login,align="center"]
 +
-. Provide your credentialas follows:
+. Provide your credentials follows:
 ** *Username*:
 +
 [source, role="execute", subs="attributes"]
@@ -493,7 +493,7 @@ image::open_sso.png[open_sso,align="center",self,window=blank]
 +
 . The browser will prompt you for your credentials.
 +
-. Provide your credentialas follows:
+. Provide your credentials follows:
 ** *Username*:
 +
 [source, role="execute"]
@@ -503,7 +503,7 @@ user1
 +
 ** *Password*:
 +
-[source, role="execute"]
+[source, role="execute", subs="attributes"]
 ----
 {password}
 ----
@@ -652,7 +652,7 @@ image:gitlab-quarkus-app-repos.png[gitlab_home_page_quarkus_apps,align="center",
 Return to Dev Spaces and explore the source code for the Quarkus application. You'll quickly notice references to Langchain4j and Chatbot features:
 
 . Expand the my-quarkus-tkn project, navigate to src → main → resources. 
-. Open the *application.properties*. Note that various Langchain4j properties are set to connect the application to an LLM.
+.Open the *application.properties*. Note that various Langchain4j properties are set to connect the application to an LLM.
 +
 image:quarkus-langhcain-props.png[quarkus-langhcain-props,align="center",link=self,window=blank]
 . link:https://quarkus.io/extensions/io.quarkiverse.langchain4j/quarkus-langchain4j-easy-rag/[Easy RAG] is used to enable the Chatbot to perform Retrieval-Augmented Generation on a terms of service included in the *resources* folder.
@@ -680,7 +680,7 @@ This template demonstrates the enhanced productivity that Red Hat Developer Hub 
 
 == Step 5: Promote to Staging
 
-In this step ypu will promote the application to staging by creatingthis tag, a GitLab webhook triggers the staging pipeline — proving that automation delivers both speed and quality.
+In this step you will promote the application to staging by creating this tag, a GitLab webhook triggers the staging pipeline — proving that automation delivers both speed and quality.
 
 === 5.1 Log in to Gitlab
 

@@ -19,7 +19,7 @@ In this module, you help customers answer a foundational software supply chain q
 === Enter *Red Hat Trusted Profile Analyzer (RHTPA)*
 
 * This is where *RHTPA* comes into play.
-* *RHTPA* is Red Hat's supported distribution of the upstream link:https://github.com/guacsec/trustify[*trustify  project*^], which is part of the link:https://guac.sh/trustify/[*GUAC Community*^] (Graph for Understanding Artifact Composition).
+* *RHTPA* is Red Hat's supported distribution of the upstream link:https://github.com/guacsec/trustify[*trustify project*^], which is part of the link:https://guac.sh/trustify/[*GUAC Community*^] (Graph for Understanding Artifact Composition).
 * *RHTPA* ingests *SBOM* documents, indexes every component inside them, and continuously correlates that inventory against known CVEs and security advisories, producing an auditable view of software composition. 
 
 === By the end of this module you will be able to: 
