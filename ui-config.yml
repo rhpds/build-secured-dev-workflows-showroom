@@ -10,7 +10,7 @@ tabs:
   - name: OCP Console
     url: 'https://console-openshift-console.${DOMAIN}'
   - name: RHBK
-    url: 'https://sso.${DOMAIN}' 
+    url: 'https://sso.${DOMAIN}'
   - name: RHTPA
     url: 'https://server-tssc-tpa.${DOMAIN}'
   - name: REKOR Search UI
@@ -23,5 +23,3 @@ tabs:
     url: 'https://backstage-backstage.${DOMAIN}'
   - name: Argo CD
     url: 'https://argocd-server-openshift-gitops.${DOMAIN}'
-  - name: ACS
-    url: 'https://central-stackrox.${DOMAIN}'
